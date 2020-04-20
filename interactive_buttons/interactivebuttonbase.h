@@ -17,7 +17,7 @@
 #define PI 3.1415926
 #define GOLDEN_RATIO 0.618
 
-#define DOUBLE_PRESS_INTERVAL 200 // 松开和按下的间隔。相等为双击
+#define DOUBLE_PRESS_INTERVAL 300 // 松开和按下的间隔。相等为双击
 #define SINGLE_PRESS_INTERVAL 150 // 按下时间超过这个数就是单击。相等为单击
 
 /**
@@ -25,7 +25,7 @@
  ×
  * 邮箱：iwxyiii@gmail.com
  * QQ号：482582886
- * 时间：2019.11.1
+ * 时间：2020.04.20
  *
  * 说明：灵性的自定义按钮，简单又又去
  * 源码：https://github.com/MRXY001/Interactive-Windows-Buttons
@@ -37,35 +37,37 @@
 class InteractiveButtonBase : public QPushButton
 {
     Q_OBJECT
-    Q_PROPERTY(bool self_enabled WRITE setSelfEnabled)                // 是否启用自定义的按钮（true）
-    Q_PROPERTY(bool parent_enabled WRITE setParentEnabled)            // 是否启用父类按钮（false）
-    Q_PROPERTY(bool fore_enabled WRITE setForeEnabled)                // 是否绘制自定义按钮前景色（true）
-    Q_PROPERTY(QString text WRITE setText)                            // 前景文字
-    Q_PROPERTY(QString icon_path WRITE setIconPath)                   // 前景图标
-    Q_PROPERTY(QString pixmpa_path WRITE setPixmapPath)               // 前景图标
-    Q_PROPERTY(QColor icon_color WRITE setIconColor)                  // 前景图标帅色
-    Q_PROPERTY(QColor text_color WRITE setTextColor)                  // 前景文字颜色
-    Q_PROPERTY(QColor background_color WRITE setNormalColor)          // 背景颜色
-    Q_PROPERTY(QColor border_color WRITE setBorderColor)              // 边界颜色
-    Q_PROPERTY(QColor hover_color WRITE setHoverColor)                // 鼠标悬浮背景颜色
-    Q_PROPERTY(QColor press_color WRITE setPressColor)                // 鼠标按下背景颜色
-    Q_PROPERTY(int hover_duration WRITE setHoverAniDuration)          // 鼠标悬浮动画周期
-    Q_PROPERTY(int press_duration WRITE setPressAniDuration)          // 鼠标按下动画周期
-    Q_PROPERTY(int click_duration WRITE setClickAniDuration)          // 鼠标点击动画周期
-    Q_PROPERTY(double icon_padding_proper WRITE setIconPaddingProper) // 图标四边空白处大小比例
-    Q_PROPERTY(int radius WRITE setRadius)                            // 边框圆角半径
-    Q_PROPERTY(int border_width WRITE setBorderWidth)                 // 边框线条粗细
-    Q_PROPERTY(bool fixed_fore_pos WRITE setFixedTextPos)             // 是否固定前景位置（false）
-    Q_PROPERTY(bool text_dynamic_size WRITE setTextDynamicSize)       // 修改字体大小时调整按钮最小尺寸（false）
-    Q_PROPERTY(bool leave_after_clicked WRITE setLeaveAfterClick)     // 鼠标单击松开后取消悬浮效果（针对菜单、弹窗）
-    Q_PROPERTY(bool show_animation WRITE setShowAni)                  // 是否启用出现动画（鼠标移开则消失）（false）
-    Q_PROPERTY(bool water_animation WRITE setWaterRipple)             // 是否启用点击水波纹动画（否则使用渐变）（true）
-    Q_PROPERTY(int font_size READ getFontSizeT WRITE setFontSizeT)    // 动：按钮字体动画效果（自动，不应该设置）
+    Q_PROPERTY(bool self_enabled READ getSelfEnabled WRITE setSelfEnabled)                      // 是否启用自定义的按钮（true）
+    Q_PROPERTY(bool parent_enabled READ getParentEnabled WRITE setParentEnabled)                // 是否启用父类按钮（false）
+    Q_PROPERTY(bool fore_enabled READ getForeEnabled WRITE setForeEnabled)                      // 是否绘制自定义按钮前景色（true）
+    Q_PROPERTY(QString text READ getText WRITE setText)                                         // 前景文字
+    Q_PROPERTY(QString icon_path READ getIconPath WRITE setIconPath)                            // 前景图标
+    Q_PROPERTY(QString pixmap_path READ getPixmapPath WRITE setPixmapPath)                      // 前景图标
+    Q_PROPERTY(QColor icon_color READ getIconColor WRITE setIconColor)                          // 前景图标帅色
+    Q_PROPERTY(QColor text_color READ getTextColor WRITE setTextColor)                          // 前景文字颜色
+    Q_PROPERTY(QColor background_color READ getNormalColor WRITE setNormalColor)                // 背景颜色
+    Q_PROPERTY(QColor border_color READ getBorderColor WRITE setBorderColor)                    // 边界颜色
+    Q_PROPERTY(QColor hover_color READ getHoverColor WRITE setHoverColor)                       // 鼠标悬浮背景颜色
+    Q_PROPERTY(QColor press_color READ getPressColor WRITE setPressColor)                       // 鼠标按下背景颜色
+    Q_PROPERTY(int hover_duration READ getHoverAniDuration WRITE setHoverAniDuration)           // 鼠标悬浮动画周期
+    Q_PROPERTY(int press_duration READ getPressAniDuration WRITE setPressAniDuration)           // 鼠标按下动画周期
+    Q_PROPERTY(int click_duration READ getClickAniDuration WRITE setClickAniDuration)           // 鼠标点击动画周期
+    Q_PROPERTY(double icon_padding_proper READ getIconPaddingProper WRITE setIconPaddingProper) // 图标四边空白处大小比例
+    Q_PROPERTY(int radius READ getRadius WRITE setRadius)                                       // 边框圆角半径
+    Q_PROPERTY(int border_width READ getBorderWidth WRITE setBorderWidth)                       // 边框线条粗细
+    Q_PROPERTY(bool fixed_fore_pos READ getFixedTextPos WRITE setFixedTextPos)                  // 是否固定前景位置（false）
+    Q_PROPERTY(bool text_dynamic_size READ getTextDynamicSize WRITE setTextDynamicSize)         // 修改字体大小时调整按钮最小尺寸（false）
+    Q_PROPERTY(bool leave_after_clicked READ getLeaveAfterClick WRITE setLeaveAfterClick)       // 鼠标单击松开后取消悬浮效果（针对菜单、弹窗）
+    Q_PROPERTY(bool show_animation READ getShowAni WRITE setShowAni)                            // 是否启用出现动画（鼠标移开则消失）（false）
+    Q_PROPERTY(bool water_animation READ getWaterRipple WRITE setWaterRipple)                   // 是否启用点击水波纹动画（否则使用渐变）（true）
+    Q_PROPERTY(int font_size READ getFontSizeT WRITE setFontSizeT)                              // 动：按钮字体动画效果（自动，不应该设置）
 public:
     InteractiveButtonBase(QWidget *parent = nullptr);
     InteractiveButtonBase(QString text, QWidget *parent = nullptr);
     InteractiveButtonBase(QIcon icon, QWidget *parent = nullptr);
     InteractiveButtonBase(QPixmap pixmap, QWidget *parent = nullptr);
+    InteractiveButtonBase(QIcon icon, QString text, QWidget *parent = nullptr);
+    InteractiveButtonBase(QPixmap pixmap, QString text, QWidget *parent = nullptr);
 
     /**
      * 前景实体
@@ -76,8 +78,8 @@ public:
         Text,       // 纯文字（替代父类）
         Icon,       // 纯图标
         PixmapMask, // 可变色图标（通过pixmap+遮罩实现），锯齿化明显
-        IconText,   // 图标+文字（暂不支持）
-        PixmapText  // 变色图标+文字（暂不支持）
+        IconText,   // 图标+文字（强制左对齐）
+        PixmapText  // 变色图标+文字（强制左对齐）
     };
 
     /**
@@ -135,7 +137,8 @@ public:
         int left, top, right, bottom; // 四个边界的空白距离
     };
 
-    enum NolinearType {
+    enum NolinearType
+    {
         Linear,
         SlowFaster,
         FastSlower,
@@ -170,6 +173,8 @@ public:
     void setPressColor(QColor color);
     void setIconColor(QColor color = QColor(0, 0, 0));
     void setTextColor(QColor color = QColor(0, 0, 0));
+    void setFocusBg(QColor color);
+    void setFocusBorder(QColor color);
     void setFontSize(int f);
     void setHover();
     void setAlign(Qt::Alignment a);
@@ -187,6 +192,8 @@ public:
     void setTextDynamicSize(bool d = true);
     void setLeaveAfterClick(bool l = true);
     void setDoubleClicked(bool e = true);
+    void setAutoTextColor(bool a = true);
+    void setPretendFocus(bool f = true);
 
     void setShowAni(bool enable = true);
     void showForeground();
@@ -194,10 +201,36 @@ public:
     void hideForeground();
     void delayShowed(int time, QPoint point = QPoint(0, 0));
 
+    QString getText();
     void setMenu(QMenu *menu);
     void setState(bool s = true);
     bool getState();
-    virtual void simulateStatePress(bool s = true);
+    virtual void simulateStatePress(bool s = true, bool a = false);
+    bool isHovering() { return hovering; }
+    bool isPressing() { return pressing; }
+
+    bool getSelfEnabled() { return self_enabled; }
+    bool getParentEnabled() { return parent_enabled; }
+    bool getForeEnabled() { return fore_enabled; }
+    QColor getIconColor() { return icon_color; }
+    QColor getTextColor() { return text_color; }
+    QColor getNormalColor() { return normal_bg; }
+    QColor getBorderColor() { return border_bg; }
+    QColor getHoverColor() { return hover_bg; }
+    QColor getPressColor() { return press_bg; }
+    QString getIconPath() { return ""; }
+    QString getPixmapPath() { return ""; }
+    int getHoverAniDuration() { return hover_bg_duration; }
+    int getPressAniDuration() { return press_bg_duration; }
+    int getClickAniDuration() { return click_ani_duration; }
+    double getIconPaddingProper() { return icon_padding_proper; }
+    int getRadius() { return qMax(radius_x, radius_y); }
+    int getBorderWidth() { return border_width; }
+    bool getFixedTextPos() { return fixed_fore_pos; }
+    bool getTextDynamicSize() { return text_dynamic_size; }
+    bool getLeaveAfterClick() { return leave_after_clicked; }
+    bool getShowAni() { return show_animation; }
+    bool getWaterRipple() { return water_animation; }
 
 #if QT_DEPRECATED_SINCE(5, 11)
     QT_DEPRECATED_X("Use InteractiveButtonBase::setFixedForePos(bool fixed = true)")
@@ -246,6 +279,17 @@ signals:
     void pressDisappearAniFinished();
     void jitterAniFinished();
     void doubleClicked();
+    void signalFocusIn();
+    void signalFocusOut();
+
+    void signalMouseEnter();
+    void signalMouseEnterLater(); // 进入后延迟信号（以渐变动画完成为准，相当于可手动设置）
+    void signalMouseLeave();
+    void signalMouseLeaveLater(); // 离开后延迟的信号（直至渐变动画完成（要是划过一下子离开，这个也会变快））
+    void signalMousePress(QMouseEvent* event);
+    void signalMousePressLater(QMouseEvent* event);
+    void signalMouseRelease(QMouseEvent* event);
+    void signalMouseReleaseLater(QMouseEvent* event);
 
 public slots:
     virtual void anchorTimeOut();
@@ -258,7 +302,7 @@ public:
     QString text;
     QPixmap pixmap;
     PaintAddin paint_addin;
-    EdgeVal icon_paddings;
+    EdgeVal fore_paddings;
 
 protected:
     // 总体开关
@@ -287,19 +331,24 @@ protected:
     // 背景与前景
     QColor icon_color, text_color;                   // 前景颜色
     QColor normal_bg, hover_bg, press_bg, border_bg; // 各种背景颜色
+    QColor focus_bg, focus_border;                   // 有焦点的颜色
     int hover_speed, press_start, press_speed;       // 颜色渐变速度
     int hover_progress, press_progress;              // 颜色渐变进度
     double icon_padding_proper;                      // 图标的大小比例
+    int icon_text_padding, icon_text_size;           // 图标+文字模式共存时，两者间隔、图标大小
     int border_width;
     int radius_x, radius_y;
     int font_size;
     bool fixed_fore_pos;    // 鼠标进入时是否固定文字位置
     bool fixed_fore_size;   // 鼠标进入/点击时是否固定前景大小
     bool text_dynamic_size; // 设置字体时自动调整最小宽高
+    bool auto_text_color;   // 动画时是否自动调整文字颜色
+    bool focusing;          // 是否获得了焦点
 
     // 鼠标单击动画
     bool click_ani_appearing, click_ani_disappearing; // 是否正在按下的动画效果中
     int click_ani_progress;                           // 按下的进度（使用时间差计算）
+    QMouseEvent *mouse_press_event, *mouse_release_event;
 
     // 统一绘制图标的区域（从整个按钮变为中心三分之二，并且根据偏移计算）
     bool unified_geometry; // 上面用不到的话，这个也用不到……
@@ -323,9 +372,9 @@ protected:
     bool leave_after_clicked; // 鼠标单击松开后取消悬浮效果（针对菜单、弹窗），按钮必定失去焦点
 
     // 双击
-    bool double_clicked;      // 开启双击
-    QTimer* double_timer;     // 双击时钟
-    bool double_prevent;      // 双击阻止单击release的flag
+    bool double_clicked;  // 开启双击
+    QTimer *double_timer; // 双击时钟
+    bool double_prevent;  // 双击阻止单击release的flag
 };
 
 #endif // INTERACTIVEBUTTONBASE_H

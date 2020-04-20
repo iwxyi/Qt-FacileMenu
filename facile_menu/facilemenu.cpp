@@ -13,6 +13,11 @@ FacileMenu::FacileMenu(QWidget *parent) : QWidget(parent)
     main_vlayout->setSpacing(0);
 }
 
+FacileMenu::FacileMenu(bool sub, QWidget *parent) : FacileMenu(parent)
+{
+    _is_sub_menu = sub;
+}
+
 void FacileMenu::addAction(QIcon icon, QString text, FuncType func)
 {
     actions.append(FacileAction{icon, text, getShortcutByText(text), false});
@@ -46,7 +51,7 @@ void FacileMenu::addAction(QString text, FuncType func)
  * 鼠标浮在上面展开
  * 同时也可以设置点击事件
  */
-FacileMenu *FacileMenu::addMenu(QIcon icon, QString text, FuncType &func)
+FacileMenu *FacileMenu::addMenu(QIcon icon, QString text, FuncType func)
 {
     actions.append(FacileAction{QIcon(), text, getShortcutByText(text), true});
 
@@ -58,9 +63,13 @@ FacileMenu *FacileMenu::addMenu(QIcon icon, QString text, FuncType &func)
     connect(btn, &InteractiveButtonBase::clicked, this, [=]{
         func();
     });
+
+    FacileMenu* menu = new FacileMenu(this);
+    menu->hide();
+    return menu;
 }
 
-FacileMenu *FacileMenu::addMenu(QString text, FuncType &&func)
+FacileMenu *FacileMenu::addMenu(QString text, FuncType func)
 {
     actions.append(FacileAction{QIcon(), text, getShortcutByText(text), true});
 
