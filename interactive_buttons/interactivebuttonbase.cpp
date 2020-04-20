@@ -1358,9 +1358,17 @@ void InteractiveButtonBase::paintWaterRipple(QPainter& painter)
 void InteractiveButtonBase::setJitter()
 {
     jitters.clear();
-    QPoint center_pos = geometry().center()-geometry().topLeft();
+    QRect geo(
+                geometry().left() + icon_paddings.left,
+                geometry().top() + icon_paddings.top,
+                geometry().width() - icon_paddings.left - icon_paddings.right,
+                geometry().height() - icon_paddings.top - icon_paddings.bottom
+                );
+    QPoint padding_pos(icon_paddings.left, icon_paddings.top);
+    QPoint center_pos = geo.center()-geometry().topLeft();
+    QPoint real_center = geometry().center() - geometry().topLeft();
     int full_manh = (anchor_pos-center_pos).manhattanLength(); // 距离
-    if (full_manh > (geometry().topLeft() - geometry().bottomRight()).manhattanLength()) // 距离超过外接圆半径，开启抖动
+    if (full_manh > (geo.topLeft() - geo.bottomRight()).manhattanLength()) // 距离超过外接圆半径，开启抖动
     {
         QPoint jitter_pos(effect_pos);
         full_manh = (jitter_pos-center_pos).manhattanLength();
@@ -1370,13 +1378,13 @@ void InteractiveButtonBase::setJitter()
         while (manh > elastic_coefficient)
         {
             jitters << Jitter(jitter_pos, timestamp);
-            jitter_pos = center_pos - (jitter_pos - center_pos) / elastic_coefficient;
+            jitter_pos = real_center - (jitter_pos - real_center) / elastic_coefficient;
             duration = jitter_duration * manh / full_manh;
             timestamp += duration;
             manh = static_cast<int>(manh / elastic_coefficient);
         }
-        jitters << Jitter(center_pos, timestamp);
-        anchor_pos = mouse_pos = center_pos;
+        jitters << Jitter(real_center, timestamp);
+        anchor_pos = mouse_pos = real_center;
     }
 }
 
