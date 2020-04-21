@@ -300,7 +300,7 @@ public slots:
     virtual void slotClicked();
     void slotCloseState();
 
-public:
+protected:
     PaintModel model;
     QIcon icon;
     QString text;

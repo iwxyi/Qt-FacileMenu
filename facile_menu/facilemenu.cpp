@@ -1,6 +1,6 @@
 #include "facilemenu.h"
 
-QColor FacileMenu::normal_bg = QColor(238, 238, 238);
+QColor FacileMenu::normal_bg = QColor(255, 255, 255);
 QColor FacileMenu::hover_bg = QColor(64, 64, 64, 64);
 QColor FacileMenu::press_bg = QColor(128, 128, 128, 128);
 QColor FacileMenu::text_fg = QColor(0, 0, 0);
@@ -11,18 +11,23 @@ FacileMenu::FacileMenu(QWidget *parent) : QWidget(parent)
     setAttribute(Qt::WA_DeleteOnClose, true);
     setFocusPolicy(Qt::StrongFocus); // 获取焦点，允许按键点击
     setWindowFlag(Qt::Popup, true);
+    setAutoFillBackground(false);  //这个不设置的话就背景变黑
+    setAttribute(Qt::WA_StyledBackground);
 
     main_vlayout = new QVBoxLayout(this);
     setLayout(main_vlayout);
     main_vlayout->setEnabled(true);
     main_vlayout->setMargin(0);
     main_vlayout->setSpacing(0);
+
+    setStyleSheet("background: "+QVariant(normal_bg).toString()+"; border: none; border-radius:5px;");
 }
 
 FacileMenu::FacileMenu(bool sub, QWidget *parent) : FacileMenu(parent)
 {
     _is_sub_menu = sub;
     setAttribute(Qt::WA_DeleteOnClose, false);
+    setFocusPolicy(Qt::NoFocus);
 }
 
 FacileMenuItem *FacileMenu::addAction(QIcon icon, QString text, FuncType func)
@@ -36,10 +41,11 @@ FacileMenuItem *FacileMenu::addAction(QIcon icon, QString text, FuncType func)
 
     connect(item, &InteractiveButtonBase::clicked, this, [=]{
         func();
+        emit signalActionTriggered(item);
         close();
     });
     connect(item, &InteractiveButtonBase::signalMouseEnter, this, [=]{
-       if (current_sub_menu)
+       if (current_sub_menu) // 进入这个action，展开的子菜单隐藏起来
        {
            current_sub_menu->hide();
            current_sub_menu = nullptr;
@@ -67,22 +73,26 @@ FacileMenu *FacileMenu::addMenu(QIcon icon, QString text, FuncType func)
     main_vlayout->addWidget(item);
     items.append(item);
 
-    connect(item, &InteractiveButtonBase::clicked, this, [=]{
-        func();
-        close();
-    });
-    connect(item, &InteractiveButtonBase::signalMouseEnterLater, [=]{
-        if (current_sub_menu)
-        {
-            if (item->subMenu() == current_sub_menu)
-                return ;
-            current_sub_menu->hide();
-        }
+    // 子菜单项是否可点击
+    if (func != nullptr)
+    {
+        connect(item, &InteractiveButtonBase::clicked, this, [=]{
+            func();
+            emit signalActionTriggered(item);
+            close();
+        });
+    }
+    else // 点击出现子项
+    {
+        connect(item, &InteractiveButtonBase::clicked, this, [=]{
+            // 显示子菜单
+            showSubMenu(item);
+        });
+    }
 
-        current_sub_menu = item->subMenu();
-        current_sub_menu->move(this->geometry().center());
-        current_sub_menu->show();
-//        current_sub_menu->execute();
+    connect(item, &InteractiveButtonBase::signalMouseEnterLater, [=]{
+        // 显示子菜单
+        showSubMenu(item);
     });
 
     FacileMenu* menu = new FacileMenu(true, this);
@@ -91,12 +101,30 @@ FacileMenu *FacileMenu::addMenu(QIcon icon, QString text, FuncType func)
     connect(menu, &FacileMenu::signalHidden, item, [=]{
         item->discardHoverPress();
     });
+    connect(menu, &FacileMenu::signalActionTriggered, this, [=](FacileMenuItem* action){
+        // 子菜单被点击了，副菜单依次隐藏
+        emit signalActionTriggered(action);
+        close();
+    });
     return menu;
 }
 
 FacileMenu *FacileMenu::addMenu(QString text, FuncType func)
 {
-   return addMenu(QIcon(), text, func);
+    return addMenu(QIcon(), text, func);
+}
+
+FacileMenuItem *FacileMenu::addSeparator()
+{
+    FacileMenuItem* item = new FacileMenuItem(this);
+    item->setNormalColor(QColor(64, 64, 64, 64));
+    item->setFixedHeight(1);
+    item->setPaddings(32, 32, 0, 0);
+
+    main_vlayout->addWidget(item);
+    items.append(item);
+
+    return item;
 }
 
 void FacileMenu::execute(QPoint pos)
@@ -116,6 +144,16 @@ void FacileMenu::execute(QPoint pos)
 
     // 移动窗口
     move(pos);
+
+    // 设置背景为圆角矩形
+    QPixmap pixmap(width(), height());
+    pixmap.fill(Qt::transparent);
+    QPainter pix_ptr(&pixmap);
+    pix_ptr.setRenderHint(QPainter::Antialiasing, true);
+    QPainterPath path;
+    path.addRoundedRect(0, 0, width(), height(), 5, 5);
+    pix_ptr.fillPath(path, Qt::white);
+    setMask(pixmap.mask());
 
     // 显示、动画
     QWidget::show();
@@ -148,10 +186,23 @@ void FacileMenu::setActionButton(InteractiveButtonBase *btn)
     btn->setPaddings(8, 48, 8, 8);
 
     // TODO:设置颜色
-    btn->setNormalColor(normal_bg);
+    btn->setNormalColor(Qt::transparent);
     btn->setHoverColor(hover_bg);
     btn->setPressColor(press_bg);
     btn->setTextColor(text_fg);
+}
+
+void FacileMenu::showSubMenu(FacileMenuItem *item)
+{
+    if (current_sub_menu)
+    {
+        if (item->subMenu() == current_sub_menu) // 当前显示的就是这个子菜单
+            return ;
+        current_sub_menu->hide();
+    }
+
+    current_sub_menu = item->subMenu();
+    current_sub_menu->execute();
 }
 
 void FacileMenu::startAnimationOnShowed()

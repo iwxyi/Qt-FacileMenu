@@ -36,6 +36,7 @@ void MainWindow::on_pushButton_clicked()
     menu->addAction(QIcon(":/icons/stop"), "停止", [=]{
         qDebug() << "=>停止";
     });
+    menu->addSeparator();
 
     menu->addAction(QIcon(":/icons/faster"), "加速", [=]{
         qDebug() << "=>加速";
@@ -48,6 +49,29 @@ void MainWindow::on_pushButton_clicked()
     })->setChecked(slower_checked);
 
     auto subMenu = menu->addMenu("子菜单", [=]{});
+    {
+        subMenu->addAction(QIcon(":/icons/run"), "开始播放", [=]{
+            qDebug() << "=>开始播放";
+        });
+
+        subMenu->addAction(QIcon(":/icons/pause"), "暂停", [=]{
+            qDebug() << "=>暂停";
+        });
+
+        subMenu->addAction(QIcon(":/icons/resume"), "继续", [=]{
+            qDebug() << "=>继续";
+        })->disable();
+
+        subMenu->addAction(QIcon(":/icons/stop"), "停止", [=]{
+            qDebug() << "=>停止";
+        });
+
+        subMenu->addAction(QIcon(":/icons/faster"), "加速", [=]{
+            qDebug() << "=>加速";
+            faster_checked = !faster_checked;
+        })->setChecked(faster_checked);
+    }
+
 
     menu->execute(QCursor::pos());
 }

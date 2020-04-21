@@ -74,6 +74,19 @@ FacileMenu *FacileMenuItem::subMenu()
     return sub_menu;
 }
 
+void FacileMenuItem::paintEvent(QPaintEvent *event)
+{
+    InteractiveButtonBase::paintEvent(event);
+
+    if (isSubMenu())
+    {
+        // 画右边箭头的图标
+        QPainter painter(this);
+        QRect rect(width() - icon_text_size - 8, 8, icon_text_size, icon_text_size);
+        painter.drawPixmap(rect, QPixmap(":/icons/sub_menu_arrow"));
+    }
+}
+
 void FacileMenuItem::drawIconBeforeText(QPainter &painter, QRect icon_rect)
 {
     // 选中

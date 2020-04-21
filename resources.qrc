@@ -6,5 +6,6 @@
         <file alias="run">resources/icons/run.png</file>
         <file alias="slower">resources/icons/slower.png</file>
         <file alias="stop">resources/icons/stop.png</file>
+        <file alias="sub_menu_arrow">resources/icons/sub_menu_arrow.png</file>
     </qresource>
 </RCC>

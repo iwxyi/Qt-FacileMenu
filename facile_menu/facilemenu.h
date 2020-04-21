@@ -19,8 +19,9 @@ public:
 
     FacileMenuItem* addAction(QIcon icon, QString text, FuncType func = []{});
     FacileMenuItem* addAction(QString text, FuncType func = []{});
-    FacileMenu* addMenu(QIcon icon, QString text, FuncType func = []{});
-    FacileMenu* addMenu(QString text, FuncType func = []{});
+    FacileMenu* addMenu(QIcon icon, QString text, FuncType func = nullptr);
+    FacileMenu* addMenu(QString text, FuncType func = nullptr);
+    FacileMenuItem* addSeparator();
 
     void execute(QPoint pos = QPoint(-1, -1));
 
@@ -33,11 +34,12 @@ public slots:
 protected:
     Qt::Key getShortcutByText(QString text);
     void setActionButton(InteractiveButtonBase* btn);
+    void showSubMenu(FacileMenuItem* item);
     void startAnimationOnShowed();
     void hideEvent(QHideEvent *event) override;
 
 public:
-    static QColor normal_bg; // 普通背景
+    static QColor normal_bg; // 普通背景（用作全局是为了方便设置）
     static QColor hover_bg;  // 悬浮背景
     static QColor press_bg;  // 按下背景
     static QColor text_fg;   // 字体/变色图标颜色

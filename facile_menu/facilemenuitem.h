@@ -26,12 +26,13 @@ public:
     FacileMenu* subMenu();
 
 protected:
+    void paintEvent(QPaintEvent *event) override;
     void drawIconBeforeText(QPainter &painter, QRect icon_rect) override;
 
 private:
     Qt::Key key;
     bool checkable = false;
-    FacileMenu* sub_menu;
+    FacileMenu* sub_menu = nullptr;
 };
 
 #endif // FACILEMENUITEM_H
