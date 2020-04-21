@@ -52,6 +52,8 @@ FacileMenuItem *FacileMenu::addAction(QIcon icon, QString text, FuncType func)
         toHide(items.indexOf(item));
     });
     connect(item, &InteractiveButtonBase::signalMouseEnter, this, [=]{
+        current_index = items.indexOf(item);
+
        if (current_sub_menu) // 进入这个action，展开的子菜单隐藏起来
        {
            current_sub_menu->hide();
@@ -100,6 +102,8 @@ FacileMenu *FacileMenu::addMenu(QIcon icon, QString text, FuncType func)
     }
 
     connect(item, &InteractiveButtonBase::signalMouseEnterLater, [=]{
+        current_index = items.indexOf(item);
+
         // 显示子菜单
         showSubMenu(item);
     });
@@ -150,6 +154,8 @@ void FacileMenu::addTipArea(QString longestTip)
 
 void FacileMenu::execute(QPoint pos)
 {
+    current_index = -1;
+
     if (pos == QPoint(-1,-1))
         pos = QCursor::pos();
     main_vlayout->activate(); // 先调整所有控件大小
@@ -212,9 +218,16 @@ void FacileMenu::execute(QPoint pos)
     startAnimationOnShowed();
 }
 
-bool FacileMenu::isCursorInArea(QPoint pos)
+bool FacileMenu::isCursorInArea(QPoint pos, FacileMenu *child)
 {
-    return geometry().contains(pos);
+    // 不在这范围内
+    if (!geometry().contains(pos))
+        return false;
+    // 如果是正展开的这个子项按钮
+    if (current_index > -1 && child && items.at(current_index)->subMenu() == child && items.at(current_index)->geometry().contains(mapFromGlobal(pos)))
+        return false;
+    // 在这个菜单内的其他按钮
+    return true;
 }
 
 void FacileMenu::toHide(int focusIndex)
@@ -381,7 +394,7 @@ void FacileMenu::mouseMoveEvent(QMouseEvent *event)
     QPoint pos = QCursor::pos();
     if (_showing_animation || isCursorInArea(pos)) // 正在出现或在自己的区域内，不管
         ;
-    else if (parent_menu && parent_menu->isCursorInArea(pos)) // 在父类，自己隐藏
+    else if (parent_menu && parent_menu->isCursorInArea(pos, this)) // 在父类，自己隐藏
     {
         this->hide();
         parent_menu->setFocus();

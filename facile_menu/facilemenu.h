@@ -29,7 +29,7 @@ public:
     void addTipArea(QString longestTip);
 
     void execute(QPoint pos = QPoint(-1, -1));
-    bool isCursorInArea(QPoint pos);
+    bool isCursorInArea(QPoint pos, FacileMenu* child = nullptr);
     void toHide(int focusIndex = -1);
 
 signals:
@@ -67,6 +67,7 @@ private:
 
     int addin_tip_area = 0;
     bool _showing_animation = false;
+    int current_index = -1; // 当前索引
 };
 
 #endif // FACILEMENU_H
