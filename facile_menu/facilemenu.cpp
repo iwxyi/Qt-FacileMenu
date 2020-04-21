@@ -46,6 +46,36 @@ void FacileMenu::addAction(QString text, FuncType func)
     });
 }
 
+void FacileMenu::addAction(QIcon icon, QString text, bool check, FuncType func)
+{
+    FacileMenuItem* item = new FacileMenuItem(icon, text, this);
+    item->setKey(getShortcutByText(text));
+    item->setChecked(check);
+
+    setActionButton(item);
+    main_vlayout->addWidget(item);
+
+    connect(item, &InteractiveButtonBase::clicked, this, [=]{
+        func();
+        close();
+    });
+}
+
+void FacileMenu::addAction(QString text, bool check, FuncType func)
+{
+    FacileMenuItem* item = new FacileMenuItem(text, this);
+    item->setKey(getShortcutByText(text));
+    item->setChecked(check);
+
+    setActionButton(item);
+    main_vlayout->addWidget(item);
+
+    connect(item, &InteractiveButtonBase::clicked, this, [=]{
+        func();
+        close();
+    });
+}
+
 /**
  * 添加一项子菜单
  * 鼠标浮在上面展开

@@ -19,6 +19,8 @@ public:
 
     void addAction(QIcon icon, QString text, FuncType func);
     void addAction(QString text, FuncType func);
+    void addAction(QIcon icon, QString text, bool check, FuncType func);
+    void addAction(QString text, bool check, FuncType func);
     FacileMenu* addMenu(QIcon icon, QString text, FuncType func);
     FacileMenu* addMenu(QString text, FuncType func);
 
