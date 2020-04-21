@@ -1,7 +1,13 @@
 #include "facilemenu.h"
 
+QColor FacileMenu::normal_bg = QColor(238, 238, 238);
+QColor FacileMenu::hover_bg = QColor(64, 64, 64, 64);
+QColor FacileMenu::press_bg = QColor(128, 128, 128, 128);
+QColor FacileMenu::text_fg = QColor(0, 0, 0);
+
 FacileMenu::FacileMenu(QWidget *parent) : QWidget(parent)
 {
+    setObjectName("FacileMenu");
     setAttribute(Qt::WA_DeleteOnClose, true);
     setFocusPolicy(Qt::StrongFocus); // 获取焦点，允许按键点击
     setWindowFlag(Qt::Popup, true);
@@ -25,6 +31,7 @@ FacileMenuItem *FacileMenu::addAction(QIcon icon, QString text, FuncType func)
 
     setActionButton(item);
     main_vlayout->addWidget(item);
+    items.append(item);
 
     connect(item, &InteractiveButtonBase::clicked, this, [=]{
         func();
@@ -40,6 +47,7 @@ FacileMenuItem *FacileMenu::addAction(QString text, FuncType func)
 
     setActionButton(item);
     main_vlayout->addWidget(item);
+    items.append(item);
 
     connect(item, &InteractiveButtonBase::clicked, this, [=]{
         func();
@@ -60,6 +68,7 @@ FacileMenu *FacileMenu::addMenu(QIcon icon, QString text, FuncType func)
 
     setActionButton(item);
     main_vlayout->addWidget(item);
+    items.append(item);
 
     connect(item, &InteractiveButtonBase::clicked, this, [=]{
         func();
@@ -79,6 +88,7 @@ FacileMenu *FacileMenu::addMenu(QString text, FuncType func)
 
     setActionButton(item);
     main_vlayout->addWidget(item);
+    items.append(item);
 
     connect(item, &InteractiveButtonBase::clicked, this, [=]{
         func();
@@ -95,11 +105,25 @@ void FacileMenu::execute(QPoint pos)
 {
     if (pos == QPoint(-1,-1))
         pos = QCursor::pos();
-    // TODO: 判断有没有超出屏幕边界
+    main_vlayout->activate(); // 先调整所有控件大小
 
+    // 获取屏幕大小
+    QDesktopWidget* desktop = QApplication::desktop();
+    QRect avai = desktop->availableGeometry();
+    // 如果超过范围，则调整位置
+    if (pos.x() >= width() && pos.x() + width() > avai.width())
+        pos.setX(pos.x() - width());
+    if (pos.y() >= height() && pos.y() + height() > avai.height())
+        pos.setY(pos.y() - height());
+
+    // 移动窗口
     move(pos);
+
+    // 显示、动画
     QWidget::show();
     setFocus();
+
+    startAnimationOnShowed();
 }
 
 Qt::Key FacileMenu::getShortcutByText(QString text)
@@ -126,4 +150,35 @@ void FacileMenu::setActionButton(InteractiveButtonBase *btn)
     btn->setPaddings(8, 48, 8, 8);
 
     // TODO:设置颜色
+    btn->setNormalColor(normal_bg);
+    btn->setHoverColor(hover_bg);
+    btn->setPressColor(press_bg);
+    btn->setTextColor(text_fg);
+}
+
+void FacileMenu::startAnimationOnShowed()
+{
+    main_vlayout->setEnabled(false);
+
+    // 从上往下的动画
+    QPoint start_pos = mapFromGlobal(QCursor::pos());
+    for (int i = 0; i < items.size(); i++)
+    {
+        InteractiveButtonBase* btn = items.at(i);
+        btn->setBlockHover(true);
+        QPropertyAnimation* ani = new QPropertyAnimation(btn, "pos");
+        ani->setStartValue(start_pos);
+        ani->setEndValue(btn->pos());
+        ani->setEasingCurve(QEasingCurve::OutBack);
+        ani->setDuration(300);
+        connect(ani, SIGNAL(finished()), ani, SLOT(deleteLater()));
+        connect(ani, &QPropertyAnimation::finished, btn, [=]{
+            btn->setBlockHover(false);
+        });
+        ani->start();
+    }
+
+    QTimer::singleShot(300, this, [=]{
+        main_vlayout->setEnabled(true);
+    });
 }

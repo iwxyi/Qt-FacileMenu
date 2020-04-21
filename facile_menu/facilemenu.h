@@ -6,6 +6,8 @@
 #include <functional>
 #include <QRegularExpression>
 #include <QVBoxLayout>
+#include <QDesktopWidget>
+#include <QApplication>
 #include "facilemenuitem.h"
 
 class FacileMenu : public QWidget
@@ -27,12 +29,18 @@ signals:
 
 public slots:
 
-private:
+protected:
     Qt::Key getShortcutByText(QString text);
     void setActionButton(InteractiveButtonBase* btn);
+    void startAnimationOnShowed();
+
+public:
+    static QColor normal_bg; // 普通背景
+    static QColor hover_bg;  // 悬浮背景
+    static QColor press_bg;  // 按下背景
+    static QColor text_fg;   // 字体/变色图标颜色
 
 private:
-    QList<InteractiveButtonBase*> buttons;
     QList<FacileMenuItem*> items;
     QVBoxLayout* main_vlayout;
 

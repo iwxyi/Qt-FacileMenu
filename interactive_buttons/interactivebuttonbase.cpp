@@ -28,7 +28,7 @@ InteractiveButtonBase::InteractiveButtonBase(QWidget *parent)
       unified_geometry(false), _l(0), _t(0), _w(32), _h(32),
       jitter_animation(true), elastic_coefficient(1.2), jitter_duration(300),
       water_animation(true), water_press_duration(800), water_release_duration(400), water_finish_duration(300),
-      align(Qt::AlignCenter), _state(false), leave_after_clicked(false),
+      align(Qt::AlignCenter), _state(false), leave_after_clicked(false), _block_hover(false),
       double_clicked(false), double_timer(nullptr), double_prevent(false)
 {
     setMouseTracking(true); // 鼠标没有按下时也能捕获移动事件
@@ -808,6 +808,18 @@ void InteractiveButtonBase::setPretendFocus(bool f)
 }
 
 /**
+ * 如果按钮被做成一个组合，在显示的时候开启动画
+ * 一开始鼠标下的按钮一直在hover状态，移开也不会变
+ * 开启后临时屏蔽，记得在动画结束后关闭
+ */
+void InteractiveButtonBase::setBlockHover(bool b)
+{
+    _block_hover = b;
+    if (b && hovering)
+        leaveEvent(nullptr);
+}
+
+/**
  * 是否开启出现动画
  * 鼠标进入按钮区域，前景图标从对面方向缩放出现
  * @param enable 开关
@@ -975,6 +987,12 @@ void InteractiveButtonBase::simulateStatePress(bool s, bool a)
  */
 void InteractiveButtonBase::enterEvent(QEvent *event)
 {
+    if (_block_hover) // 临时屏蔽hover事件
+    {
+        event->accept();
+        return ;
+    }
+
     if (!anchor_timer->isActive())
     {
         anchor_timer->start();
@@ -1121,6 +1139,11 @@ void InteractiveButtonBase::mouseReleaseEvent(QMouseEvent* event)
  */
 void InteractiveButtonBase::mouseMoveEvent(QMouseEvent *event)
 {
+    if (_block_hover) // 临时屏蔽hover事件
+    {
+        event->accept();
+        return ;
+    }
     if (hovering == false) // 失去焦点又回来了
     {
         enterEvent(nullptr);
