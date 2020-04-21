@@ -4,6 +4,7 @@ QColor FacileMenu::normal_bg = QColor(255, 255, 255);
 QColor FacileMenu::hover_bg = QColor(64, 64, 64, 64);
 QColor FacileMenu::press_bg = QColor(128, 128, 128, 128);
 QColor FacileMenu::text_fg = QColor(0, 0, 0);
+bool FacileMenu::blue_bg = true;
 
 FacileMenu::FacileMenu(QWidget *parent) : QWidget(parent)
 {
@@ -178,6 +179,32 @@ void FacileMenu::execute(QPoint pos)
         setMask(pixmap.mask());
     }
 
+    // 是否捕获背景模糊图片
+    if (blue_bg)
+    {
+        // 获取图片
+        QRect rect = this->geometry();
+        int radius = qMin(64, qMin(width(), height())); // 模糊半径，也是边界
+        rect.adjust(-radius, -radius, +radius, +radius);
+        QScreen* screen = QApplication::screenAt(QCursor::pos());
+        QPixmap bg = screen->grabWindow(QApplication::desktop()->winId(), rect.left(), rect.top(), rect.width(), rect.height());
+
+        // 开始模糊
+        QT_BEGIN_NAMESPACE
+          extern Q_WIDGETS_EXPORT void qt_blurImage( QPainter *p, QImage &blurImage, qreal radius, bool quality, bool alphaOnly, int transposed = 0 );
+        QT_END_NAMESPACE
+
+        QPixmap pixmap = bg;
+        QImage img = pixmap.toImage(); // img -blur-> painter(pixmap)
+        QPainter painter( &pixmap );
+        qt_blurImage( &painter, img, radius, true, false );
+        // 裁剪掉边缘（模糊后会有黑边）
+        int c = qMin(bg.width(), bg.height());
+        c = qMin(c/2, radius);
+        bg_pixmap = pixmap.copy(c, c, pixmap.width()-c*2, pixmap.height()-c*2);
+    }
+
+
     // 显示、动画
     QWidget::show();
     setFocus();
@@ -278,7 +305,7 @@ void FacileMenu::startAnimationOnShowed()
 void FacileMenu::startAnimationOnHidden(int focusIndex)
 {
     // 控件移动动画
-    int dur_min =1000, dur_max = 2000;
+    int dur_min =100, dur_max = 200;
     int up_flow_count = focusIndex > -1 ? qMax(focusIndex, items.size()-focusIndex-1) : -1;
     int up_end = items.size() ? -items.at(0)->height() : 0;
     int flow_end = height();
@@ -374,4 +401,15 @@ void FacileMenu::keyPressEvent(QKeyEvent *event)
     }
 
     return QWidget::keyPressEvent(event);
+}
+
+void FacileMenu::paintEvent(QPaintEvent *event)
+{
+    if (!bg_pixmap.isNull())
+    {
+        QPainter painter(this);
+        painter.drawPixmap(QRect(0,0,width(),height()), bg_pixmap);
+        return ;
+    }
+    QWidget::paintEvent(event);
 }

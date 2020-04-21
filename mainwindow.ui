@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
-    <height>600</height>
+    <width>238</width>
+    <height>102</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,8 +17,8 @@
    <widget class="InteractiveButtonBase" name="pushButton">
     <property name="geometry">
      <rect>
-      <x>140</x>
-      <y>120</y>
+      <x>70</x>
+      <y>20</y>
       <width>75</width>
       <height>23</height>
      </rect>
@@ -33,7 +33,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>800</width>
+     <width>238</width>
      <height>23</height>
     </rect>
    </property>

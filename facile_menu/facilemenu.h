@@ -9,6 +9,8 @@
 #include <QDesktopWidget>
 #include <QApplication>
 //#include <QGraphicsOpacityEffect>
+#include <QScreen>
+#include <QGraphicsDropShadowEffect>
 #include "facilemenuitem.h"
 
 class FacileMenu : public QWidget
@@ -46,16 +48,19 @@ protected:
     void hideEvent(QHideEvent *event) override;
     void mouseMoveEvent(QMouseEvent *event) override;
     void keyPressEvent(QKeyEvent *event) override;
+    void paintEvent(QPaintEvent *event) override;
 
 public:
     static QColor normal_bg; // 普通背景（用作全局是为了方便设置）
     static QColor hover_bg;  // 悬浮背景
     static QColor press_bg;  // 按下背景
     static QColor text_fg;   // 字体/变色图标颜色
+    static bool blue_bg;     // 背景是否透明
 
 private:
     QList<FacileMenuItem*> items;
     QVBoxLayout* main_vlayout;
+    QPixmap bg_pixmap;
 
     FacileMenu* current_sub_menu = nullptr; // 当前打开（不一定显示）的子菜单
     FacileMenu* parent_menu = nullptr; // 父类的菜单
