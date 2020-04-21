@@ -26,6 +26,7 @@ public:
 
 signals:
     void signalActionTriggered(FacileMenuItem* action);
+    void signalHidden();
 
 public slots:
 
@@ -33,6 +34,7 @@ protected:
     Qt::Key getShortcutByText(QString text);
     void setActionButton(InteractiveButtonBase* btn);
     void startAnimationOnShowed();
+    void hideEvent(QHideEvent *event) override;
 
 public:
     static QColor normal_bg; // 普通背景

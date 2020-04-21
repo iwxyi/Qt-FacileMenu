@@ -22,6 +22,7 @@ FacileMenu::FacileMenu(QWidget *parent) : QWidget(parent)
 FacileMenu::FacileMenu(bool sub, QWidget *parent) : FacileMenu(parent)
 {
     _is_sub_menu = sub;
+    setAttribute(Qt::WA_DeleteOnClose, false);
 }
 
 FacileMenuItem *FacileMenu::addAction(QIcon icon, QString text, FuncType func)
@@ -37,23 +38,19 @@ FacileMenuItem *FacileMenu::addAction(QIcon icon, QString text, FuncType func)
         func();
         close();
     });
+    connect(item, &InteractiveButtonBase::signalMouseEnter, this, [=]{
+       if (current_sub_menu)
+       {
+           current_sub_menu->hide();
+           current_sub_menu = nullptr;
+       }
+    });
     return item;
 }
 
 FacileMenuItem *FacileMenu::addAction(QString text, FuncType func)
 {
-    FacileMenuItem* item = new FacileMenuItem(text, this);
-    item->setKey(getShortcutByText(text));
-
-    setActionButton(item);
-    main_vlayout->addWidget(item);
-    items.append(item);
-
-    connect(item, &InteractiveButtonBase::clicked, this, [=]{
-        func();
-        close();
-    });
-    return item;
+    return addAction(QIcon(), text, func);
 }
 
 /**
@@ -74,31 +71,32 @@ FacileMenu *FacileMenu::addMenu(QIcon icon, QString text, FuncType func)
         func();
         close();
     });
+    connect(item, &InteractiveButtonBase::signalMouseEnterLater, [=]{
+        if (current_sub_menu)
+        {
+            if (item->subMenu() == current_sub_menu)
+                return ;
+            current_sub_menu->hide();
+        }
 
-    FacileMenu* menu = new FacileMenu(this);
+        current_sub_menu = item->subMenu();
+        current_sub_menu->move(this->geometry().center());
+        current_sub_menu->show();
+//        current_sub_menu->execute();
+    });
+
+    FacileMenu* menu = new FacileMenu(true, this);
     menu->hide();
     item->setSubMenu(menu);
+    connect(menu, &FacileMenu::signalHidden, item, [=]{
+        item->discardHoverPress();
+    });
     return menu;
 }
 
 FacileMenu *FacileMenu::addMenu(QString text, FuncType func)
 {
-    FacileMenuItem* item = new FacileMenuItem(text, this);
-    item->setKey(getShortcutByText(text));
-
-    setActionButton(item);
-    main_vlayout->addWidget(item);
-    items.append(item);
-
-    connect(item, &InteractiveButtonBase::clicked, this, [=]{
-        func();
-        close();
-    });
-
-    FacileMenu* menu = new FacileMenu(this);
-    menu->hide();
-    item->setSubMenu(menu);
-    return menu;
+   return addMenu(QIcon(), text, func);
 }
 
 void FacileMenu::execute(QPoint pos)
@@ -181,4 +179,10 @@ void FacileMenu::startAnimationOnShowed()
     QTimer::singleShot(300, this, [=]{
         main_vlayout->setEnabled(true);
     });
+}
+
+void FacileMenu::hideEvent(QHideEvent *event)
+{
+    emit signalHidden();
+    return QWidget::hideEvent(event);
 }

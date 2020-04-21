@@ -69,6 +69,11 @@ FacileMenuItem *FacileMenuItem::disable()
     return this;
 }
 
+FacileMenu *FacileMenuItem::subMenu()
+{
+    return sub_menu;
+}
+
 void FacileMenuItem::drawIconBeforeText(QPainter &painter, QRect icon_rect)
 {
     // 选中

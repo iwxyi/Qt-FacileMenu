@@ -23,6 +23,7 @@ public:
     bool isSubMenu();
     FacileMenuItem* triggered(FuncType func);
     FacileMenuItem* disable();
+    FacileMenu* subMenu();
 
 protected:
     void drawIconBeforeText(QPainter &painter, QRect icon_rect) override;

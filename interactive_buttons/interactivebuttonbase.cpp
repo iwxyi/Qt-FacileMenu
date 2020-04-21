@@ -983,6 +983,28 @@ void InteractiveButtonBase::simulateStatePress(bool s, bool a)
 }
 
 /**
+ * 强制丢弃hover、press状态
+ * 适用于悬浮/点击后，弹出模态浮窗
+ * 浮窗关闭后调用此方法
+ * @param force 如果鼠标仍在此按钮内，是否强制取消hover/press状态
+ */
+void InteractiveButtonBase::discardHoverPress(bool force)
+{
+    if (!force && inArea(mapFromGlobal(QCursor::pos()))) // 鼠标还在这范围内
+        return ;
+
+    if (hovering)
+    {
+        leaveEvent(nullptr);
+    }
+
+    if (pressing)
+    {
+        mouseReleaseEvent(new QMouseEvent(QMouseEvent::Type::None, QPoint(size().width()/2,size().height()/2), Qt::LeftButton, Qt::NoButton, Qt::NoModifier));
+    }
+}
+
+/**
  * 鼠标移入事件，触发 hover 时间戳
  */
 void InteractiveButtonBase::enterEvent(QEvent *event)
@@ -1827,10 +1849,10 @@ void InteractiveButtonBase::anchorTimeOut()
             if (press_progress <= 0)
             {
                 press_progress = 0;
-                if (mouse_press_event)
+                if (mouse_release_event)
                 {
-                    emit signalMousePressLater(mouse_press_event);
-                    mouse_press_event = nullptr;
+                    emit signalMouseReleaseLater(mouse_release_event);
+                    mouse_release_event = nullptr;
                 }
             }
         }
@@ -1843,11 +1865,7 @@ void InteractiveButtonBase::anchorTimeOut()
                 if (hover_progress >= 100)
                 {
                     hover_progress = 100;
-                    if (mouse_release_event)
-                    {
-                        emit signalMouseReleaseLater(mouse_release_event);
-                        mouse_release_event = nullptr;
-                    }
+                    emit signalMouseEnterLater();
                 }
             }
         }
