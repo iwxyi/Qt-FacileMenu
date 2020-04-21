@@ -8,6 +8,7 @@
 #include <QVBoxLayout>
 #include <QDesktopWidget>
 #include <QApplication>
+//#include <QGraphicsOpacityEffect>
 #include "facilemenuitem.h"
 
 class FacileMenu : public QWidget

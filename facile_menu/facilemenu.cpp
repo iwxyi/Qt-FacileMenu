@@ -277,7 +277,8 @@ void FacileMenu::startAnimationOnShowed()
  */
 void FacileMenu::startAnimationOnHidden(int focusIndex)
 {
-    int dur_min =100, dur_max = 200;
+    // 控件移动动画
+    int dur_min =1000, dur_max = 2000;
     int up_flow_count = focusIndex > -1 ? qMax(focusIndex, items.size()-focusIndex-1) : -1;
     int up_end = items.size() ? -items.at(0)->height() : 0;
     int flow_end = height();
@@ -319,7 +320,22 @@ void FacileMenu::startAnimationOnHidden(int focusIndex)
         ani->start();
     }
 
-    QTimer::singleShot(dur_max*0.8, this, [=]{
+    // 变淡动画（针对Popup，一切透明无效）
+    /*QGraphicsOpacityEffect* effect = new QGraphicsOpacityEffect(this);
+    effect->setOpacity(1);
+    setGraphicsEffect(effect);
+    QPropertyAnimation* opa_ani = new QPropertyAnimation(effect, "opacity");
+    opa_ani->setDuration(dur_max * 0.8);
+    opa_ani->setStartValue(1);
+    opa_ani->setEndValue(0);
+    connect(opa_ani, &QPropertyAnimation::finished, this, [=]{
+        opa_ani->deleteLater();
+        effect->deleteLater();
+    });
+    opa_ani->start();*/
+
+    // 真正关闭
+    QTimer::singleShot(dur_max, this, [=]{
         main_vlayout->setEnabled(true);
         close();
     });
