@@ -20,8 +20,8 @@ void MainWindow::on_pushButton_clicked()
     static bool slower_checked = false;
 
     FacileMenu* menu = new FacileMenu(this);
-//    menu->addTipArea("Ctrl+P");
-    menu->addTipArea(100);
+    menu->addTipArea("Ctrl+P");
+//    menu->addTipArea(100);
 
     menu->addAction(QIcon(":/icons/run"), "开始播放 (&S)", [=]{
         qDebug() << "=>开始播放";

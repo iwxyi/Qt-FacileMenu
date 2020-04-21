@@ -144,7 +144,7 @@ void FacileMenu::addTipArea(int x)
 void FacileMenu::addTipArea(QString longestTip)
 {
     QFontMetrics fm(this->font());
-    addin_tip_area = fm.horizontalAdvance(longestTip);
+    addin_tip_area = fm.horizontalAdvance(longestTip+"Ctrl");
 }
 
 void FacileMenu::execute(QPoint pos)
@@ -271,11 +271,17 @@ void FacileMenu::startAnimationOnShowed()
     });
 }
 
+/**
+ * 关闭前显示隐藏动画
+ * @param focusIndex 聚焦的item，如果不存在则为-1
+ */
 void FacileMenu::startAnimationOnHidden(int focusIndex)
 {
-    int dur = 200;
-    QPoint up_end(0, items.size() ? -items.at(0)->height() : 0);
-    QPoint flow_end(0, height());
+    int dur_min =100, dur_max = 200;
+    int up_flow_count = focusIndex > -1 ? qMax(focusIndex, items.size()-focusIndex-1) : -1;
+    int up_end = items.size() ? -items.at(0)->height() : 0;
+    int flow_end = height();
+    int focus_top = focusIndex > -1 ? items.at(focusIndex)->pos().y() : 0;
     for (int i = 0; i < items.size(); i++)
     {
         InteractiveButtonBase* btn = items.at(i);
@@ -285,16 +291,27 @@ void FacileMenu::startAnimationOnHidden(int focusIndex)
         ani->setEasingCurve(QEasingCurve::OutCubic);
         if (focusIndex > -1)
         {
-            if (i < focusIndex)
-                ani->setEndValue(up_end);
-            else if (i == focusIndex)
+            if (i < focusIndex) // 上面的项
+            {
+                ani->setEndValue(QPoint(0, up_end - (focus_top - btn->pos().y()) / 8));
+                ani->setDuration(dur_max - qAbs(focusIndex-i)*(dur_max-dur_min)/up_flow_count);
+            }
+            else if (i == focusIndex) // 中间的项
+            {
                 ani->setEndValue(btn->pos());
-            else
-                ani->setEndValue(flow_end);
+                ani->setDuration(dur_max);
+            }
+            else // 下面的项
+            {
+                ani->setEndValue(QPoint(0, flow_end + (btn->pos().y()-focus_top) / 8));
+                ani->setDuration(dur_max - qAbs(i-focusIndex)*(dur_max-dur_min)/up_flow_count);
+            }
         }
         else
-            ani->setEndValue(up_end);
-        ani->setDuration(dur);
+        {
+            ani->setEndValue(QPoint(0, up_end));
+            ani->setDuration(dur_max);
+        }
         connect(ani, SIGNAL(finished()), ani, SLOT(deleteLater()));
         connect(ani, &QPropertyAnimation::finished, btn, [=]{
             btn->setBlockHover(false);
@@ -302,7 +319,7 @@ void FacileMenu::startAnimationOnHidden(int focusIndex)
         ani->start();
     }
 
-    QTimer::singleShot(dur, this, [=]{
+    QTimer::singleShot(dur_max*0.8, this, [=]{
         main_vlayout->setEnabled(true);
         close();
     });
