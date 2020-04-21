@@ -20,11 +20,12 @@ FacileMenuItem::FacileMenuItem(QPixmap p, QString t, QWidget *parent) : Interact
 
 }
 
-void FacileMenuItem::setChecked(bool c)
+FacileMenuItem *FacileMenuItem::setChecked(bool c)
 {
     checkable = true;
     _state = c;
     update();
+    return this;
 }
 
 bool FacileMenuItem::isChecked()
@@ -32,9 +33,10 @@ bool FacileMenuItem::isChecked()
     return getState();
 }
 
-void FacileMenuItem::setKey(Qt::Key key)
+FacileMenuItem *FacileMenuItem::setKey(Qt::Key key)
 {
     this->key = key;
+    return this;
 }
 
 bool FacileMenuItem::isKey(Qt::Key key)
@@ -42,14 +44,29 @@ bool FacileMenuItem::isKey(Qt::Key key)
     return key == this->key;
 }
 
-void FacileMenuItem::setSubMenu(FacileMenu *menu)
+FacileMenuItem *FacileMenuItem::setSubMenu(FacileMenu *menu)
 {
     sub_menu = menu;
+    return this;
 }
 
 bool FacileMenuItem::isSubMenu()
 {
     return sub_menu != nullptr;
+}
+
+FacileMenuItem *FacileMenuItem::triggered(FuncType func)
+{
+    connect(this, &InteractiveButtonBase::clicked, this, [=]{
+        func();
+    });
+    return this;
+}
+
+FacileMenuItem *FacileMenuItem::disable()
+{
+    setDisabled(true);
+    return this;
 }
 
 void FacileMenuItem::drawIconBeforeText(QPainter &painter, QRect icon_rect)

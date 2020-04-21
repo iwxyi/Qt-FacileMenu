@@ -18,7 +18,7 @@ FacileMenu::FacileMenu(bool sub, QWidget *parent) : FacileMenu(parent)
     _is_sub_menu = sub;
 }
 
-void FacileMenu::addAction(QIcon icon, QString text, FuncType func)
+FacileMenuItem *FacileMenu::addAction(QIcon icon, QString text, FuncType func)
 {
     FacileMenuItem* item = new FacileMenuItem(icon, text, this);
     item->setKey(getShortcutByText(text));
@@ -30,9 +30,10 @@ void FacileMenu::addAction(QIcon icon, QString text, FuncType func)
         func();
         close();
     });
+    return item;
 }
 
-void FacileMenu::addAction(QString text, FuncType func)
+FacileMenuItem *FacileMenu::addAction(QString text, FuncType func)
 {
     FacileMenuItem* item = new FacileMenuItem(text, this);
     item->setKey(getShortcutByText(text));
@@ -44,36 +45,7 @@ void FacileMenu::addAction(QString text, FuncType func)
         func();
         close();
     });
-}
-
-void FacileMenu::addAction(QIcon icon, QString text, bool check, FuncType func)
-{
-    FacileMenuItem* item = new FacileMenuItem(icon, text, this);
-    item->setKey(getShortcutByText(text));
-    item->setChecked(check);
-
-    setActionButton(item);
-    main_vlayout->addWidget(item);
-
-    connect(item, &InteractiveButtonBase::clicked, this, [=]{
-        func();
-        close();
-    });
-}
-
-void FacileMenu::addAction(QString text, bool check, FuncType func)
-{
-    FacileMenuItem* item = new FacileMenuItem(text, this);
-    item->setKey(getShortcutByText(text));
-    item->setChecked(check);
-
-    setActionButton(item);
-    main_vlayout->addWidget(item);
-
-    connect(item, &InteractiveButtonBase::clicked, this, [=]{
-        func();
-        close();
-    });
+    return item;
 }
 
 /**

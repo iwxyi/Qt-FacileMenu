@@ -272,6 +272,7 @@ protected:
     QPixmap getMaskPixmap(QPixmap p, QColor c);
 
     double getNolinearProg(int p, NolinearType type);
+    QIcon::Mode getIconMode();
 
 signals:
     void showAniFinished();

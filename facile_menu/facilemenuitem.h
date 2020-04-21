@@ -3,6 +3,8 @@
 
 #include "interactivebuttonbase.h"
 
+typedef std::function<void()> const FuncType;
+
 class FacileMenu;
 
 class FacileMenuItem : public InteractiveButtonBase
@@ -13,12 +15,14 @@ public:
     FacileMenuItem(QIcon i, QString t, QWidget* parent = nullptr);
     FacileMenuItem(QPixmap p, QString t, QWidget* parent = nullptr);
 
-    void setChecked(bool c);
+    FacileMenuItem* setChecked(bool c);
     bool isChecked();
-    void setKey(Qt::Key key);
+    FacileMenuItem* setKey(Qt::Key key);
     bool isKey(Qt::Key key);
-    void setSubMenu(FacileMenu* menu);
+    FacileMenuItem* setSubMenu(FacileMenu* menu);
     bool isSubMenu();
+    FacileMenuItem* triggered(FuncType func);
+    FacileMenuItem* disable();
 
 protected:
     void drawIconBeforeText(QPainter &painter, QRect icon_rect) override;

@@ -1374,7 +1374,7 @@ void InteractiveButtonBase::paintEvent(QPaintEvent* event)
         }
         else if (model == Icon) // 绘制图标
         {
-            icon.paint(&painter, rect, align);
+            icon.paint(&painter, rect, align, getIconMode());
         }
         else if (model == PixmapMask)
         {
@@ -1418,7 +1418,7 @@ void InteractiveButtonBase::paintEvent(QPaintEvent* event)
 void InteractiveButtonBase::drawIconBeforeText(QPainter& painter, QRect icon_rect)
 {
     if (model == IconText)
-        icon.paint(&painter, icon_rect, align);
+        icon.paint(&painter, icon_rect, align, getIconMode());
     else if (model == PixmapText)
         painter.drawPixmap(icon_rect, pixmap);
 }
@@ -1734,6 +1734,11 @@ double InteractiveButtonBase::getNolinearProg(int p, InteractiveButtonBase::Noli
         else
             return 1.0 + (100-p) / 200.0;
     }
+}
+
+QIcon::Mode InteractiveButtonBase::getIconMode()
+{
+    return isEnabled() ? (getState() ? QIcon::Selected : (hovering||pressing ? QIcon::Active : QIcon::Normal)) : QIcon::Disabled;
 }
 
 /**

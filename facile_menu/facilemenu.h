@@ -8,8 +8,6 @@
 #include <QVBoxLayout>
 #include "facilemenuitem.h"
 
-typedef std::function<void()> const FuncType;
-
 class FacileMenu : public QWidget
 {
     Q_OBJECT
@@ -17,12 +15,10 @@ public:
     FacileMenu(QWidget *parent = nullptr);
     FacileMenu(bool sub, QWidget* parent = nullptr);
 
-    void addAction(QIcon icon, QString text, FuncType func);
-    void addAction(QString text, FuncType func);
-    void addAction(QIcon icon, QString text, bool check, FuncType func);
-    void addAction(QString text, bool check, FuncType func);
-    FacileMenu* addMenu(QIcon icon, QString text, FuncType func);
-    FacileMenu* addMenu(QString text, FuncType func);
+    FacileMenuItem* addAction(QIcon icon, QString text, FuncType func = []{});
+    FacileMenuItem* addAction(QString text, FuncType func = []{});
+    FacileMenu* addMenu(QIcon icon, QString text, FuncType func = []{});
+    FacileMenu* addMenu(QString text, FuncType func = []{});
 
     void execute(QPoint pos = QPoint(-1, -1));
 
