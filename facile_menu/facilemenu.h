@@ -6,16 +6,9 @@
 #include <functional>
 #include <QRegularExpression>
 #include <QVBoxLayout>
-#include "interactivebuttonbase.h"
+#include "facilemenuitem.h"
 
 typedef std::function<void()> const FuncType;
-
-struct FacileAction {
-    QIcon icon;
-    QString text;
-    Qt::Key key;
-    bool isMenu;
-};
 
 class FacileMenu : public QWidget
 {
@@ -32,7 +25,7 @@ public:
     void execute(QPoint pos = QPoint(-1, -1));
 
 signals:
-    void signalActionTriggered(FacileAction action);
+    void signalActionTriggered(FacileMenuItem* action);
 
 public slots:
 
@@ -42,7 +35,7 @@ private:
 
 private:
     QList<InteractiveButtonBase*> buttons;
-    QList<FacileAction> actions;
+    QList<FacileMenuItem*> items;
     QVBoxLayout* main_vlayout;
 
     FacileMenu* current_sub_menu = nullptr;

@@ -20,14 +20,13 @@ FacileMenu::FacileMenu(bool sub, QWidget *parent) : FacileMenu(parent)
 
 void FacileMenu::addAction(QIcon icon, QString text, FuncType func)
 {
-    actions.append(FacileAction{icon, text, getShortcutByText(text), false});
+    FacileMenuItem* item = new FacileMenuItem(icon, text, this);
+    item->setKey(getShortcutByText(text));
 
-    InteractiveButtonBase* btn = new InteractiveButtonBase(text, this);
-    btn->setIcon(icon);
-    setActionButton(btn);
-    main_vlayout->addWidget(btn);
+    setActionButton(item);
+    main_vlayout->addWidget(item);
 
-    connect(btn, &InteractiveButtonBase::clicked, this, [=]{
+    connect(item, &InteractiveButtonBase::clicked, this, [=]{
         func();
         close();
     });
@@ -35,14 +34,15 @@ void FacileMenu::addAction(QIcon icon, QString text, FuncType func)
 
 void FacileMenu::addAction(QString text, FuncType func)
 {
-    actions.append(FacileAction{QIcon(), text, getShortcutByText(text), false});
+    FacileMenuItem* item = new FacileMenuItem(text, this);
+    item->setKey(getShortcutByText(text));
 
-    InteractiveButtonBase* btn = new InteractiveButtonBase(text, this);
-    setActionButton(btn);
-    main_vlayout->addWidget(btn);
+    setActionButton(item);
+    main_vlayout->addWidget(item);
 
-    connect(btn, &InteractiveButtonBase::clicked, this, [=]{
+    connect(item, &InteractiveButtonBase::clicked, this, [=]{
         func();
+        close();
     });
 }
 
@@ -53,33 +53,40 @@ void FacileMenu::addAction(QString text, FuncType func)
  */
 FacileMenu *FacileMenu::addMenu(QIcon icon, QString text, FuncType func)
 {
-    actions.append(FacileAction{QIcon(), text, getShortcutByText(text), true});
+    FacileMenuItem* item = new FacileMenuItem(icon, text, this);
+    item->setKey(getShortcutByText(text));
 
-    InteractiveButtonBase* btn = new InteractiveButtonBase(text, this);
-    btn->setIcon(icon);
-    setActionButton(btn);
-    main_vlayout->addWidget(btn);
+    setActionButton(item);
+    main_vlayout->addWidget(item);
 
-    connect(btn, &InteractiveButtonBase::clicked, this, [=]{
+    connect(item, &InteractiveButtonBase::clicked, this, [=]{
         func();
+        close();
     });
 
     FacileMenu* menu = new FacileMenu(this);
     menu->hide();
+    item->setSubMenu(menu);
     return menu;
 }
 
 FacileMenu *FacileMenu::addMenu(QString text, FuncType func)
 {
-    actions.append(FacileAction{QIcon(), text, getShortcutByText(text), true});
+    FacileMenuItem* item = new FacileMenuItem(text, this);
+    item->setKey(getShortcutByText(text));
 
-    InteractiveButtonBase* btn = new InteractiveButtonBase(text, this);
-    setActionButton(btn);
-    main_vlayout->addWidget(btn);
+    setActionButton(item);
+    main_vlayout->addWidget(item);
 
-    connect(btn, &InteractiveButtonBase::clicked, this, [=]{
+    connect(item, &InteractiveButtonBase::clicked, this, [=]{
         func();
+        close();
     });
+
+    FacileMenu* menu = new FacileMenu(this);
+    menu->hide();
+    item->setSubMenu(menu);
+    return menu;
 }
 
 void FacileMenu::execute(QPoint pos)
@@ -114,7 +121,7 @@ Qt::Key FacileMenu::getShortcutByText(QString text)
 void FacileMenu::setActionButton(InteractiveButtonBase *btn)
 {
     // 设置尺寸
-    btn->setPaddings(32, 48, 8, 8);
+    btn->setPaddings(8, 48, 8, 8);
 
-    // 设置颜色
+    // TODO:设置颜色
 }

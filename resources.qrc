@@ -1,0 +1,10 @@
+<RCC>
+    <qresource prefix="/icons">
+        <file alias="faster">resources/icons/faster.png</file>
+        <file alias="pause">resources/icons/pause.png</file>
+        <file alias="resume">resources/icons/resume.png</file>
+        <file alias="run">resources/icons/run.png</file>
+        <file alias="slower">resources/icons/slower.png</file>
+        <file alias="stop">resources/icons/stop.png</file>
+    </qresource>
+</RCC>

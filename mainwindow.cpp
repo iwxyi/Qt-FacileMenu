@@ -17,11 +17,17 @@ MainWindow::~MainWindow()
 void MainWindow::on_pushButton_clicked()
 {
     FacileMenu* menu = new FacileMenu(this);
-    menu->addAction(QIcon(), "测试", [=]{
-        qDebug() << "11111111111";
+    menu->addAction(QIcon(":/icons/run"), "开始播放", [=]{
+        qDebug() << "=>开始播放";
     });
-    menu->addAction(QIcon(), "22222222", [=]{
-        qDebug() << "2222222";
+    menu->addAction(QIcon(":/icons/pause"), "暂停", [=]{
+        qDebug() << "=>暂停";
+    });
+    menu->addAction(QIcon(":/icons/faster"), "加速", [=]{
+        qDebug() << "=>加速";
+    });
+    menu->addAction(QIcon(":/icons/slower"), "减速", [=]{
+        qDebug() << "=>减速";
     });
     auto subMenu = menu->addMenu("子菜单", [=]{});
 

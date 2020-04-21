@@ -252,6 +252,7 @@ protected:
     virtual bool inArea(QPoint point);
     virtual QPainterPath getBgPainterPath();
     virtual QPainterPath getWaterPainterPath(Water water);
+    virtual void drawIconBeforeText(QPainter &painter, QRect icon_rect);
 
     QRect getUnifiedGeometry();
     void updateUnifiedGeometry();

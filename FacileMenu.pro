@@ -20,12 +20,14 @@ INCLUDEPATH += interactive_buttons/ \
 
 SOURCES += \
     facile_menu/facilemenu.cpp \
+    facile_menu/facilemenuitem.cpp \
     interactive_buttons/interactivebuttonbase.cpp \
     main.cpp \
     mainwindow.cpp
 
 HEADERS += \
     facile_menu/facilemenu.h \
+    facile_menu/facilemenuitem.h \
     interactive_buttons/interactivebuttonbase.h \
     mainwindow.h
 
@@ -36,3 +38,6 @@ FORMS += \
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
+
+RESOURCES += \
+    resources.qrc
