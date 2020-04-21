@@ -48,7 +48,7 @@ void MainWindow::on_pushButton_clicked()
         slower_checked = !slower_checked;
     })->setChecked(slower_checked);
 
-    auto subMenu = menu->addMenu("子菜单");
+    auto subMenu = menu->addMenu("子菜单0");
     {
         subMenu->addAction(QIcon(":/icons/run"), "开始播放", [=]{
             qDebug() << "=>开始播放";
@@ -95,10 +95,11 @@ void MainWindow::on_pushButton_clicked()
             })->setChecked(faster_checked);
 
             auto subMenu3 = subMenu2->addMenu("子菜单");
+            subMenu3->addAction("没有子菜单了");
         }
     }
 
-    auto subMenu2 = menu->addMenu("子菜单");
+    auto subMenu2 = menu->addMenu("子菜单1");
     {
         subMenu2->addAction(QIcon(":/icons/run"), "开始播放", [=]{
             qDebug() << "=>开始播放";
@@ -109,7 +110,7 @@ void MainWindow::on_pushButton_clicked()
         });
     }
 
-    auto subMenu3 = menu->addMenu("子菜单");
+    auto subMenu3 = menu->addMenu("子菜单2");
     {
 
         subMenu3->addAction(QIcon(":/icons/resume"), "继续", [=]{
@@ -121,7 +122,7 @@ void MainWindow::on_pushButton_clicked()
         });
     }
 
-    auto subMenu4 = menu->addMenu("子菜单");
+    auto subMenu4 = menu->addMenu("子菜单3");
     {
         subMenu4->addAction(QIcon(":/icons/faster"), "加速", [=]{
             qDebug() << "=>加速";

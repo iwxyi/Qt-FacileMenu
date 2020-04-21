@@ -24,6 +24,8 @@ public:
     FacileMenuItem* addSeparator();
 
     void execute(QPoint pos = QPoint(-1, -1));
+    bool isCursorInArea(QPoint pos);
+    void toHide(int focusIndex = -1);
 
 signals:
     void signalActionTriggered(FacileMenuItem* action);
@@ -36,6 +38,7 @@ protected:
     void setActionButton(InteractiveButtonBase* btn);
     void showSubMenu(FacileMenuItem* item);
     void startAnimationOnShowed();
+    void startAnimationOnHidden(int focusIndex);
     void hideEvent(QHideEvent *event) override;
     void mouseMoveEvent(QMouseEvent *event) override;
 
@@ -49,8 +52,10 @@ private:
     QList<FacileMenuItem*> items;
     QVBoxLayout* main_vlayout;
 
-    FacileMenu* current_sub_menu = nullptr;
-    bool _is_sub_menu; // 是否是子菜单
+    FacileMenu* current_sub_menu = nullptr; // 当前打开（不一定显示）的子菜单
+    FacileMenu* parent_menu = nullptr; // 父类的菜单
+
+    bool _showing_animation = false;
 };
 
 #endif // FACILEMENU_H

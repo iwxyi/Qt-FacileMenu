@@ -25,11 +25,13 @@ FacileMenu::FacileMenu(QWidget *parent) : QWidget(parent)
     setMouseTracking(true);
 }
 
-FacileMenu::FacileMenu(bool sub, QWidget *parent) : FacileMenu(parent)
+FacileMenu::FacileMenu(bool, QWidget *parent) : FacileMenu(parent)
 {
-    _is_sub_menu = sub;
     setAttribute(Qt::WA_DeleteOnClose, false);
     setFocusPolicy(Qt::NoFocus);
+
+    // 保存父菜单的指针，判断鼠标移动的位置
+    parent_menu = static_cast<FacileMenu*>(parent);
 }
 
 FacileMenuItem *FacileMenu::addAction(QIcon icon, QString text, FuncType func)
@@ -44,7 +46,7 @@ FacileMenuItem *FacileMenu::addAction(QIcon icon, QString text, FuncType func)
     connect(item, &InteractiveButtonBase::clicked, this, [=]{
         func();
         emit signalActionTriggered(item);
-        close();
+        toHide(items.indexOf(item));
     });
     connect(item, &InteractiveButtonBase::signalMouseEnter, this, [=]{
        if (current_sub_menu) // 进入这个action，展开的子菜单隐藏起来
@@ -81,7 +83,7 @@ FacileMenu *FacileMenu::addMenu(QIcon icon, QString text, FuncType func)
         connect(item, &InteractiveButtonBase::clicked, this, [=]{
             func();
             emit signalActionTriggered(item);
-            close();
+            toHide(items.indexOf(item));
         });
     }
     else // 点击出现子项
@@ -101,12 +103,13 @@ FacileMenu *FacileMenu::addMenu(QIcon icon, QString text, FuncType func)
     menu->hide();
     item->setSubMenu(menu);
     connect(menu, &FacileMenu::signalHidden, item, [=]{
+        // 子菜单隐藏，当前按钮强制取消hover状态
         item->discardHoverPress();
     });
     connect(menu, &FacileMenu::signalActionTriggered, this, [=](FacileMenuItem* action){
         // 子菜单被点击了，副菜单依次隐藏
         emit signalActionTriggered(action);
-        close();
+        toHide(items.indexOf(item));
     });
     return menu;
 }
@@ -167,6 +170,16 @@ void FacileMenu::execute(QPoint pos)
     startAnimationOnShowed();
 }
 
+bool FacileMenu::isCursorInArea(QPoint pos)
+{
+    return geometry().contains(pos);
+}
+
+void FacileMenu::toHide(int focusIndex)
+{
+    startAnimationOnHidden(focusIndex);
+}
+
 Qt::Key FacileMenu::getShortcutByText(QString text)
 {
     Qt::Key key = Qt::Key_Exit;
@@ -210,9 +223,14 @@ void FacileMenu::showSubMenu(FacileMenuItem *item)
     current_sub_menu->execute();
 }
 
+/**
+ * 菜单出现动画
+ * 从光标位置依次出现
+ */
 void FacileMenu::startAnimationOnShowed()
 {
     main_vlayout->setEnabled(false);
+    _showing_animation = true;
 
     // 从上往下的动画
     QPoint start_pos = mapFromGlobal(QCursor::pos());
@@ -234,6 +252,44 @@ void FacileMenu::startAnimationOnShowed()
 
     QTimer::singleShot(300, this, [=]{
         main_vlayout->setEnabled(true);
+        _showing_animation = false;
+    });
+}
+
+void FacileMenu::startAnimationOnHidden(int focusIndex)
+{
+    int dur = 200;
+    QPoint up_end(0, items.size() ? -items.at(0)->height() : 0);
+    QPoint flow_end(0, height());
+    for (int i = 0; i < items.size(); i++)
+    {
+        InteractiveButtonBase* btn = items.at(i);
+        btn->setBlockHover(true);
+        QPropertyAnimation* ani = new QPropertyAnimation(btn, "pos");
+        ani->setStartValue(btn->pos());
+        ani->setEasingCurve(QEasingCurve::OutCubic);
+        if (focusIndex > -1)
+        {
+            if (i < focusIndex)
+                ani->setEndValue(up_end);
+            else if (i == focusIndex)
+                ani->setEndValue(btn->pos());
+            else
+                ani->setEndValue(flow_end);
+        }
+        else
+            ani->setEndValue(up_end);
+        ani->setDuration(dur);
+        connect(ani, SIGNAL(finished()), ani, SLOT(deleteLater()));
+        connect(ani, &QPropertyAnimation::finished, btn, [=]{
+            btn->setBlockHover(false);
+        });
+        ani->start();
+    }
+
+    QTimer::singleShot(dur, this, [=]{
+        main_vlayout->setEnabled(true);
+        close();
     });
 }
 
@@ -247,5 +303,12 @@ void FacileMenu::mouseMoveEvent(QMouseEvent *event)
 {
     QWidget::mouseMoveEvent(event);
 
-
+    QPoint pos = QCursor::pos();
+    if (_showing_animation || isCursorInArea(pos)) // 正在出现或在自己的区域内，不管
+        ;
+    else if (parent_menu && parent_menu->isCursorInArea(pos)) // 在父类，自己隐藏
+    {
+        this->hide();
+        parent_menu->setFocus();
+    }
 }
