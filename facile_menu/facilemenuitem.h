@@ -21,6 +21,7 @@ public:
     bool isKey(Qt::Key key);
     FacileMenuItem* setSubMenu(FacileMenu* menu);
     bool isSubMenu();
+    FacileMenuItem* addShortcutTip(QString sc);
     FacileMenuItem* triggered(FuncType func);
     FacileMenuItem* disable();
     FacileMenu* subMenu();
@@ -33,6 +34,7 @@ private:
     Qt::Key key;
     bool checkable = false;
     FacileMenu* sub_menu = nullptr;
+    QString shortcut_tip = ""; // 快捷键提示
 };
 
 #endif // FACILEMENUITEM_H

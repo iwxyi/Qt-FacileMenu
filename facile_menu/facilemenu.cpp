@@ -36,8 +36,10 @@ FacileMenu::FacileMenu(bool, QWidget *parent) : FacileMenu(parent)
 
 FacileMenuItem *FacileMenu::addAction(QIcon icon, QString text, FuncType func)
 {
+    auto key = getShortcutByText(text);
+    text.replace("&", "");
     FacileMenuItem* item = new FacileMenuItem(icon, text, this);
-    item->setKey(getShortcutByText(text));
+    item->setKey(key);
 
     setActionButton(item);
     main_vlayout->addWidget(item);
@@ -70,8 +72,10 @@ FacileMenuItem *FacileMenu::addAction(QString text, FuncType func)
  */
 FacileMenu *FacileMenu::addMenu(QIcon icon, QString text, FuncType func)
 {
+    auto key = getShortcutByText(text);
+    text.replace("&", "");
     FacileMenuItem* item = new FacileMenuItem(icon, text, this);
-    item->setKey(getShortcutByText(text));
+    item->setKey(key);
 
     setActionButton(item);
     main_vlayout->addWidget(item);
@@ -130,6 +134,17 @@ FacileMenuItem *FacileMenu::addSeparator()
     items.append(item);
 
     return item;
+}
+
+void FacileMenu::addTipArea(int x)
+{
+    addin_tip_area = x;
+}
+
+void FacileMenu::addTipArea(QString longestTip)
+{
+    QFontMetrics fm(this->font());
+    addin_tip_area = fm.horizontalAdvance(longestTip);
 }
 
 void FacileMenu::execute(QPoint pos)
@@ -201,9 +216,9 @@ Qt::Key FacileMenu::getShortcutByText(QString text)
 void FacileMenu::setActionButton(InteractiveButtonBase *btn)
 {
     // 设置尺寸
-    btn->setPaddings(8, 48, 8, 8);
+    btn->setPaddings(8, 48 + addin_tip_area, 8, 8);
 
-    // TODO:设置颜色
+    // 设置颜色
     btn->setNormalColor(Qt::transparent);
     btn->setHoverColor(hover_bg);
     btn->setPressColor(press_bg);
@@ -311,4 +326,19 @@ void FacileMenu::mouseMoveEvent(QMouseEvent *event)
         this->hide();
         parent_menu->setFocus();
     }
+}
+
+void FacileMenu::keyPressEvent(QKeyEvent *event)
+{
+    auto key = event->key();
+    foreach (auto item, items)
+    {
+        if (item->isKey((Qt::Key)key))
+        {
+            item->simulateStatePress();
+            break;
+        }
+    }
+
+    return QWidget::keyPressEvent(event);
 }

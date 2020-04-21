@@ -22,6 +22,8 @@ public:
     FacileMenu* addMenu(QIcon icon, QString text, FuncType func = nullptr);
     FacileMenu* addMenu(QString text, FuncType func = nullptr);
     FacileMenuItem* addSeparator();
+    void addTipArea(int x = 48);
+    void addTipArea(QString longestTip);
 
     void execute(QPoint pos = QPoint(-1, -1));
     bool isCursorInArea(QPoint pos);
@@ -39,8 +41,10 @@ protected:
     void showSubMenu(FacileMenuItem* item);
     void startAnimationOnShowed();
     void startAnimationOnHidden(int focusIndex);
+
     void hideEvent(QHideEvent *event) override;
     void mouseMoveEvent(QMouseEvent *event) override;
+    void keyPressEvent(QKeyEvent *event) override;
 
 public:
     static QColor normal_bg; // 普通背景（用作全局是为了方便设置）
@@ -55,6 +59,7 @@ private:
     FacileMenu* current_sub_menu = nullptr; // 当前打开（不一定显示）的子菜单
     FacileMenu* parent_menu = nullptr; // 父类的菜单
 
+    int addin_tip_area = 0;
     bool _showing_animation = false;
 };
 

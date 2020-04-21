@@ -55,6 +55,12 @@ bool FacileMenuItem::isSubMenu()
     return sub_menu != nullptr;
 }
 
+FacileMenuItem *FacileMenuItem::addShortcutTip(QString sc)
+{
+    shortcut_tip = sc;
+    return this;
+}
+
 FacileMenuItem *FacileMenuItem::triggered(FuncType func)
 {
     connect(this, &InteractiveButtonBase::clicked, this, [=]{
@@ -78,12 +84,28 @@ void FacileMenuItem::paintEvent(QPaintEvent *event)
 {
     InteractiveButtonBase::paintEvent(event);
 
+    int right = width() - icon_text_size - 8;
+
+    QPainter painter(this);
     if (isSubMenu())
     {
         // 画右边箭头的图标
-        QPainter painter(this);
-        QRect rect(width() - icon_text_size - 8, 8, icon_text_size, icon_text_size);
+        QRect rect(right, fore_paddings.top, icon_text_size, icon_text_size);
         painter.drawPixmap(rect, QPixmap(":/icons/sub_menu_arrow"));
+    }
+
+    if (!shortcut_tip.isEmpty())
+    {
+        // 画右边的文字
+        QFontMetrics fm(this->font());
+        int width = fm.horizontalAdvance(shortcut_tip);
+        painter.save();
+        auto c = painter.pen().color();
+        c.setAlpha(c.alpha() / 2);
+        painter.setPen(c);
+        painter.drawText(QRect(right-width, fore_paddings.top, width, height()-fore_paddings.top-fore_paddings.bottom),
+                         Qt::AlignRight, shortcut_tip);
+        painter.restore();
     }
 }
 

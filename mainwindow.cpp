@@ -20,22 +20,24 @@ void MainWindow::on_pushButton_clicked()
     static bool slower_checked = false;
 
     FacileMenu* menu = new FacileMenu(this);
+//    menu->addTipArea("Ctrl+P");
+    menu->addTipArea(100);
 
-    menu->addAction(QIcon(":/icons/run"), "开始播放", [=]{
+    menu->addAction(QIcon(":/icons/run"), "开始播放 (&S)", [=]{
         qDebug() << "=>开始播放";
-    });
+    })->addShortcutTip("Ctrl+S");
 
-    menu->addAction(QIcon(":/icons/pause"), "暂停", [=]{
+    menu->addAction(QIcon(":/icons/pause"), "暂停 (&P)", [=]{
         qDebug() << "=>暂停";
-    });
+    })->addShortcutTip("Ctrl+P");
 
-    menu->addAction(QIcon(":/icons/resume"), "继续", [=]{
+    menu->addAction(QIcon(":/icons/resume"), "继续 (&R)", [=]{
         qDebug() << "=>继续";
-    })->disable();
+    })->disable()->addShortcutTip("Ctrl+R");
 
-    menu->addAction(QIcon(":/icons/stop"), "停止", [=]{
+    menu->addAction(QIcon(":/icons/stop"), "停止 (&T)", [=]{
         qDebug() << "=>停止";
-    });
+    })->addShortcutTip("Ctrl+T");
     menu->addSeparator();
 
     menu->addAction(QIcon(":/icons/faster"), "加速", [=]{
