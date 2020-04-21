@@ -37,6 +37,7 @@ protected:
     void showSubMenu(FacileMenuItem* item);
     void startAnimationOnShowed();
     void hideEvent(QHideEvent *event) override;
+    void mouseMoveEvent(QMouseEvent *event) override;
 
 public:
     static QColor normal_bg; // 普通背景（用作全局是为了方便设置）

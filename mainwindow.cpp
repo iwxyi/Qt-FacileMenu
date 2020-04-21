@@ -48,7 +48,7 @@ void MainWindow::on_pushButton_clicked()
         slower_checked = !slower_checked;
     })->setChecked(slower_checked);
 
-    auto subMenu = menu->addMenu("子菜单", [=]{});
+    auto subMenu = menu->addMenu("子菜单");
     {
         subMenu->addAction(QIcon(":/icons/run"), "开始播放", [=]{
             qDebug() << "=>开始播放";
@@ -67,6 +67,63 @@ void MainWindow::on_pushButton_clicked()
         });
 
         subMenu->addAction(QIcon(":/icons/faster"), "加速", [=]{
+            qDebug() << "=>加速";
+            faster_checked = !faster_checked;
+        })->setChecked(faster_checked);
+
+        auto subMenu2 = subMenu->addMenu("子菜单");
+        {
+            subMenu2->addAction(QIcon(":/icons/run"), "开始播放", [=]{
+                qDebug() << "=>开始播放";
+            });
+
+            subMenu2->addAction(QIcon(":/icons/pause"), "暂停", [=]{
+                qDebug() << "=>暂停";
+            });
+
+            subMenu2->addAction(QIcon(":/icons/resume"), "继续", [=]{
+                qDebug() << "=>继续";
+            })->disable();
+
+            subMenu2->addAction(QIcon(":/icons/stop"), "停止", [=]{
+                qDebug() << "=>停止";
+            });
+
+            subMenu2->addAction(QIcon(":/icons/faster"), "加速", [=]{
+                qDebug() << "=>加速";
+                faster_checked = !faster_checked;
+            })->setChecked(faster_checked);
+
+            auto subMenu3 = subMenu2->addMenu("子菜单");
+        }
+    }
+
+    auto subMenu2 = menu->addMenu("子菜单");
+    {
+        subMenu2->addAction(QIcon(":/icons/run"), "开始播放", [=]{
+            qDebug() << "=>开始播放";
+        });
+
+        subMenu2->addAction(QIcon(":/icons/pause"), "暂停", [=]{
+            qDebug() << "=>暂停";
+        });
+    }
+
+    auto subMenu3 = menu->addMenu("子菜单");
+    {
+
+        subMenu3->addAction(QIcon(":/icons/resume"), "继续", [=]{
+            qDebug() << "=>继续";
+        })->disable();
+
+        subMenu3->addAction(QIcon(":/icons/stop"), "停止", [=]{
+            qDebug() << "=>停止";
+        });
+    }
+
+    auto subMenu4 = menu->addMenu("子菜单");
+    {
+        subMenu4->addAction(QIcon(":/icons/faster"), "加速", [=]{
             qDebug() << "=>加速";
             faster_checked = !faster_checked;
         })->setChecked(faster_checked);

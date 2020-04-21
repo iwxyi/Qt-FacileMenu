@@ -21,6 +21,8 @@ FacileMenu::FacileMenu(QWidget *parent) : QWidget(parent)
     main_vlayout->setSpacing(0);
 
     setStyleSheet("background: "+QVariant(normal_bg).toString()+"; border: none; border-radius:5px;");
+
+    setMouseTracking(true);
 }
 
 FacileMenu::FacileMenu(bool sub, QWidget *parent) : FacileMenu(parent)
@@ -146,14 +148,17 @@ void FacileMenu::execute(QPoint pos)
     move(pos);
 
     // 设置背景为圆角矩形
-    QPixmap pixmap(width(), height());
-    pixmap.fill(Qt::transparent);
-    QPainter pix_ptr(&pixmap);
-    pix_ptr.setRenderHint(QPainter::Antialiasing, true);
-    QPainterPath path;
-    path.addRoundedRect(0, 0, width(), height(), 5, 5);
-    pix_ptr.fillPath(path, Qt::white);
-    setMask(pixmap.mask());
+    if (height() > 0) // 没有菜单项的时候为0
+    {
+        QPixmap pixmap(width(), height());
+        pixmap.fill(Qt::transparent);
+        QPainter pix_ptr(&pixmap);
+        pix_ptr.setRenderHint(QPainter::Antialiasing, true);
+        QPainterPath path;
+        path.addRoundedRect(0, 0, width(), height(), 5, 5);
+        pix_ptr.fillPath(path, Qt::white);
+        setMask(pixmap.mask());
+    }
 
     // 显示、动画
     QWidget::show();
@@ -196,7 +201,7 @@ void FacileMenu::showSubMenu(FacileMenuItem *item)
 {
     if (current_sub_menu)
     {
-        if (item->subMenu() == current_sub_menu) // 当前显示的就是这个子菜单
+        if (item->subMenu() == current_sub_menu && !current_sub_menu->isHidden()) // 当前显示的就是这个子菜单
             return ;
         current_sub_menu->hide();
     }
@@ -236,4 +241,11 @@ void FacileMenu::hideEvent(QHideEvent *event)
 {
     emit signalHidden();
     return QWidget::hideEvent(event);
+}
+
+void FacileMenu::mouseMoveEvent(QMouseEvent *event)
+{
+    QWidget::mouseMoveEvent(event);
+
+
 }
