@@ -11,6 +11,7 @@
 //#include <QGraphicsOpacityEffect>
 #include <QScreen>
 #include <QGraphicsDropShadowEffect>
+#include <QAction>
 #include "facilemenuitem.h"
 
 class FacileMenu : public QWidget
@@ -19,9 +20,11 @@ class FacileMenu : public QWidget
 public:
     FacileMenu(QWidget *parent = nullptr);
     FacileMenu(bool sub, QWidget* parent = nullptr);
+    ~FacileMenu() override;
 
     FacileMenuItem* addAction(QIcon icon, QString text, FuncType func = []{});
     FacileMenuItem* addAction(QString text, FuncType func = []{});
+    FacileMenuItem* addAction(QAction* action, bool deleteWithMenu = true);
     FacileMenu* addChipLayout();
     FacileMenuItem* addChip(QIcon icon, QString text, FuncType func = nullptr);
     FacileMenuItem* addChip(QIcon icon, FuncType func = nullptr);
@@ -70,6 +73,7 @@ private:
     QList<FacileMenuItem*> v_separators, h_separators;
     QVBoxLayout* main_vlayout;
     QList<QHBoxLayout*> chip_hlayouts;
+    QList<QAction*> import_actions;
     QPixmap bg_pixmap;
 
     FacileMenu* current_sub_menu = nullptr; // 当前打开（不一定显示）的子菜单

@@ -35,6 +35,12 @@ FacileMenu::FacileMenu(bool, QWidget *parent) : FacileMenu(parent)
     parent_menu = static_cast<FacileMenu*>(parent);
 }
 
+FacileMenu::~FacileMenu()
+{
+    foreach (auto action, import_actions)
+        action->deleteLater();
+}
+
 FacileMenuItem *FacileMenu::addAction(QIcon icon, QString text, FuncType func)
 {
     auto key = getShortcutByText(text);
@@ -73,6 +79,15 @@ FacileMenuItem *FacileMenu::addAction(QIcon icon, QString text, FuncType func)
 FacileMenuItem *FacileMenu::addAction(QString text, FuncType func)
 {
     return addAction(QIcon(), text, func);
+}
+
+FacileMenuItem *FacileMenu::addAction(QAction *action, bool deleteWithMenu)
+{
+    QIcon icon = action->icon();
+    QString text = action->text();
+    if (deleteWithMenu)
+        import_actions.append(action); // 加入列表，菜单delete时一起删了
+    return addAction(icon, text, [=]{action->trigger();});
 }
 
 FacileMenu *FacileMenu::addChipLayout()
