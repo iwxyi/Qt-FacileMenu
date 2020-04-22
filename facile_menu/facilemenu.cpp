@@ -104,6 +104,12 @@ FacileMenu *FacileMenu::addMenu(QIcon icon, QString text, FuncType func)
         });
     }
 
+    /*connect(item, &InteractiveButtonBase::signalMouseEnter, [=]{
+        if (current_index != items.indexOf(item) && current_index >= 0 && current_index < items.size())
+            items.at(current_index)->discardHoverPress(true);
+        current_index = items.indexOf(item);
+    });*/
+
     connect(item, &InteractiveButtonBase::signalMouseEnterLater, [=]{
         int index = items.indexOf(item);
         if (using_keyboard && current_index > -1 && current_index < items.size() && current_index != index) // 屏蔽键盘操作
@@ -111,15 +117,24 @@ FacileMenu *FacileMenu::addMenu(QIcon icon, QString text, FuncType func)
         current_index = index;
 
         // 显示子菜单
-        showSubMenu(item);
+        if (current_index == items.indexOf(item))
+            showSubMenu(item);
     });
+
+    /*connect(item, &InteractiveButtonBase::signalMouseLeave, [=]{
+        if (item->isHovering())
+            item->discardHoverPress(true);
+    });*/
 
     FacileMenu* menu = new FacileMenu(true, this);
     menu->hide();
     item->setSubMenu(menu);
     connect(menu, &FacileMenu::signalHidden, item, [=]{
-        // 子菜单隐藏，当前按钮强制取消hover状态
-        item->discardHoverPress();
+        if (!using_keyboard || current_index != items.indexOf(item))
+        {
+            // 子菜单隐藏，当前按钮强制取消hover状态
+            item->discardHoverPress(true);
+        }
     });
     connect(menu, &FacileMenu::signalActionTriggered, this, [=](FacileMenuItem* action){
         // 子菜单被点击了，副菜单依次隐藏
@@ -165,6 +180,7 @@ void FacileMenu::execute(QPoint pos)
 
     if (pos == QPoint(-1,-1))
         pos = QCursor::pos();
+    main_vlayout->setEnabled(true);
     main_vlayout->activate(); // 先调整所有控件大小
 
     // 获取屏幕大小
@@ -220,7 +236,6 @@ void FacileMenu::execute(QPoint pos)
     // 显示、动画
     QWidget::show();
     setFocus();
-
     startAnimationOnShowed();
 }
 
@@ -355,14 +370,17 @@ void FacileMenu::startAnimationOnShowed()
 void FacileMenu::startAnimationOnHidden(int focusIndex)
 {
     // 控件移动动画
+    main_vlayout->setEnabled(false);
     int dur_min =100, dur_max = 200;
     int up_flow_count = focusIndex > -1 ? qMax(focusIndex, items.size()-focusIndex-1) : -1;
     int up_end = items.size() ? -items.at(0)->height() : 0;
     int flow_end = height();
     int focus_top = focusIndex > -1 ? items.at(focusIndex)->pos().y() : 0;
+//    QList<QPoint> ori_poss;
     for (int i = 0; i < items.size(); i++)
     {
         InteractiveButtonBase* btn = items.at(i);
+//        ori_poss.append(btn->pos());
         btn->setBlockHover(true);
         QPropertyAnimation* ani = new QPropertyAnimation(btn, "pos");
         ani->setStartValue(btn->pos());
@@ -413,7 +431,12 @@ void FacileMenu::startAnimationOnHidden(int focusIndex)
 
     // 真正关闭
     QTimer::singleShot(dur_max, this, [=]{
+        // 挨个还原之前的位置（不知道为什么main_vlayout不能恢复了）
+//        for (int i = 0; i < ori_poss.size(); i++)
+//            items.at(i)->move(ori_poss.at(i));
         main_vlayout->setEnabled(true);
+        main_vlayout->activate(); // 恢复原来的位置
+
         close();
     });
 }
@@ -464,12 +487,12 @@ void FacileMenu::keyPressEvent(QKeyEvent *event)
     switch (key) {
     case Qt::Key_Up:
     {
-        if (current_index <= 0 || current_index >= items.size())
+        if (current_index < 0 || current_index >= items.size())
             current_index = items.size()-1;
         else
         {
             items.at(current_index--)->discardHoverPress(true);
-            if (current_index == -1)
+            if (current_index < 0)
                 current_index = items.size()-1;
         }
         // 判断 item 是否被禁用
@@ -524,7 +547,7 @@ void FacileMenu::keyPressEvent(QKeyEvent *event)
         }
         // 退出子菜单
         else if (isSubMenu())
-            toHide();
+            close();
         return ;
     case Qt::Key_Right:
         // 移动到右边按钮
