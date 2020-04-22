@@ -89,12 +89,20 @@ FacileMenuItem *FacileMenu::addChip(QIcon icon, QString text, FuncType func)
 {
     auto key = getShortcutByText(text);
     text.replace("&", "");
-    FacileMenuItem* item = new FacileMenuItem(icon, text, this);
+    FacileMenuItem* item;
+    if (icon.isNull())
+        item =  new FacileMenuItem(text, this);
+    else
+        item =  new FacileMenuItem(icon, text, this);
     item->setKey(key);
 
     setActionButton(item, true);
     if (chip_hlayouts.size())
+    {
+        if (chip_hlayouts.last()->count() > 0)
+            addVSeparator(); // 添加竖向分割线
         chip_hlayouts.last()->addWidget(item);
+    }
     else
         main_vlayout->addWidget(item);
     items.append(item);
@@ -220,6 +228,9 @@ FacileMenu *FacileMenu::addMenu(QString text, FuncType func)
     return addMenu(QIcon(), text, func);
 }
 
+/**
+ * 添加水平分割线
+ */
 FacileMenuItem *FacileMenu::addSeparator()
 {
     FacileMenuItem* item = new FacileMenuItem(this);
@@ -230,6 +241,24 @@ FacileMenuItem *FacileMenu::addSeparator()
 
     main_vlayout->addWidget(item);
     items.append(item);
+
+    return item;
+}
+
+/**
+ * 一行有多个按钮时的竖向分割线
+ * 只有添加chip前有效
+ */
+FacileMenuItem *FacileMenu::addVSeparator()
+{
+    FacileMenuItem* item = new FacileMenuItem(this);
+    item->setNormalColor(QColor(64, 64, 64, 64));
+    item->setFixedWidth(1);
+    item->setPaddings(0, 0, 0, 0);
+    item->setDisabled(true);
+
+    chip_hlayouts.last()->addWidget(item);
+//    items.append(item);
 
     return item;
 }

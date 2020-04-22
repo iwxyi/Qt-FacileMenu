@@ -48,6 +48,7 @@ protected:
     bool isCursorInArea(QPoint pos, FacileMenu* child = nullptr);
     void setKeyBoardUsed(bool use = true);
     bool isSubMenu();
+    FacileMenuItem* addVSeparator();
     void startAnimationOnShowed();
     void startAnimationOnHidden(int focusIndex);
 
