@@ -47,11 +47,15 @@ FacileMenuItem *FacileMenu::addAction(QIcon icon, QString text, FuncType func)
     items.append(item);
 
     connect(item, &InteractiveButtonBase::clicked, this, [=]{
+        if (_showing_animation)
+            return ;
         func();
         emit signalActionTriggered(item);
         toHide(items.indexOf(item));
     });
     connect(item, &InteractiveButtonBase::signalMouseEnter, this, [=]{
+        if (_showing_animation)
+            return ;
         int index = items.indexOf(item);
         if (using_keyboard && current_index > -1 && current_index < items.size() && current_index != index) // 屏蔽键盘操作
             items.at(current_index)->discardHoverPress(true);
@@ -98,12 +102,16 @@ FacileMenuItem *FacileMenu::addChip(QIcon icon, QString text, FuncType func)
     if (func != nullptr)
     {
         connect(item, &InteractiveButtonBase::clicked, this, [=]{
+            if (_showing_animation)
+                return ;
             func();
             emit signalActionTriggered(item);
             toHide(items.indexOf(item));
         });
     }
     connect(item, &InteractiveButtonBase::signalMouseEnter, this, [=]{
+        if (_showing_animation)
+            return ;
         int index = items.indexOf(item);
         if (using_keyboard && current_index > -1 && current_index < items.size() && current_index != index) // 屏蔽键盘操作
             items.at(current_index)->discardHoverPress(true);
@@ -148,6 +156,8 @@ FacileMenu *FacileMenu::addMenu(QIcon icon, QString text, FuncType func)
     if (func != nullptr)
     {
         connect(item, &InteractiveButtonBase::clicked, this, [=]{
+            if (_showing_animation)
+                return ;
             func();
             emit signalActionTriggered(item);
             toHide(items.indexOf(item));
@@ -156,6 +166,8 @@ FacileMenu *FacileMenu::addMenu(QIcon icon, QString text, FuncType func)
     else // 点击出现子项
     {
         connect(item, &InteractiveButtonBase::clicked, this, [=]{
+            if (_showing_animation)
+                return ;
             // 显示子菜单
             showSubMenu(item);
         });
@@ -168,6 +180,8 @@ FacileMenu *FacileMenu::addMenu(QIcon icon, QString text, FuncType func)
     });*/
 
     connect(item, &InteractiveButtonBase::signalMouseEnterLater, [=]{
+        if (_showing_animation)
+            return ;
         int index = items.indexOf(item);
         if (using_keyboard && current_index > -1 && current_index < items.size() && current_index != index) // 屏蔽键盘操作
             items.at(current_index)->discardHoverPress(true);
@@ -472,6 +486,7 @@ void FacileMenu::startAnimationOnShowed()
  */
 void FacileMenu::startAnimationOnHidden(int focusIndex)
 {
+    _showing_animation = true;
     // 控件移动动画
     main_vlayout->setEnabled(false);
     int dur_min =100, dur_max = 200;
@@ -534,6 +549,7 @@ void FacileMenu::startAnimationOnHidden(int focusIndex)
 
     // 真正关闭
     QTimer::singleShot(dur_max, this, [=]{
+        _showing_animation = false;
         // 挨个还原之前的位置（不知道为什么main_vlayout不能恢复了）
 //        for (int i = 0; i < ori_poss.size(); i++)
 //            items.at(i)->move(ori_poss.at(i));
@@ -598,6 +614,25 @@ void FacileMenu::keyPressEvent(QKeyEvent *event)
             if (current_index < 0)
                 current_index = items.size()-1;
         }
+        auto focusToHoriFirst = [&]{
+            // 如果是横向按钮，理应聚焦到第一项；如果第一项不可用，依次延后
+            if (current_index > 0 && items.at(current_index-1)->pos().y() == items.at(current_index)->pos().y())
+            {
+                int last_index = current_index;
+                // 获取当前行的第一项
+                int y = items.at(current_index)->pos().y();
+                while (current_index > 0 && items.at(current_index-1)->pos().y() == y)
+                    current_index--;
+                int first_index = current_index;
+                // 移动到第一项可用的项
+                while (current_index < last_index && !items.at(current_index)->isEnabled())
+                    current_index++;
+                // 如果这一行全部不可用，强制回到第一项
+                if (current_index == last_index)
+                    current_index = first_index;
+            }
+        };
+        focusToHoriFirst();
         // 判断 item 是否被禁用
         if (!items.at(current_index)->isEnabled())
         {
@@ -606,6 +641,8 @@ void FacileMenu::keyPressEvent(QKeyEvent *event)
                 current_index--;
                 if (current_index < 0)
                     current_index = items.size()-1;
+                else
+                    focusToHoriFirst();
             } while (current_index != old_index && !items.at(current_index)->isEnabled());
             if (current_index == old_index) // 如果绕了一圈都不能用，取消
                 return ;
@@ -616,6 +653,7 @@ void FacileMenu::keyPressEvent(QKeyEvent *event)
         return ;
     }
     case Qt::Key_Down:
+    {
         if (current_index < 0 || current_index >= items.size())
             current_index = 0;
         else
@@ -624,6 +662,33 @@ void FacileMenu::keyPressEvent(QKeyEvent *event)
             if (current_index >= items.size())
                 current_index = 0;
         }
+        auto focusIgnoreHorizoneRest = [&]{
+            // 跳过同一行后面所有（至少要先聚焦在这一行的第二项）
+            if (current_index > 0 && current_index < items.size()-1 && items.at(current_index-1)->pos().y() == items.at(current_index)->pos().y())
+            {
+                int y = items.at(current_index)->pos().y();
+                // 先判断前面是不是有可以点击的
+                int temp_index = current_index;
+                bool is_line_second = false;
+                while (--temp_index > 0 && items.at(temp_index)->pos().y() == y)
+                {
+                    if (items.at(temp_index)->isEnabled())
+                    {
+                        is_line_second = true;
+                        break;
+                    }
+                }
+                if (!is_line_second) // 这是这一行的第一项，可以聚焦
+                    return ;
+                // 跳过这一行后面所有的按钮
+                while (current_index < items.size()-1 && items.at(current_index+1)->pos().y() == y)
+                    current_index++;
+                current_index++;
+                if (current_index >= items.size())
+                    current_index = 0;
+            }
+        };
+        focusIgnoreHorizoneRest();
         // 判断 item 是否被禁用
         if (!items.at(current_index)->isEnabled())
         {
@@ -632,6 +697,8 @@ void FacileMenu::keyPressEvent(QKeyEvent *event)
                 current_index++;
                 if (current_index >= items.size())
                     current_index = 0;
+                else
+                    focusIgnoreHorizoneRest();
             } while (current_index != old_index && !items.at(current_index)->isEnabled());
             if (current_index == old_index) // 如果绕了一圈都不能用，取消
                 return ;
@@ -640,12 +707,25 @@ void FacileMenu::keyPressEvent(QKeyEvent *event)
         items.at(current_index)->simulateHover();
         using_keyboard = true;
         return ;
+    }
     case Qt::Key_Left:
         // 移动到左边按钮
         if (current_index > 0 && items.at(current_index-1)->pos().y() == items.at(current_index)->pos().y())
         {
             items.at(current_index--)->discardHoverPress(true);
-            items.at(current_index)->setHover();
+            // 找到左边第一项能点击的按钮；如果没有，宁可移动到上几行
+            if (!items.at(current_index)->isEnabled())
+            {
+                int ori_index = current_index;
+                while (--current_index >= 0 && !items.at(current_index)->isEnabled()) ;
+                if (current_index == -1) // 前面没有能选的了
+                {
+                    current_index = ori_index + 1; // 恢复到之前选择的那一项
+                    return ;
+                }
+            }
+            // 聚焦到这个能点的按钮
+            items.at(current_index)->simulateHover();
             using_keyboard = true;
         }
         // 退出子菜单
@@ -657,7 +737,19 @@ void FacileMenu::keyPressEvent(QKeyEvent *event)
         if (current_index < items.size()-1 && items.at(current_index+1)->pos().y() == items.at(current_index)->pos().y())
         {
             items.at(current_index++)->discardHoverPress(true);
-            items.at(current_index)->setHover();
+            // 找到右边第一项能点击的按钮；如果没有，宁可移动到下几行
+            if (!items.at(current_index)->isEnabled())
+            {
+                int ori_index = current_index;
+                while (++current_index < items.size() && !items.at(current_index)->isEnabled()) ;
+                if (current_index == items.size()) // 后面没有能选的了
+                {
+                    current_index = ori_index - 1; // 恢复到之前选择的那一项
+                    return ;
+                }
+            }
+            // 聚焦到这个能点的按钮
+            items.at(current_index)->simulateHover();
             using_keyboard = true;
         }
         // 展开子菜单
@@ -669,13 +761,27 @@ void FacileMenu::keyPressEvent(QKeyEvent *event)
     case Qt::Key_Home:
         if (current_index >= 0 || current_index < items.size())
             items.at(current_index)->discardHoverPress(true);
-        items.at(current_index = 0)->simulateHover();
+        // 聚焦到第一项能点的按钮
+        if (!items.at(current_index = 0)->isEnabled())
+        {
+            while (++current_index < items.size() && !items.at(current_index)->isEnabled());
+            if(current_index == items.size()) // 没有能点的（不太可能）
+                return ;
+        }
+        items.at(current_index)->simulateHover();
         using_keyboard = true;
         return ;
     case Qt::Key_End:
         if (current_index >= 0 || current_index < items.size())
             items.at(current_index)->discardHoverPress(true);
-        items.at(current_index = items.size())->simulateHover();
+        // 聚焦到最后一项能点的按钮
+        if (!items.at(current_index = items.size()-1)->isEnabled())
+        {
+            while (--current_index >= 0 && !items.at(current_index)->isEnabled());
+            if(current_index == -1) // 没有能点的（不太可能）
+                return ;
+        }
+        items.at(current_index)->simulateHover();
         using_keyboard = true;
         return ;
     case Qt::Key_Enter:

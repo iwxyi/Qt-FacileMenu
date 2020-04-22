@@ -17,7 +17,7 @@
    <widget class="InteractiveButtonBase" name="pushButton">
     <property name="geometry">
      <rect>
-      <x>70</x>
+      <x>20</x>
       <y>20</y>
       <width>75</width>
       <height>23</height>
@@ -25,6 +25,19 @@
     </property>
     <property name="text">
      <string>菜单</string>
+    </property>
+   </widget>
+   <widget class="InteractiveButtonBase" name="pushButton_2">
+    <property name="geometry">
+     <rect>
+      <x>110</x>
+      <y>20</y>
+      <width>75</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>菜单2</string>
     </property>
    </widget>
   </widget>

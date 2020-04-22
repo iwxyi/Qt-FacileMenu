@@ -21,7 +21,6 @@ void MainWindow::on_pushButton_clicked()
 
     FacileMenu* menu = new FacileMenu(this);
     menu->addTipArea("Ctrl+P");
-//    menu->addTipArea(100);
 
     menu->addAction(QIcon(":/icons/run"), "开始播放 (&S)", [=]{
         qDebug() << "=>开始播放";
@@ -136,6 +135,70 @@ void MainWindow::on_pushButton_clicked()
             faster_checked = !faster_checked;
         })->setChecked(faster_checked);
     }
+
+
+    menu->execute(QCursor::pos());
+}
+
+void MainWindow::on_pushButton_2_clicked()
+{
+    static bool faster_checked = true;
+    static bool slower_checked = false;
+
+    FacileMenu* menu = new FacileMenu(this);
+    menu->addTipArea("Ctrl+P");
+
+    menu->addChipLayout();
+    menu->addChip("按钮1")->disable();
+    menu->addChip("按钮2")->disable();
+    menu->addChip("按钮3")->disable();
+
+    menu->addAction(QIcon(":/icons/run"), "开始播放 (&S)", [=]{
+        qDebug() << "=>开始播放";
+    })->addShortcutTip("Ctrl+S");
+
+    menu->addAction(QIcon(":/icons/pause"), "暂停 (&P)", [=]{
+        qDebug() << "=>暂停";
+    })->addShortcutTip("Ctrl+P");
+
+    menu->addAction(QIcon(":/icons/resume"), "继续 (&R)", [=]{
+        qDebug() << "=>继续";
+    })->disable()->addShortcutTip("Ctrl+R");
+
+    menu->addAction(QIcon(":/icons/stop"), "停止 (&T)", [=]{
+        qDebug() << "=>停止";
+    })->addShortcutTip("Ctrl+T");
+    menu->addSeparator();
+
+    menu->addAction(QIcon(":/icons/faster"), "加速", [=]{
+        qDebug() << "=>加速";
+        faster_checked = !faster_checked;
+    })->setChecked(faster_checked);
+
+    menu->addAction(QIcon(":/icons/slower"), "减速", [=]{
+        qDebug() << "=>减速";
+        slower_checked = !slower_checked;
+    })->setChecked(slower_checked);
+
+    menu->addChipLayout();
+    menu->addChip("按钮1");
+    menu->addChip("按钮2");
+    menu->addChip("按钮3")->disable();
+
+    menu->addAction(QIcon(":/icons/faster"), "加速", [=]{
+        qDebug() << "=>加速";
+        faster_checked = !faster_checked;
+    })->setChecked(faster_checked)->disable();
+
+    menu->addAction(QIcon(":/icons/slower"), "减速", [=]{
+        qDebug() << "=>减速";
+        slower_checked = !slower_checked;
+    })->setChecked(slower_checked)->disable();
+
+    menu->addChipLayout();
+    menu->addChip("按钮1");
+    menu->addChip("按钮2")->disable();
+    menu->addChip("按钮3")->disable();
 
 
     menu->execute(QCursor::pos());
