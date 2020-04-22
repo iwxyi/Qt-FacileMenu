@@ -338,9 +338,27 @@ void FacileMenu::startAnimationOnShowed()
 {
     main_vlayout->setEnabled(false);
     _showing_animation = true;
+    QEasingCurve curve = QEasingCurve::OutBack;
+    if (items.size() <= 1)
+        curve = QEasingCurve::OutQuad;
 
     // 从上往下的动画
     QPoint start_pos = mapFromGlobal(QCursor::pos());
+    if (start_pos.x() < 0)
+        start_pos.setX(0);
+    else if (start_pos.x() > width())
+        start_pos.setX(width());
+    if (start_pos.y() < 0)
+        start_pos.setY(0);
+    else if (start_pos.y() > height())
+        start_pos.setY(height());
+    if (items.size() >= 1)
+    {
+        if (start_pos.y() == 0) // 最顶上
+            start_pos.setY(-items.at(0)->height());
+        if (start_pos.x() == width()) // 最右边
+            start_pos.setX(width()/2);
+    }
     for (int i = 0; i < items.size(); i++)
     {
         InteractiveButtonBase* btn = items.at(i);
@@ -348,7 +366,7 @@ void FacileMenu::startAnimationOnShowed()
         QPropertyAnimation* ani = new QPropertyAnimation(btn, "pos");
         ani->setStartValue(start_pos);
         ani->setEndValue(btn->pos());
-        ani->setEasingCurve(QEasingCurve::OutBack);
+        ani->setEasingCurve(curve);
         ani->setDuration(300);
         connect(ani, SIGNAL(finished()), ani, SLOT(deleteLater()));
         connect(ani, &QPropertyAnimation::finished, btn, [=]{
