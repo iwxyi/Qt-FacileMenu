@@ -243,7 +243,17 @@ bool FacileMenu::isCursorInArea(QPoint pos, FacileMenu *child)
 {
     // 不在这范围内
     if (!geometry().contains(pos))
+    {
+        // 在自己的副菜单那里
+        if (isSubMenu() && parent_menu->isCursorInArea(pos, this)) // 如果这也是子菜单（已展开），则递归遍历父菜单
+        {
+            QTimer::singleShot(0, this, [=]{
+                close(); // 把自己也隐藏了
+            });
+            return true;
+        }
         return false;
+    }
     // 如果是正展开的这个子项按钮
     if (current_index > -1 && child && items.at(current_index)->subMenu() == child && items.at(current_index)->geometry().contains(mapFromGlobal(pos)))
         return false;
