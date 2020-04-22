@@ -66,6 +66,7 @@ public:
 
 private:
     QList<FacileMenuItem*> items;
+    QList<FacileMenuItem*> v_separators, h_separators;
     QVBoxLayout* main_vlayout;
     QList<QHBoxLayout*> chip_hlayouts;
     QPixmap bg_pixmap;

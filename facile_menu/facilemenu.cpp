@@ -240,7 +240,7 @@ FacileMenuItem *FacileMenu::addSeparator()
     item->setDisabled(true);
 
     main_vlayout->addWidget(item);
-    items.append(item);
+    h_separators.append(item);
 
     return item;
 }
@@ -258,7 +258,7 @@ FacileMenuItem *FacileMenu::addVSeparator()
     item->setDisabled(true);
 
     chip_hlayouts.last()->addWidget(item);
-//    items.append(item);
+    v_separators.append(item);
 
     return item;
 }
@@ -502,6 +502,38 @@ void FacileMenu::startAnimationOnShowed()
         });
         ani->start();
     }
+
+    // 分割线动画
+    foreach (auto item, h_separators + v_separators)
+        item->hide();
+    QTimer::singleShot(300, this, [=]{
+        for (int i = 0; i < h_separators.size(); i++)
+        {
+            InteractiveButtonBase* btn = h_separators.at(i);
+            btn->show();
+            btn->setMinimumSize(0, 0);
+            QPropertyAnimation* ani = new QPropertyAnimation(btn, "geometry");
+            ani->setStartValue(QRect(btn->geometry().center(), QSize(1,1)));
+            ani->setEndValue(btn->geometry());
+            ani->setEasingCurve(QEasingCurve::OutQuad);
+            ani->setDuration(300);
+            connect(ani, SIGNAL(finished()), ani, SLOT(deleteLater()));
+            ani->start();
+        }
+        for (int i = 0; i < v_separators.size(); i++)
+        {
+            InteractiveButtonBase* btn = v_separators.at(i);
+            btn->show();
+            btn->setMinimumSize(0, 0);
+            QPropertyAnimation* ani = new QPropertyAnimation(btn, "geometry");
+            ani->setStartValue(QRect(btn->geometry().center(), QSize(1,1)));
+            ani->setEndValue(btn->geometry());
+            ani->setEasingCurve(QEasingCurve::OutQuad);
+            ani->setDuration(300);
+            connect(ani, SIGNAL(finished()), ani, SLOT(deleteLater()));
+            ani->start();
+        }
+    });
 
     QTimer::singleShot(300, this, [=]{
         main_vlayout->setEnabled(true);
