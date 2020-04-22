@@ -33,10 +33,7 @@ public:
     void addTipArea(QString longestTip);
 
     void execute(QPoint pos = QPoint(-1, -1));
-    bool isCursorInArea(QPoint pos, FacileMenu* child = nullptr);
     void toHide(int focusIndex = -1);
-    void setKeyBoardUsed(bool use = true);
-    bool isSubMenu();
 
 signals:
     void signalActionTriggered(FacileMenuItem* action);
@@ -48,6 +45,9 @@ protected:
     Qt::Key getShortcutByText(QString text);
     void setActionButton(InteractiveButtonBase* btn, bool isChip = false);
     void showSubMenu(FacileMenuItem* item);
+    bool isCursorInArea(QPoint pos, FacileMenu* child = nullptr);
+    void setKeyBoardUsed(bool use = true);
+    bool isSubMenu();
     void startAnimationOnShowed();
     void startAnimationOnHidden(int focusIndex);
 

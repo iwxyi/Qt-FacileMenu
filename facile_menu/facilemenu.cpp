@@ -282,6 +282,12 @@ void FacileMenu::execute(QPoint pos)
         QPixmap pixmap = bg;
         QImage img = pixmap.toImage(); // img -blur-> painter(pixmap)
         QPainter painter( &pixmap );
+        // 填充半透明的背景颜色，避免太透
+        {
+            QColor bg_c(normal_bg);
+            bg_c.setAlpha(normal_bg.alpha() / 2);
+            painter.fillRect(0, 0, pixmap.width(), pixmap.height(), bg_c);
+        }
         qt_blurImage( &painter, img, radius, true, false );
         // 裁剪掉边缘（模糊后会有黑边）
         int c = qMin(bg.width(), bg.height());
@@ -296,45 +302,9 @@ void FacileMenu::execute(QPoint pos)
     startAnimationOnShowed();
 }
 
-bool FacileMenu::isCursorInArea(QPoint pos, FacileMenu *child)
-{
-    // 不在这范围内
-    if (!geometry().contains(pos))
-    {
-        // 在自己的副菜单那里
-        if (isSubMenu() && parent_menu->isCursorInArea(pos, this)) // 如果这也是子菜单（已展开），则递归遍历父菜单
-        {
-            QTimer::singleShot(0, this, [=]{
-                close(); // 把自己也隐藏了
-            });
-            return true;
-        }
-        return false;
-    }
-    // 如果是正展开的这个子项按钮
-    if (current_index > -1 && child && items.at(current_index)->subMenu() == child && items.at(current_index)->geometry().contains(mapFromGlobal(pos)))
-        return false;
-    // 在这个菜单内的其他按钮
-    return true;
-}
-
 void FacileMenu::toHide(int focusIndex)
 {
     startAnimationOnHidden(focusIndex);
-}
-
-void FacileMenu::setKeyBoardUsed(bool use)
-{
-    using_keyboard = use;
-    if (use && current_index == -1 && items.size()) // 还没有选中
-    {
-        items.at(current_index = 0)->simulateHover(); // 预先选中第一项
-    }
-}
-
-bool FacileMenu::isSubMenu()
-{
-    return parent_menu != nullptr;
 }
 
 Qt::Key FacileMenu::getShortcutByText(QString text)
@@ -407,6 +377,42 @@ void FacileMenu::showSubMenu(FacileMenuItem *item)
     }
     current_sub_menu->execute(pos);
     current_sub_menu->setKeyBoardUsed(using_keyboard);
+}
+
+bool FacileMenu::isCursorInArea(QPoint pos, FacileMenu *child)
+{
+    // 不在这范围内
+    if (!geometry().contains(pos))
+    {
+        // 在自己的副菜单那里
+        if (isSubMenu() && parent_menu->isCursorInArea(pos, this)) // 如果这也是子菜单（已展开），则递归遍历父菜单
+        {
+            QTimer::singleShot(0, this, [=]{
+                close(); // 把自己也隐藏了
+            });
+            return true;
+        }
+        return false;
+    }
+    // 如果是正展开的这个子项按钮
+    if (current_index > -1 && child && items.at(current_index)->subMenu() == child && items.at(current_index)->geometry().contains(mapFromGlobal(pos)))
+        return false;
+    // 在这个菜单内的其他按钮
+    return true;
+}
+
+void FacileMenu::setKeyBoardUsed(bool use)
+{
+    using_keyboard = use;
+    if (use && current_index == -1 && items.size()) // 还没有选中
+    {
+        items.at(current_index = 0)->simulateHover(); // 预先选中第一项
+    }
+}
+
+bool FacileMenu::isSubMenu()
+{
+    return parent_menu != nullptr;
 }
 
 /**
