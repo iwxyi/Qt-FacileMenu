@@ -140,6 +140,7 @@ FacileMenuItem *FacileMenu::addSeparator()
     item->setNormalColor(QColor(64, 64, 64, 64));
     item->setFixedHeight(1);
     item->setPaddings(32, 32, 0, 0);
+    item->setDisabled(true);
 
     main_vlayout->addWidget(item);
     items.append(item);
@@ -249,6 +250,11 @@ void FacileMenu::setKeyBoardUsed(bool use)
     }
 }
 
+bool FacileMenu::isSubMenu()
+{
+    return parent_menu != nullptr;
+}
+
 Qt::Key FacileMenu::getShortcutByText(QString text)
 {
     Qt::Key key = Qt::Key_Exit;
@@ -290,7 +296,7 @@ void FacileMenu::showSubMenu(FacileMenuItem *item)
 
     current_sub_menu = item->subMenu();
     QPoint pos(-1, -1);
-    if (using_keyboard)
+    if (using_keyboard) // 键盘模式，不是跟随鼠标位置来的
     {
         QRect avai = QApplication::desktop()->availableGeometry();
 
@@ -457,17 +463,32 @@ void FacileMenu::keyPressEvent(QKeyEvent *event)
 
     switch (key) {
     case Qt::Key_Up:
+    {
         if (current_index <= 0 || current_index >= items.size())
             current_index = items.size()-1;
         else
         {
             items.at(current_index--)->discardHoverPress(true);
-            if (current_index < 0)
-                current_index = 0;
+            if (current_index == -1)
+                current_index = items.size()-1;
         }
+        // 判断 item 是否被禁用
+        if (!items.at(current_index)->isEnabled())
+        {
+            int old_index = current_index;
+            do {
+                current_index--;
+                if (current_index < 0)
+                    current_index = items.size()-1;
+            } while (current_index != old_index && !items.at(current_index)->isEnabled());
+            if (current_index == old_index) // 如果绕了一圈都不能用，取消
+                return ;
+        }
+        // 找到真正的上一项
         items.at(current_index)->simulateHover();
         using_keyboard = true;
-        break;
+        return ;
+    }
     case Qt::Key_Down:
         if (current_index < 0 || current_index >= items.size())
             current_index = 0;
@@ -475,23 +496,71 @@ void FacileMenu::keyPressEvent(QKeyEvent *event)
         {
             items.at(current_index++)->discardHoverPress(true);
             if (current_index >= items.size())
-                current_index = items.size()-1;
+                current_index = 0;
         }
+        // 判断 item 是否被禁用
+        if (!items.at(current_index)->isEnabled())
+        {
+            int old_index = current_index;
+            do {
+                current_index++;
+                if (current_index >= items.size())
+                    current_index = 0;
+            } while (current_index != old_index && !items.at(current_index)->isEnabled());
+            if (current_index == old_index) // 如果绕了一圈都不能用，取消
+                return ;
+        }
+        // 找到真正的上一项
         items.at(current_index)->simulateHover();
         using_keyboard = true;
-        break;
+        return ;
     case Qt::Key_Left:
-        break;
+        // 移动到左边按钮
+        if (current_index > 0 && items.at(current_index-1)->pos().y() == items.at(current_index)->pos().y())
+        {
+            items.at(current_index--)->discardHoverPress(true);
+            items.at(current_index)->setHover();
+            using_keyboard = true;
+        }
+        // 退出子菜单
+        else if (isSubMenu())
+            toHide();
+        return ;
     case Qt::Key_Right:
-        break;
+        // 移动到右边按钮
+        if (current_index < items.size()-1 && items.at(current_index+1)->pos().y() == items.at(current_index)->pos().y())
+        {
+            items.at(current_index++)->discardHoverPress(true);
+            items.at(current_index)->setHover();
+            using_keyboard = true;
+        }
+        // 展开子菜单
+        else if (current_index >= 0 && current_index < items.size() && items.at(current_index)->isSubMenu())
+        {
+            showSubMenu(items.at(current_index));
+        }
+        return ;
     case Qt::Key_Home:
-        break;
+        if (current_index >= 0 || current_index < items.size())
+            items.at(current_index)->discardHoverPress(true);
+        items.at(current_index = 0)->simulateHover();
+        using_keyboard = true;
+        return ;
     case Qt::Key_End:
-        break;
+        if (current_index >= 0 || current_index < items.size())
+            items.at(current_index)->discardHoverPress(true);
+        items.at(current_index = items.size())->simulateHover();
+        using_keyboard = true;
+        return ;
     case Qt::Key_Enter:
     case Qt::Key_Return:
     case Qt::Key_Space:
-        break;
+        if (current_index >= 0 || current_index < items.size())
+        {
+            auto item = items.at(current_index);
+            item->simulateStatePress(!item->getState(), false);
+        }
+        return ;
     }
 
     return QWidget::keyPressEvent(event);

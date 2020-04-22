@@ -32,6 +32,7 @@ public:
     bool isCursorInArea(QPoint pos, FacileMenu* child = nullptr);
     void toHide(int focusIndex = -1);
     void setKeyBoardUsed(bool use = true);
+    bool isSubMenu();
 
 signals:
     void signalActionTriggered(FacileMenuItem* action);
