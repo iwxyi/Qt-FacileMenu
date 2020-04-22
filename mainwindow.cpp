@@ -151,7 +151,7 @@ void MainWindow::on_pushButton_2_clicked()
     menu->addChipLayout();
     menu->addChip("按钮1")->disable();
     menu->addChip("按钮2")->disable();
-    menu->addChip("按钮3")->disable();
+    menu->addChip("按钮3");
 
     menu->addAction(QIcon(":/icons/run"), "开始播放 (&S)", [=]{
         qDebug() << "=>开始播放";

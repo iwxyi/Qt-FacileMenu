@@ -777,13 +777,17 @@ void FacileMenu::keyPressEvent(QKeyEvent *event)
             // 找到左边第一项能点击的按钮；如果没有，宁可移动到上几行
             if (!items.at(current_index)->isEnabled())
             {
+                int y = items.at(current_index)->pos().y();
                 int ori_index = current_index;
-                while (--current_index >= 0 && !items.at(current_index)->isEnabled()) ;
+                /*while (--current_index >= 0 && !items.at(current_index)->isEnabled()) ;
                 if (current_index == -1) // 前面没有能选的了
                 {
                     current_index = ori_index + 1; // 恢复到之前选择的那一项
                     return ;
-                }
+                }*/
+                while (--current_index >= 0 && !items.at(current_index)->isEnabled() && items.at(current_index)->pos().y() == y) ;
+                if (current_index < 0 || items.at(current_index)->pos().y() != y) // 前面没有能选的了
+                    current_index = ori_index + 1; // 恢复到之前选择的那一项
             }
             // 聚焦到这个能点的按钮
             items.at(current_index)->simulateHover();
@@ -801,13 +805,17 @@ void FacileMenu::keyPressEvent(QKeyEvent *event)
             // 找到右边第一项能点击的按钮；如果没有，宁可移动到下几行
             if (!items.at(current_index)->isEnabled())
             {
+                int y = items.at(current_index)->pos().y();
                 int ori_index = current_index;
-                while (++current_index < items.size() && !items.at(current_index)->isEnabled()) ;
+                /*while (++current_index < items.size() && !items.at(current_index)->isEnabled()) ;
                 if (current_index == items.size()) // 后面没有能选的了
                 {
                     current_index = ori_index - 1; // 恢复到之前选择的那一项
                     return ;
-                }
+                }*/
+                while (++current_index < items.size() && !items.at(current_index)->isEnabled() && items.at(current_index)->pos().y() == y) ;
+                if (current_index == items.size() || items.at(current_index)->pos().y() != y) // 后面没有能选的了
+                    current_index = ori_index - 1; // 恢复到之前选择的那一项
             }
             // 聚焦到这个能点的按钮
             items.at(current_index)->simulateHover();
