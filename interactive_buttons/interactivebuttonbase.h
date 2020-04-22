@@ -209,6 +209,7 @@ public:
     virtual void simulateStatePress(bool s = true, bool a = false);
     bool isHovering() { return hovering; }
     bool isPressing() { return pressing; }
+    void simulateHover();
     void discardHoverPress(bool force = false);
 
     bool getSelfEnabled() { return self_enabled; }

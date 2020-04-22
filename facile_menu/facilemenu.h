@@ -31,6 +31,7 @@ public:
     void execute(QPoint pos = QPoint(-1, -1));
     bool isCursorInArea(QPoint pos, FacileMenu* child = nullptr);
     void toHide(int focusIndex = -1);
+    void setKeyBoardUsed(bool use = true);
 
 signals:
     void signalActionTriggered(FacileMenuItem* action);
@@ -65,9 +66,10 @@ private:
     FacileMenu* current_sub_menu = nullptr; // 当前打开（不一定显示）的子菜单
     FacileMenu* parent_menu = nullptr; // 父类的菜单
 
-    int addin_tip_area = 0;
+    int addin_tip_area = 0; // 右边用来显示提示文字的区域
     bool _showing_animation = false;
     int current_index = -1; // 当前索引
+    bool using_keyboard = false; // 是否正在使用键盘挑选菜单
 };
 
 #endif // FACILEMENU_H

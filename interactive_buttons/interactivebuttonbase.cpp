@@ -983,6 +983,21 @@ void InteractiveButtonBase::simulateStatePress(bool s, bool a)
 }
 
 /**
+ * 模拟鼠标悬浮的效果
+ * 适用于键盘操作时，模拟鼠标hover状态
+ * 用 discardHoverPress 取消状态
+ */
+void InteractiveButtonBase::simulateHover()
+{
+    if (!hovering)
+    {
+        if (_block_hover)
+            setBlockHover(false); // 可能已经临时屏蔽掉鼠标 enter 事件，强制hover
+        enterEvent(nullptr);
+    }
+}
+
+/**
  * 强制丢弃hover、press状态
  * 适用于悬浮/点击后，弹出模态浮窗
  * 浮窗关闭后调用此方法
@@ -1011,7 +1026,8 @@ void InteractiveButtonBase::enterEvent(QEvent *event)
 {
     if (_block_hover) // 临时屏蔽hover事件
     {
-        event->accept();
+        if (event)
+            event->accept();
         return ;
     }
 
@@ -1163,7 +1179,8 @@ void InteractiveButtonBase::mouseMoveEvent(QMouseEvent *event)
 {
     if (_block_hover) // 临时屏蔽hover事件
     {
-        event->accept();
+        if (event)
+            event->accept();
         return ;
     }
     if (hovering == false) // 失去焦点又回来了

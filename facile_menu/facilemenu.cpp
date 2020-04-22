@@ -52,13 +52,16 @@ FacileMenuItem *FacileMenu::addAction(QIcon icon, QString text, FuncType func)
         toHide(items.indexOf(item));
     });
     connect(item, &InteractiveButtonBase::signalMouseEnter, this, [=]{
-        current_index = items.indexOf(item);
+        int index = items.indexOf(item);
+        if (using_keyboard && current_index > -1 && current_index < items.size() && current_index != index) // 屏蔽键盘操作
+            items.at(current_index)->discardHoverPress(true);
+        current_index = index;
 
-       if (current_sub_menu) // 进入这个action，展开的子菜单隐藏起来
-       {
+        if (current_sub_menu) // 进入这个action，展开的子菜单隐藏起来
+        {
            current_sub_menu->hide();
            current_sub_menu = nullptr;
-       }
+        }
     });
     return item;
 }
@@ -102,7 +105,10 @@ FacileMenu *FacileMenu::addMenu(QIcon icon, QString text, FuncType func)
     }
 
     connect(item, &InteractiveButtonBase::signalMouseEnterLater, [=]{
-        current_index = items.indexOf(item);
+        int index = items.indexOf(item);
+        if (using_keyboard && current_index > -1 && current_index < items.size() && current_index != index) // 屏蔽键盘操作
+            items.at(current_index)->discardHoverPress(true);
+        current_index = index;
 
         // 显示子菜单
         showSubMenu(item);
@@ -161,8 +167,7 @@ void FacileMenu::execute(QPoint pos)
     main_vlayout->activate(); // 先调整所有控件大小
 
     // 获取屏幕大小
-    QDesktopWidget* desktop = QApplication::desktop();
-    QRect avai = desktop->availableGeometry();
+    QRect avai = QApplication::desktop()->availableGeometry();
     // 如果超过范围，则调整位置
     if (pos.x() >= width() && pos.x() + width() > avai.width())
         pos.setX(pos.x() - width());
@@ -235,6 +240,15 @@ void FacileMenu::toHide(int focusIndex)
     startAnimationOnHidden(focusIndex);
 }
 
+void FacileMenu::setKeyBoardUsed(bool use)
+{
+    using_keyboard = use;
+    if (use && current_index == -1 && items.size()) // 还没有选中
+    {
+        items.at(current_index = 0)->simulateHover(); // 预先选中第一项
+    }
+}
+
 Qt::Key FacileMenu::getShortcutByText(QString text)
 {
     Qt::Key key = Qt::Key_Exit;
@@ -275,7 +289,24 @@ void FacileMenu::showSubMenu(FacileMenuItem *item)
     }
 
     current_sub_menu = item->subMenu();
-    current_sub_menu->execute();
+    QPoint pos(-1, -1);
+    if (using_keyboard)
+    {
+        QRect avai = QApplication::desktop()->availableGeometry();
+
+        // 键盘模式，相对于点击项的右边
+        QPoint tl = mapToGlobal(item->pos());
+        if (tl.x() + item->width() + current_sub_menu->width() < avai.width())
+            pos.setX(tl.x() + item->width());
+        else
+            pos.setX(tl.x() - current_sub_menu->width());
+        if (tl.y() + current_sub_menu->height() < avai.height())
+            pos.setY(tl.y());
+        else
+            pos.setY(tl.y() - current_sub_menu->height());
+    }
+    current_sub_menu->execute(pos);
+    current_sub_menu->setKeyBoardUsed(using_keyboard);
 }
 
 /**
@@ -399,6 +430,13 @@ void FacileMenu::mouseMoveEvent(QMouseEvent *event)
         this->hide();
         parent_menu->setFocus();
     }
+
+    if (using_keyboard)
+    {
+        using_keyboard = false;
+        if (current_index >= 0 && current_index <= items.size())
+            items.at(current_index)->discardHoverPress(false);
+    }
 }
 
 void FacileMenu::keyPressEvent(QKeyEvent *event)
@@ -408,9 +446,52 @@ void FacileMenu::keyPressEvent(QKeyEvent *event)
     {
         if (item->isKey((Qt::Key)key))
         {
-            item->simulateStatePress();
-            break;
+            item->simulateStatePress(); // 确定是这个action的快捷键
+            return ;
         }
+    }
+
+    // 菜单按键响应
+    if (event->modifiers() != Qt::NoModifier || items.size() == 0)
+        return QWidget::keyPressEvent(event);
+
+    switch (key) {
+    case Qt::Key_Up:
+        if (current_index <= 0 || current_index >= items.size())
+            current_index = items.size()-1;
+        else
+        {
+            items.at(current_index--)->discardHoverPress(true);
+            if (current_index < 0)
+                current_index = 0;
+        }
+        items.at(current_index)->simulateHover();
+        using_keyboard = true;
+        break;
+    case Qt::Key_Down:
+        if (current_index < 0 || current_index >= items.size())
+            current_index = 0;
+        else
+        {
+            items.at(current_index++)->discardHoverPress(true);
+            if (current_index >= items.size())
+                current_index = items.size()-1;
+        }
+        items.at(current_index)->simulateHover();
+        using_keyboard = true;
+        break;
+    case Qt::Key_Left:
+        break;
+    case Qt::Key_Right:
+        break;
+    case Qt::Key_Home:
+        break;
+    case Qt::Key_End:
+        break;
+    case Qt::Key_Enter:
+    case Qt::Key_Return:
+    case Qt::Key_Space:
+        break;
     }
 
     return QWidget::keyPressEvent(event);
