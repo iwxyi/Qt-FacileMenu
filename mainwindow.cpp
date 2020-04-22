@@ -50,6 +50,11 @@ void MainWindow::on_pushButton_clicked()
         slower_checked = !slower_checked;
     })->setChecked(slower_checked);
 
+    menu->addChipLayout();
+    menu->addChip("按钮1");
+    menu->addChip("按钮2");
+    menu->addChip("按钮3");
+
     auto subMenu = menu->addMenu("子菜单0");
     {
         subMenu->addAction(QIcon(":/icons/run"), "开始播放", [=]{

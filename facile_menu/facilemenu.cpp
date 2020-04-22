@@ -71,6 +71,63 @@ FacileMenuItem *FacileMenu::addAction(QString text, FuncType func)
     return addAction(QIcon(), text, func);
 }
 
+void FacileMenu::addChipLayout()
+{
+    QHBoxLayout* layout = new QHBoxLayout;
+    chip_hlayouts.append(layout);
+    main_vlayout->addLayout(layout);
+}
+
+/**
+ * 添加小部件
+ */
+FacileMenuItem *FacileMenu::addChip(QIcon icon, QString text, FuncType func)
+{
+    auto key = getShortcutByText(text);
+    text.replace("&", "");
+    FacileMenuItem* item = new FacileMenuItem(icon, text, this);
+    item->setKey(key);
+
+    setActionButton(item, true);
+    if (chip_hlayouts.size())
+        chip_hlayouts.last()->addWidget(item);
+    else
+        main_vlayout->addWidget(item);
+    items.append(item);
+
+    if (func != nullptr)
+    {
+        connect(item, &InteractiveButtonBase::clicked, this, [=]{
+            func();
+            emit signalActionTriggered(item);
+            toHide(items.indexOf(item));
+        });
+    }
+    connect(item, &InteractiveButtonBase::signalMouseEnter, this, [=]{
+        int index = items.indexOf(item);
+        if (using_keyboard && current_index > -1 && current_index < items.size() && current_index != index) // 屏蔽键盘操作
+            items.at(current_index)->discardHoverPress(true);
+        current_index = index;
+
+        if (current_sub_menu) // 进入这个action，展开的子菜单隐藏起来
+        {
+           current_sub_menu->hide();
+           current_sub_menu = nullptr;
+        }
+    });
+    return item;
+}
+
+FacileMenuItem *FacileMenu::addChip(QIcon icon, FuncType func)
+{
+    return addChip(icon, "", func);
+}
+
+FacileMenuItem *FacileMenu::addChip(QString text, FuncType func)
+{
+    return addChip(QIcon(), text, func);
+}
+
 /**
  * 添加一项子菜单
  * 鼠标浮在上面展开
@@ -298,10 +355,22 @@ Qt::Key FacileMenu::getShortcutByText(QString text)
     return key;
 }
 
-void FacileMenu::setActionButton(InteractiveButtonBase *btn)
+/**
+ * 统一设置Action按钮（尺寸、颜色等）
+ * @param btn     按钮
+ * @param isChip  是否是小按钮（一行多个，右边不用空白）
+ */
+void FacileMenu::setActionButton(InteractiveButtonBase *btn, bool isChip)
 {
     // 设置尺寸
-    btn->setPaddings(8, 48 + addin_tip_area, 8, 8);
+    if (isChip)
+    {
+        btn->setPaddings(8, 8, 8, 8);
+    }
+    else
+    {
+        btn->setPaddings(8, 48 + addin_tip_area, 8, 8);
+    }
 
     // 设置颜色
     btn->setNormalColor(Qt::transparent);

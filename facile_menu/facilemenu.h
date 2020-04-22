@@ -22,6 +22,10 @@ public:
 
     FacileMenuItem* addAction(QIcon icon, QString text, FuncType func = []{});
     FacileMenuItem* addAction(QString text, FuncType func = []{});
+    void addChipLayout();
+    FacileMenuItem* addChip(QIcon icon, QString text, FuncType func = nullptr);
+    FacileMenuItem* addChip(QIcon icon, FuncType func = nullptr);
+    FacileMenuItem* addChip(QString text, FuncType func = nullptr);
     FacileMenu* addMenu(QIcon icon, QString text, FuncType func = nullptr);
     FacileMenu* addMenu(QString text, FuncType func = nullptr);
     FacileMenuItem* addSeparator();
@@ -42,7 +46,7 @@ public slots:
 
 protected:
     Qt::Key getShortcutByText(QString text);
-    void setActionButton(InteractiveButtonBase* btn);
+    void setActionButton(InteractiveButtonBase* btn, bool isChip = false);
     void showSubMenu(FacileMenuItem* item);
     void startAnimationOnShowed();
     void startAnimationOnHidden(int focusIndex);
@@ -62,6 +66,7 @@ public:
 private:
     QList<FacileMenuItem*> items;
     QVBoxLayout* main_vlayout;
+    QList<QHBoxLayout*> chip_hlayouts;
     QPixmap bg_pixmap;
 
     FacileMenu* current_sub_menu = nullptr; // 当前打开（不一定显示）的子菜单
