@@ -55,7 +55,7 @@ bool FacileMenuItem::isSubMenu()
     return sub_menu != nullptr;
 }
 
-FacileMenuItem *FacileMenuItem::addShortcutTip(QString sc)
+FacileMenuItem *FacileMenuItem::tip(QString sc)
 {
     shortcut_tip = sc;
     return this;
@@ -69,9 +69,45 @@ FacileMenuItem *FacileMenuItem::triggered(FuncType func)
     return this;
 }
 
-FacileMenuItem *FacileMenuItem::disable()
+FacileMenuItem *FacileMenuItem::disable(bool dis)
 {
-    setDisabled(true);
+    if (dis)
+        setDisabled(true);
+    return this;
+}
+
+FacileMenuItem *FacileMenuItem::enable(bool en)
+{
+    if (en)
+        setEnabled(true);
+    return this;
+}
+
+FacileMenuItem *FacileMenuItem::hide(bool hi)
+{
+    if (hi)
+        InteractiveButtonBase::hide();
+    return this;
+}
+
+FacileMenuItem *FacileMenuItem::visible(bool vi)
+{
+    if (vi)
+        InteractiveButtonBase::setVisible(true);
+    return this;
+}
+
+FacileMenuItem *FacileMenuItem::text(bool te, QString str)
+{
+    if (te)
+        setText(str);
+    return this;
+}
+
+FacileMenuItem *FacileMenuItem::icon(bool ic, QIcon icon)
+{
+    if (ic)
+        setIcon(icon);
     return this;
 }
 

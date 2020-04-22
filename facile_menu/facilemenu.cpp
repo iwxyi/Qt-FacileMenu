@@ -75,11 +75,12 @@ FacileMenuItem *FacileMenu::addAction(QString text, FuncType func)
     return addAction(QIcon(), text, func);
 }
 
-void FacileMenu::addChipLayout()
+FacileMenu *FacileMenu::addChipLayout()
 {
     QHBoxLayout* layout = new QHBoxLayout;
     chip_hlayouts.append(layout);
     main_vlayout->addLayout(layout);
+    return this;
 }
 
 /**
@@ -245,11 +246,17 @@ FacileMenuItem *FacileMenu::addSeparator()
     return item;
 }
 
+FacileMenu *FacileMenu::split()
+{
+    addSeparator();
+    return this;
+}
+
 /**
  * 一行有多个按钮时的竖向分割线
  * 只有添加chip前有效
  */
-FacileMenuItem *FacileMenu::addVSeparator()
+FacileMenu *FacileMenu::addVSeparator()
 {
     FacileMenuItem* item = new FacileMenuItem(this);
     item->setNormalColor(QColor(64, 64, 64, 64));
@@ -260,7 +267,7 @@ FacileMenuItem *FacileMenu::addVSeparator()
     chip_hlayouts.last()->addWidget(item);
     v_separators.append(item);
 
-    return item;
+    return this;
 }
 
 void FacileMenu::addTipArea(int x)
@@ -323,7 +330,6 @@ void FacileMenu::execute(QPoint pos)
         QT_END_NAMESPACE
 
         QPixmap pixmap = bg;
-        QImage img = pixmap.toImage(); // img -blur-> painter(pixmap)
         QPainter painter( &pixmap );
         // 填充半透明的背景颜色，避免太透
         {
@@ -331,6 +337,7 @@ void FacileMenu::execute(QPoint pos)
             bg_c.setAlpha(normal_bg.alpha() / 2);
             painter.fillRect(0, 0, pixmap.width(), pixmap.height(), bg_c);
         }
+        QImage img = pixmap.toImage(); // img -blur-> painter(pixmap)
         qt_blurImage( &painter, img, radius, true, false );
         // 裁剪掉边缘（模糊后会有黑边）
         int c = qMin(bg.width(), bg.height());

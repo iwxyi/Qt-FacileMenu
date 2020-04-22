@@ -22,13 +22,14 @@ public:
 
     FacileMenuItem* addAction(QIcon icon, QString text, FuncType func = []{});
     FacileMenuItem* addAction(QString text, FuncType func = []{});
-    void addChipLayout();
+    FacileMenu* addChipLayout();
     FacileMenuItem* addChip(QIcon icon, QString text, FuncType func = nullptr);
     FacileMenuItem* addChip(QIcon icon, FuncType func = nullptr);
     FacileMenuItem* addChip(QString text, FuncType func = nullptr);
     FacileMenu* addMenu(QIcon icon, QString text, FuncType func = nullptr);
     FacileMenu* addMenu(QString text, FuncType func = nullptr);
     FacileMenuItem* addSeparator();
+    FacileMenu* split();
     void addTipArea(int x = 48);
     void addTipArea(QString longestTip);
 
@@ -48,7 +49,7 @@ protected:
     bool isCursorInArea(QPoint pos, FacileMenu* child = nullptr);
     void setKeyBoardUsed(bool use = true);
     bool isSubMenu();
-    FacileMenuItem* addVSeparator();
+    FacileMenu* addVSeparator();
     void startAnimationOnShowed();
     void startAnimationOnHidden(int focusIndex);
 

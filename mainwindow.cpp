@@ -24,19 +24,19 @@ void MainWindow::on_pushButton_clicked()
 
     menu->addAction(QIcon(":/icons/run"), "开始播放 (&S)", [=]{
         qDebug() << "=>开始播放";
-    })->addShortcutTip("Ctrl+S");
+    })->tip("Ctrl+S");
 
     menu->addAction(QIcon(":/icons/pause"), "暂停 (&P)", [=]{
         qDebug() << "=>暂停";
-    })->addShortcutTip("Ctrl+P");
+    })->tip("Ctrl+P");
 
     menu->addAction(QIcon(":/icons/resume"), "继续 (&R)", [=]{
         qDebug() << "=>继续";
-    })->disable()->addShortcutTip("Ctrl+R");
+    })->disable()->tip("Ctrl+R");
 
     menu->addAction(QIcon(":/icons/stop"), "停止 (&T)", [=]{
         qDebug() << "=>停止";
-    })->addShortcutTip("Ctrl+T");
+    })->tip("Ctrl+T");
     menu->addSeparator();
 
     menu->addAction(QIcon(":/icons/faster"), "加速", [=]{
@@ -155,19 +155,19 @@ void MainWindow::on_pushButton_2_clicked()
 
     menu->addAction(QIcon(":/icons/run"), "开始播放 (&S)", [=]{
         qDebug() << "=>开始播放";
-    })->addShortcutTip("Ctrl+S");
+    })->tip("Ctrl+S");
 
     menu->addAction(QIcon(":/icons/pause"), "暂停 (&P)", [=]{
         qDebug() << "=>暂停";
-    })->addShortcutTip("Ctrl+P");
+    })->tip("Ctrl+P");
 
     menu->addAction(QIcon(":/icons/resume"), "继续 (&R)", [=]{
         qDebug() << "=>继续";
-    })->disable()->addShortcutTip("Ctrl+R");
+    })->disable()->tip("Ctrl+R");
 
     menu->addAction(QIcon(":/icons/stop"), "停止 (&T)", [=]{
         qDebug() << "=>停止";
-    })->addShortcutTip("Ctrl+T");
+    })->tip("Ctrl+T");
     menu->addSeparator();
 
     menu->addAction(QIcon(":/icons/faster"), "加速", [=]{

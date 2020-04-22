@@ -21,9 +21,17 @@ public:
     bool isKey(Qt::Key key);
     FacileMenuItem* setSubMenu(FacileMenu* menu);
     bool isSubMenu();
-    FacileMenuItem* addShortcutTip(QString sc);
+
+    FacileMenuItem* tip(QString sc);
     FacileMenuItem* triggered(FuncType func);
-    FacileMenuItem* disable();
+
+    FacileMenuItem* disable(bool dis = true); // 特定情况下触发
+    FacileMenuItem* enable(bool en = true);
+    FacileMenuItem* hide(bool hi = true);
+    FacileMenuItem* visible(bool vi = true);
+    FacileMenuItem* text(bool te, QString str);
+    FacileMenuItem* icon(bool ic, QIcon icon);
+
     FacileMenu* subMenu();
 
 protected:
