@@ -181,9 +181,10 @@ void MainWindow::on_pushButton_2_clicked()
     })->setChecked(slower_checked);
 
     menu->addChipLayout();
-    menu->addChip("按钮1");
-    menu->addChip("按钮2");
-    menu->addChip("按钮3")->disable();
+    menu->addChip(QIcon(":/icons/run"));
+    menu->addChip(QIcon(":/icons/pause"));
+    menu->addChip(QIcon(":/icons/resume"));
+    menu->addChip(QIcon(":/icons/stop"))->disable();
 
     menu->addAction(QIcon(":/icons/faster"), "加速", [=]{
         qDebug() << "=>加速";

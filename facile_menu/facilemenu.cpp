@@ -108,6 +108,8 @@ FacileMenuItem *FacileMenu::addChip(QIcon icon, QString text, FuncType func)
     FacileMenuItem* item;
     if (icon.isNull())
         item =  new FacileMenuItem(text, this);
+    else if (text.isEmpty())
+        item = new FacileMenuItem(icon, this);
     else
         item =  new FacileMenuItem(icon, text, this);
     item->setKey(key);
@@ -412,6 +414,10 @@ void FacileMenu::setActionButton(InteractiveButtonBase *btn, bool isChip)
     btn->setHoverColor(hover_bg);
     btn->setPressColor(press_bg);
     btn->setTextColor(text_fg);
+
+    QFont font(btn->font());
+    font.setWeight(QFont::Medium);
+    btn->setFont(font);
 }
 
 void FacileMenu::showSubMenu(FacileMenuItem *item)

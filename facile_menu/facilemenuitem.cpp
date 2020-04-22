@@ -10,6 +10,11 @@ FacileMenuItem::FacileMenuItem(QString t, QWidget *parent) : InteractiveButtonBa
 
 }
 
+FacileMenuItem::FacileMenuItem(QIcon i, QWidget *parent) : InteractiveButtonBase(i, parent)
+{
+
+}
+
 FacileMenuItem::FacileMenuItem(QIcon i, QString t, QWidget *parent) : InteractiveButtonBase(i, t, parent)
 {
 

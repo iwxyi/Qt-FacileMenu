@@ -12,6 +12,7 @@ class FacileMenuItem : public InteractiveButtonBase
 public:
     FacileMenuItem(QWidget* parent = nullptr);
     FacileMenuItem(QString t, QWidget* parent = nullptr);
+    FacileMenuItem(QIcon i, QWidget* parent = nullptr);
     FacileMenuItem(QIcon i, QString t, QWidget* parent = nullptr);
     FacileMenuItem(QPixmap p, QString t, QWidget* parent = nullptr);
 
