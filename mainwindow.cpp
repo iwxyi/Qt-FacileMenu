@@ -121,6 +121,10 @@ void MainWindow::on_pushButton_clicked()
             qDebug() << "=>选中3";
         })->setChecked(true)->linger();
 
+        auto ac4 = subMenu2->addAction("选中4", [=]{
+            qDebug() << "=>选中4";
+        })->setChecked(true)->linger();
+
         ac1->triggered([=]{
             subMenu2->uncheckAll(ac1);
         });
@@ -129,6 +133,9 @@ void MainWindow::on_pushButton_clicked()
         });
         ac3->triggered([=]{
             subMenu2->uncheckAll(ac3);
+        });
+        ac4->triggered([=]{
+            subMenu2->uncheckAll(ac4);
         });
     }
 

@@ -34,11 +34,13 @@ FacileMenuItem *FacileMenuItem::setChecked(bool c)
 {
     checkable = true;
     _state = c;
+    if (InteractiveButtonBase::icon.isNull())
+        model = IconText; // 强制显示check空白部分
     update();
     return this;
 }
 
-bool FacileMenuItem::isChecked()
+inline bool FacileMenuItem::isChecked()
 {
     return getState();
 }
@@ -132,7 +134,10 @@ FacileMenuItem *FacileMenuItem::text(bool te, QString str)
 {
     if (te)
     {
+        // 去掉快捷键符号
+        // 注意：这里设置文字不会改变原来的快捷键！
         setText(str.replace(QRegExp("&([\\w\\d])\\b"), "\\1"));
+        // 调整大小
         setFixedForeSize();
     }
     return this;
@@ -190,19 +195,30 @@ void FacileMenuItem::drawIconBeforeText(QPainter &painter, QRect icon_rect)
     if (checkable)
     {
         QPainterPath path;
-        path.addRoundedRect(icon_rect, 3, 3);
-        if (getState())
+        QRect expand_rect = icon_rect;
+        expand_rect.adjust(-2, -2, 2, 2);
+        path.addRoundedRect(expand_rect, 3, 3);
+        if (InteractiveButtonBase::icon.isNull())
         {
-            // 绘制选中样式： 圆角矩形
-            painter.fillPath(path, press_bg);
+            // 绘制√
+            if (isChecked())
+                painter.drawText(icon_rect, "√");
         }
-        else
+        else // 有图标，使用
         {
-            // 绘制未选中样式：空白边框
-            painter.save();
-            painter.setPen(QPen(press_bg, 1));
-            painter.drawPath(path);
-            painter.restore();
+            if (getState())
+            {
+                // 绘制选中样式： 圆角矩形
+                painter.fillPath(path, press_bg);
+            }
+            else
+            {
+                // 绘制未选中样式：空白边框
+                painter.save();
+                painter.setPen(QPen(press_bg, 1));
+                painter.drawPath(path);
+                painter.restore();
+            }
         }
     }
 
