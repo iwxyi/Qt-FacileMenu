@@ -143,14 +143,14 @@ void MainWindow::on_pushButton_clicked()
         });
     }
 
-    auto subMenu4 = menu->addMenu("子菜单3");
-    {
-        subMenu4->addAction(QIcon(":/icons/faster"), "加速", [=]{
-            qDebug() << "=>加速";
-            faster_checked = !faster_checked;
-        })->setChecked(faster_checked);
-    }
-
+    auto subMenu4 = menu->addMenu("批量菜单");
+    QStringList texts;
+    for (int i = 0; i < 10; i++)
+        texts << "项目"+QString::number(i);
+    static int selected = 2;
+    subMenu4->addOptions(texts, selected, [=](int index){
+        qDebug() << "选中了：" << (selected = index);
+    });
 
     menu->exec(QCursor::pos());
 }

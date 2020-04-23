@@ -139,6 +139,21 @@ ac3->triggered([=]{
 
 
 
+### 批量添加单选项
+
+```C++
+QStringList texts;
+for (int i = 0; i < 10; i++)
+    texts << "项目"+QString::number(i);
+static int selected = 2;
+
+menu->addOptions(texts, selected, [=](int index){
+    qDebug() << "选中了：" << (selected = index);
+});
+```
+
+
+
 
 
 ## 截图

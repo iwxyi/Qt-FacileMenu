@@ -259,6 +259,38 @@ FacileMenu *FacileMenu::addLayout(QLayout *layout)
 }
 
 /**
+ * 添加可选菜单，快速添加多个选项
+ * @param texts  文字
+ * @param states 选中状态
+ * @param func   回调
+ * @return
+ */
+FacileMenu *FacileMenu::addOptions(QList<QString> texts, QList<bool> states, FuncIntType func)
+{
+    int si = qMin(texts.size(), states.size());
+    for (int i = 0; i < si; i++)
+    {
+        addAction(texts.at(i), [=]{
+            func(i);
+        })->check(states.at(i));
+    }
+
+    return this;
+}
+
+FacileMenu *FacileMenu::addOptions(QList<QString> texts, int select, FuncIntType func)
+{
+    QList<bool>states;
+    for (int i = 0; i < texts.size(); i++)
+        states << false;
+
+    if (select >= 0 && select < states.size())
+        states[select] = true;
+
+    return addOptions(texts, states, func);
+}
+
+/**
  * 添加水平分割线
  */
 FacileMenuItem *FacileMenu::addSeparator()

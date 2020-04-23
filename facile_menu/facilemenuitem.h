@@ -4,6 +4,7 @@
 #include "interactivebuttonbase.h"
 
 typedef std::function<void()> const FuncType;
+typedef std::function<void(int)> const FuncIntType;
 
 class FacileMenu;
 

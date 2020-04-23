@@ -126,6 +126,8 @@ FacileMenuItem *FacileMenuItem::check(bool ch)
     setCheckable(true);
     if (ch)
         setChecked(true);
+    else if (InteractiveButtonBase::icon.isNull())
+        model = IconText; // 强制显示check空白部分
     return this;
 }
 

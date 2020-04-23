@@ -40,6 +40,9 @@ public:
     FacileMenu* addWidget(QWidget* widget);
     FacileMenu* addLayout(QLayout* layout);
 
+    FacileMenu* addOptions(QList<QString>texts, QList<bool>states, FuncIntType func);
+    FacileMenu* addOptions(QList<QString>texts, int select, FuncIntType func);
+
     FacileMenuItem* addSeparator();
     FacileMenu* split();
 
