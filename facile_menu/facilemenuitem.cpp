@@ -25,6 +25,11 @@ FacileMenuItem::FacileMenuItem(QPixmap p, QString t, QWidget *parent) : Interact
 
 }
 
+bool FacileMenuItem::isCheckable() const
+{
+    return checkable;
+}
+
 FacileMenuItem *FacileMenuItem::setChecked(bool c)
 {
     checkable = true;
@@ -44,7 +49,7 @@ FacileMenuItem *FacileMenuItem::setKey(Qt::Key key)
     return this;
 }
 
-bool FacileMenuItem::isKey(Qt::Key key)
+bool FacileMenuItem::isKey(Qt::Key key) const
 {
     return key == this->key;
 }
@@ -55,9 +60,14 @@ FacileMenuItem *FacileMenuItem::setSubMenu(FacileMenu *menu)
     return this;
 }
 
-bool FacileMenuItem::isSubMenu()
+bool FacileMenuItem::isSubMenu() const
 {
     return sub_menu != nullptr;
+}
+
+bool FacileMenuItem::isLinger() const
+{
+    return trigger_linger;
 }
 
 FacileMenuItem *FacileMenuItem::tip(QString sc)
@@ -102,18 +112,42 @@ FacileMenuItem *FacileMenuItem::visible(bool vi)
     return this;
 }
 
-FacileMenuItem *FacileMenuItem::text(bool te, QString str)
+FacileMenuItem *FacileMenuItem::check(bool ch)
 {
-    if (te)
-        setText(str);
+    setCheckable(true);
+    if (ch)
+        setChecked(true);
     return this;
 }
 
-FacileMenuItem *FacileMenuItem::icon(bool ic, QIcon icon)
+FacileMenuItem *FacileMenuItem::uncheck(bool uc)
+{
+    setCheckable(true);
+    if (uc)
+        setChecked(false);
+    return this;
+}
+
+FacileMenuItem *FacileMenuItem::text(bool te, QString str)
+{
+    if (te)
+    {
+        setText(str.replace(QRegExp("&([\\w\\d])\\b"), "\\1"));
+        setFixedForeSize();
+    }
+    return this;
+}
+
+FacileMenuItem *FacileMenuItem::icon(bool ic, QIcon ico)
 {
     if (ic)
-        setIcon(icon);
+        setIcon(ico);
     return this;
+}
+
+FacileMenuItem *FacileMenuItem::linger()
+{
+    trigger_linger = true;
 }
 
 FacileMenu *FacileMenuItem::subMenu()

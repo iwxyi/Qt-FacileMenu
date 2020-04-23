@@ -40,15 +40,15 @@ void MainWindow::on_pushButton_clicked()
     })->tip("Ctrl+T");
     menu->addSeparator();
 
-    menu->addLinger(QIcon(":/icons/faster"), "加速", [=]{
+    menu->addAction(QIcon(":/icons/faster"), "加速", [=]{
         qDebug() << "=>加速";
         faster_checked = !faster_checked;
-    })->setChecked(faster_checked);
+    })->check(faster_checked)->linger();
 
-    menu->addLinger(QIcon(":/icons/slower"), "减速", [=]{
+    menu->addAction(QIcon(":/icons/slower"), "减速", [=]{
         qDebug() << "=>减速";
         slower_checked = !slower_checked;
-    })->setChecked(slower_checked);
+    })->check(slower_checked)->linger();
 
     menu->addRow([=]{
         menu->addAction("按钮1");
@@ -107,27 +107,41 @@ void MainWindow::on_pushButton_clicked()
         }
     }
 
-    auto subMenu2 = menu->addMenu("子菜单1");
+    auto subMenu2 = menu->addMenu("可选菜单");
     {
-        subMenu2->addAction(QIcon(":/icons/run"), "开始播放", [=]{
-            qDebug() << "=>开始播放";
-        });
+        auto ac1 = subMenu2->addAction(QIcon(":/icons/run"), "选中1", [=]{
+            qDebug() << "=>选中1";
+        })->setChecked(true)->linger();
 
-        subMenu2->addAction(QIcon(":/icons/pause"), "暂停", [=]{
-            qDebug() << "=>暂停";
+        auto ac2 = subMenu2->addAction(QIcon(":/icons/pause"), "选中2", [=]{
+            qDebug() << "=>选中2";
+        })->setChecked(false)->linger();
+
+        auto ac3 = subMenu2->addAction(QIcon(":/icons/resume"), "选中3", [=]{
+            qDebug() << "=>选中3";
+        })->setChecked(true)->linger();
+
+        ac1->triggered([=]{
+            subMenu2->uncheckAll(ac1);
+        });
+        ac2->triggered([=]{
+            subMenu2->uncheckAll(ac2);
+        });
+        ac3->triggered([=]{
+            subMenu2->uncheckAll(ac3);
         });
     }
 
     auto subMenu3 = menu->addMenu("子菜单2");
     {
 
-        subMenu3->addLinger(QIcon(":/icons/resume"), "继续", [=]{
+        subMenu3->addAction(QIcon(":/icons/resume"), "继续", [=]{
             qDebug() << "=>继续";
-        })->disable();
+        })->disable()->linger();
 
-        subMenu3->addLinger(QIcon(":/icons/stop"), "停止", [=]{
+        subMenu3->addAction(QIcon(":/icons/stop"), "停止", [=]{
             qDebug() << "=>停止";
-        });
+        })->linger();
     }
 
     auto subMenu4 = menu->addMenu("子菜单3");
@@ -153,7 +167,7 @@ void MainWindow::on_pushButton_2_clicked()
     menu->addRow([=]{
         menu->addAction("按钮1")->disable();
         menu->addAction("按钮2")->disable();
-        menu->addAction("按钮3");
+        menu->addAction("按钮3")->text(true, "按钮3 (&K)");
     });
 
     menu->addAction(QIcon(":/icons/run"), "开始播放 (&S)", [=]{

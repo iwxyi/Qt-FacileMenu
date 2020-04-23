@@ -47,7 +47,10 @@ FacileMenuItem *FacileMenu::addAction(QIcon icon, QString text, FuncType func)
     connect(item, &InteractiveButtonBase::clicked, this, [=]{
         if (_showing_animation)
             return ;
-        func();
+        if (func != nullptr)
+            func();
+        if (item->isLinger())
+            return ;
         emit signalActionTriggered(item);
         toHide(items.indexOf(item));
     });
@@ -82,6 +85,8 @@ FacileMenuItem *FacileMenu::addAction(QIcon icon, QString text, void (*func)())
         if (_showing_animation)
             return ;
         func();
+        if (item->isLinger())
+            return ;
         emit signalActionTriggered(item);
         toHide(items.indexOf(item));
     });
@@ -100,36 +105,13 @@ FacileMenuItem *FacileMenu::addAction(QIcon icon, QString text, T *obj, void (T:
         if (_showing_animation)
             return ;
         (obj->*func)();
+        if (item->isLinger())
+            return ;
         emit signalActionTriggered(item);
         toHide(items.indexOf(item));
     });
     connect(item, &InteractiveButtonBase::signalMouseEnter, this, [=]{ itemMouseEntered(item); });
     return item;
-}
-
-/**
- * 等同于 addAction，但是点击后不隐藏菜单，可多次点击
- */
-FacileMenuItem *FacileMenu::addLinger(QIcon icon, QString text, FuncType func)
-{
-    auto item = createMenuItem(icon, text);
-    connect(item, &InteractiveButtonBase::clicked, this, [=]{
-        if (_showing_animation)
-            return ;
-        func();
-    });
-    connect(item, &InteractiveButtonBase::signalMouseEnter, this, [=]{ itemMouseEntered(item); });
-    return item;
-}
-
-FacileMenuItem *FacileMenu::addLinger(QIcon icon, FuncType func)
-{
-    return addLinger(icon, "", func);
-}
-
-FacileMenuItem *FacileMenu::addLinger(QString text, FuncType func)
-{
-    return addLinger(QIcon(), text, func);
 }
 
 FacileMenu *FacileMenu::addRow(FuncType func)
@@ -360,6 +342,30 @@ void FacileMenu::toHide(int focusIndex)
 }
 
 /**
+ * 取消所有 checkable 的项的check
+ * @param except 如果不为空，则设置这一项为true
+ * @param begin 开始取消选择的项，默认-1，从头开始
+ * @param end   结束取消选择的项（不包括此项），默认-1，直到末尾
+ */
+FacileMenu *FacileMenu::uncheckAll(FacileMenuItem *except, int begin, int end)
+{
+    if (begin < 0 || begin >= items.size())
+        begin = 0;
+    if (end < 0 || end > items.size())
+        end = items.size();
+    for (int i = begin; i < end; i++)
+    {
+        auto item = items.at(i);
+        if (!item->isCheckable())
+            continue;
+        item->setChecked(false);
+    }
+    if (except)
+        except->setChecked(true);
+    return this;
+}
+
+/**
  * 设置右边提示的区域内容
  * 一般是快捷键
  */
@@ -408,7 +414,7 @@ void FacileMenu::itemMouseEntered(FacileMenuItem *item)
 FacileMenuItem *FacileMenu::createMenuItem(QIcon icon, QString text)
 {
     auto key = getShortcutByText(text);
-    text.replace("&", "");
+    text.replace(QRegExp("&([\\w\\d])\\b"), "\\1");
     FacileMenuItem* item;
     if (!align_mid_if_alone)
     {

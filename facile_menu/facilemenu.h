@@ -22,17 +22,13 @@ public:
     FacileMenu(bool sub, QWidget* parent = nullptr);
     ~FacileMenu() override;
 
-    FacileMenuItem* addAction(QIcon icon, QString text, FuncType func = []{});
-    FacileMenuItem* addAction(QIcon icon, FuncType func = []{});
-    FacileMenuItem* addAction(QString text, FuncType func = []{});
+    FacileMenuItem* addAction(QIcon icon, QString text, FuncType func = nullptr);
+    FacileMenuItem* addAction(QIcon icon, FuncType func = nullptr);
+    FacileMenuItem* addAction(QString text, FuncType func = nullptr);
     FacileMenuItem* addAction(QAction* action, bool deleteWithMenu = true);
     FacileMenuItem* addAction(QIcon icon, QString text, void (*func)());
     template <class T>
     FacileMenuItem* addAction(QIcon icon, QString text, T *obj, void (T::*func)());
-
-    FacileMenuItem* addLinger(QIcon icon, QString text, FuncType func = []{});
-    FacileMenuItem* addLinger(QIcon icon, FuncType func = []{});
-    FacileMenuItem* addLinger(QString text, FuncType func = []{});
 
     FacileMenu* addRow(FuncType func = []{});
     FacileMenu* beginRow();
@@ -47,6 +43,8 @@ public:
     void exec(QPoint pos = QPoint(-1, -1));
     void execute(QPoint pos = QPoint(-1, -1));
     void toHide(int focusIndex = -1);
+
+    FacileMenu* uncheckAll(FacileMenuItem* except = nullptr, int begin = -1, int end = -1);
 
     FacileMenu* setTipArea(int x = 48);
     FacileMenu* setTipArea(QString longestTip);
