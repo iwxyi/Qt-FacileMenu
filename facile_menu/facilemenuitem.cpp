@@ -25,6 +25,13 @@ FacileMenuItem::FacileMenuItem(QPixmap p, QString t, QWidget *parent) : Interact
 
 }
 
+FacileMenuItem *FacileMenuItem::setCheckable(bool c)
+{
+    checkable = c;
+    update();
+    return this;
+}
+
 bool FacileMenuItem::isCheckable() const
 {
     return checkable;

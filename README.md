@@ -3,9 +3,13 @@ FacileMenu
 
 ## 介绍
 
-一款非常非常飘逸的 Qt 菜单控件，带有各种动画效果，用起来也十分方便。
+非常飘逸的 Qt 菜单控件，带有各种动画效果，用起来也十分方便。
 
-可替换 Qt 自带的菜单
+无限层级，响应键盘、鼠标单独操作，支持单快捷键。
+
+允许添加自定义 widget、layout，当做特殊的 QDialog 使用。
+
+
 
 ## 简单使用
 
@@ -30,48 +34,112 @@ FacileMenu
    menu->execute(QCursor::pos());
    ```
 
-   ## 常用功能
 
-   ### 连续设置
 
-   ```C++
-   menu->addAction(QIcon(":/icons/run"), "开始播放 (&S)", [=]{})
-       ->tip("Ctrl+S")
-       ->disable(/*如果满足某条件(默认true)则disable，下同*/)
-       ->hide(/*条件表达式*/)
-       ->setChecked(false);
-   ```
 
-   ### 子菜单
+## 常用操作
 
-   ```C++
-   auto subMenu = menu->addMenu("子菜单2");
-   
-   subMenu->addAction("继续", [=]{});
-   
-   subMenu3->addAction("停止", [=]{})
-       ->disable(!playing);
-   ```
+### 连续设置
 
-   ### 横向菜单
+```C++
+menu->addAction(QIcon(":/icons/run"), "开始播放 (&S)", [=]{})
+    ->tip("Ctrl+S")
+    ->disable(true/*如果满足某条件(默认true)则disable，下同*/)
+    ->hide(/*条件表达式*/)
+    ->uncheck(false);
+```
 
-   ```C++
-   menu->addChipLayout(); // 添加横向布局，之后才能使用 addChip
-   menu->addChip("按钮1");
-   menu->addChip("按钮2")->disable();
-   menu->addChip(QIcon(":/icons/appicon"));
-   ```
 
-   ### 导入QAction
 
-   支持在菜单关闭时自动 delete 传入的 delete，避免内存泄漏
+### 子菜单
 
-   ```C++
-   QAction* action = ...;
-   menu->addAction(action, true/*是否在菜单关闭一起时delete action*/);
-   ```
+```C++
+auto subMenu = menu->addMenu("子菜单2");
 
-   
+subMenu->addAction("继续", [=]{});
+
+subMenu3->addAction("停止", [=]{})
+        ->disable(!playing);
+```
+
+
+
+### 横向菜单
+
+方式一：一口气添加
+
+```C++
+menu->addRow([=]{
+    menu->addAction("按钮1");
+    menu->addAction("按钮2");
+    menu->addAction("按钮3");
+});
+```
+
+方式二：逐个添加
+
+```C++
+menu->beginRow();
+menu->addAction(QIcon(":/icons/run"));
+menu->addAction(QIcon(":/icons/pause"));
+menu->split();
+menu->addAction(QIcon(":/icons/resume"));
+menu->addAction(QIcon(":/icons/stop"))->disable();
+menu->endRow();
+```
+
+两种方式都支持横向布局 widget
+
+
+
+### 添加 QAction
+
+支持在菜单关闭时自动 delete 传入的 action，避免内存泄漏（默认开启）
+
+```C++
+QAction* action = ...;
+menu->addAction(action, true/*是否在菜单关闭一起时delete*/);
+```
+
+
+
+### 添加 Widget/Layout
+
+添加任意 widget 至菜单中，和菜单项并存。layout 同理。
+
+```C++
+QPushButton* button = new QPushButton("外部添加的按钮", this);
+menu->addWidget(button);
+```
+
+
+
+### 添加选择项
+
+> 如果要设置为checkable，请在创建时调用一次其以下任一方法：
+>
+> setCheckable(bool) / setChecked(bool) / check(bool) / uncheck(bool)
+
+```C++
+auto ac1 = subMenu2->addAction(QIcon(":/icons/run"), "选中1")->check()->linger();
+auto ac2 = subMenu2->addAction("选中2")->uncheck()->linger();
+auto ac3 = subMenu2->addAction("选中3")->uncheck()->linger();
+
+// 点击事件
+ac1->triggered([=]{
+    subMenu2->uncheckAll(ac1); // 只选中ac1
+});
+ac2->triggered([=]{
+    subMenu2->uncheckAll(ac2);
+});
+ac3->triggered([=]{
+    subMenu2->uncheckAll(ac3);
+});
+```
+
+
+
+
 
 ## 截图
 

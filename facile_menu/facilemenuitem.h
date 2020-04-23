@@ -16,6 +16,7 @@ public:
     FacileMenuItem(QIcon i, QString t, QWidget* parent = nullptr);
     FacileMenuItem(QPixmap p, QString t, QWidget* parent = nullptr);
 
+    FacileMenuItem* setCheckable(bool c);
     bool isCheckable() const;
     FacileMenuItem* setChecked(bool c);
     bool isChecked();

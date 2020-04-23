@@ -109,22 +109,11 @@ void MainWindow::on_pushButton_clicked()
 
     auto subMenu2 = menu->addMenu("可选菜单");
     {
-        auto ac1 = subMenu2->addAction(QIcon(":/icons/run"), "选中1", [=]{
-            qDebug() << "=>选中1";
-        })->setChecked(true)->linger();
+        auto ac1 = subMenu2->addAction(QIcon(":/icons/run"), "选中1")->check()->linger();
+        auto ac2 = subMenu2->addAction("选中2")->uncheck()->linger();
+        auto ac3 = subMenu2->addAction("选中3")->uncheck()->linger();
 
-        auto ac2 = subMenu2->addAction(QIcon(":/icons/pause"), "选中2", [=]{
-            qDebug() << "=>选中2";
-        })->setChecked(false)->linger();
-
-        auto ac3 = subMenu2->addAction(QIcon(":/icons/resume"), "选中3", [=]{
-            qDebug() << "=>选中3";
-        })->setChecked(true)->linger();
-
-        auto ac4 = subMenu2->addAction("选中4", [=]{
-            qDebug() << "=>选中4";
-        })->setChecked(true)->linger();
-
+        // 点击事件
         ac1->triggered([=]{
             subMenu2->uncheckAll(ac1);
         });
@@ -134,21 +123,24 @@ void MainWindow::on_pushButton_clicked()
         ac3->triggered([=]{
             subMenu2->uncheckAll(ac3);
         });
-        ac4->triggered([=]{
-            subMenu2->uncheckAll(ac4);
-        });
     }
 
-    auto subMenu3 = menu->addMenu("子菜单2");
+    auto subMenu3 = menu->addMenu("可选菜单");
     {
+        auto ac1 = subMenu3->addAction(QIcon(":/icons/run"), "选中1")->check()->linger();
+        auto ac2 = subMenu3->addAction("选中2")->uncheck()->linger();
+        auto ac3 = subMenu3->addAction("选中3")->uncheck()->linger();
 
-        subMenu3->addAction(QIcon(":/icons/resume"), "继续", [=]{
-            qDebug() << "=>继续";
-        })->disable()->linger();
-
-        subMenu3->addAction(QIcon(":/icons/stop"), "停止", [=]{
-            qDebug() << "=>停止";
-        })->linger();
+        // 点击事件
+        ac1->triggered([=]{
+            subMenu2->uncheckAll(ac1);
+        });
+        ac2->triggered([=]{
+            subMenu2->uncheckAll(ac2);
+        });
+        ac3->triggered([=]{
+            subMenu2->uncheckAll(ac3);
+        });
     }
 
     auto subMenu4 = menu->addMenu("子菜单3");

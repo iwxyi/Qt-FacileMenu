@@ -57,7 +57,7 @@ signals:
     void signalActionTriggered(FacileMenuItem* action);
     void signalHidden();
 
-public slots:
+private slots:
     void itemMouseEntered(FacileMenuItem* item);
 
 protected:
