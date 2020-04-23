@@ -137,7 +137,7 @@ void MainWindow::on_pushButton_clicked()
     }
 
 
-    menu->execute(QCursor::pos());
+    menu->exec(QCursor::pos());
 }
 
 void MainWindow::on_pushButton_2_clicked()
@@ -169,6 +169,9 @@ void MainWindow::on_pushButton_2_clicked()
         qDebug() << "=>停止";
     })->tip("Ctrl+T");
     menu->addSeparator();
+
+    menu->addAction(QIcon(), "静态回调方法", staticFunction);
+//    menu->fun2(1, "类内回调方法", this, &MainWindow::classFunction);
 
     menu->addAction(QIcon(":/icons/faster"), "加速", [=]{
         qDebug() << "=>加速";
@@ -202,5 +205,15 @@ void MainWindow::on_pushButton_2_clicked()
     menu->addChip("按钮3")->disable();
 
 
-    menu->execute(QCursor::pos());
+    menu->exec(QCursor::pos());
+}
+
+void MainWindow::staticFunction()
+{
+    qDebug() << "静态方法回调";
+}
+
+void MainWindow::classFunction()
+{
+    qDebug() << "类内方法回调";
 }

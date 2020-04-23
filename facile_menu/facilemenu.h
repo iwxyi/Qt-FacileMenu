@@ -25,27 +25,40 @@ public:
     FacileMenuItem* addAction(QIcon icon, QString text, FuncType func = []{});
     FacileMenuItem* addAction(QString text, FuncType func = []{});
     FacileMenuItem* addAction(QAction* action, bool deleteWithMenu = true);
+    FacileMenuItem* addAction(QIcon icon, QString text, void (*func)());
+    template <class T>
+    FacileMenuItem* addAction(QIcon icon, QString text, T *obj, void (T::*func)()); // 这个用不来
+
     FacileMenu* addChipLayout();
     FacileMenuItem* addChip(QIcon icon, QString text, FuncType func = nullptr);
     FacileMenuItem* addChip(QIcon icon, FuncType func = nullptr);
     FacileMenuItem* addChip(QString text, FuncType func = nullptr);
+
     FacileMenu* addMenu(QIcon icon, QString text, FuncType func = nullptr);
     FacileMenu* addMenu(QString text, FuncType func = nullptr);
+
     FacileMenuItem* addSeparator();
     FacileMenu* split();
+
     void addTipArea(int x = 48);
     void addTipArea(QString longestTip);
 
+    void exec(QPoint pos = QPoint(-1, -1));
     void execute(QPoint pos = QPoint(-1, -1));
     void toHide(int focusIndex = -1);
+
+    template <class T>
+    void fun2(int j, T *obp, void (T::*p)());
 
 signals:
     void signalActionTriggered(FacileMenuItem* action);
     void signalHidden();
 
 public slots:
+    void itemMouseEntered(FacileMenuItem* item);
 
 protected:
+    FacileMenuItem* createMenuItem(QIcon icon, QString text);
     Qt::Key getShortcutByText(QString text);
     void setActionButton(InteractiveButtonBase* btn, bool isChip = false);
     void showSubMenu(FacileMenuItem* item);

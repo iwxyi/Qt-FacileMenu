@@ -43,15 +43,7 @@ FacileMenu::~FacileMenu()
 
 FacileMenuItem *FacileMenu::addAction(QIcon icon, QString text, FuncType func)
 {
-    auto key = getShortcutByText(text);
-    text.replace("&", "");
-    FacileMenuItem* item = new FacileMenuItem(icon, text, this);
-    item->setKey(key);
-
-    setActionButton(item);
-    main_vlayout->addWidget(item);
-    items.append(item);
-
+    auto item = createMenuItem(icon, text);
     connect(item, &InteractiveButtonBase::clicked, this, [=]{
         if (_showing_animation)
             return ;
@@ -59,20 +51,7 @@ FacileMenuItem *FacileMenu::addAction(QIcon icon, QString text, FuncType func)
         emit signalActionTriggered(item);
         toHide(items.indexOf(item));
     });
-    connect(item, &InteractiveButtonBase::signalMouseEnter, this, [=]{
-        if (_showing_animation)
-            return ;
-        int index = items.indexOf(item);
-        if (using_keyboard && current_index > -1 && current_index < items.size() && current_index != index) // 屏蔽键盘操作
-            items.at(current_index)->discardHoverPress(true);
-        current_index = index;
-
-        if (current_sub_menu) // 进入这个action，展开的子菜单隐藏起来
-        {
-           current_sub_menu->hide();
-           current_sub_menu = nullptr;
-        }
-    });
+    connect(item, &InteractiveButtonBase::signalMouseEnter, this, [=]{ itemMouseEntered(item); });
     return item;
 }
 
@@ -83,11 +62,44 @@ FacileMenuItem *FacileMenu::addAction(QString text, FuncType func)
 
 FacileMenuItem *FacileMenu::addAction(QAction *action, bool deleteWithMenu)
 {
-    QIcon icon = action->icon();
-    QString text = action->text();
     if (deleteWithMenu)
         import_actions.append(action); // 加入列表，菜单delete时一起删了
-    return addAction(icon, text, [=]{action->trigger();});
+    return addAction(action->icon(), action->text(), [=]{action->trigger();});
+}
+
+/**
+ * 回调：普通/静态函数
+ */
+FacileMenuItem *FacileMenu::addAction(QIcon icon, QString text, void (*func)())
+{
+    auto item = createMenuItem(icon, text);
+    connect(item, &InteractiveButtonBase::clicked, this, [=]{
+        if (_showing_animation)
+            return ;
+        func();
+        emit signalActionTriggered(item);
+        toHide(items.indexOf(item));
+    });
+    connect(item, &InteractiveButtonBase::signalMouseEnter, this, [=]{ itemMouseEntered(item); });
+    return item;
+}
+
+/**
+ * 回调：类内方法
+ */
+template<class T>
+FacileMenuItem *FacileMenu::addAction(QIcon icon, QString text, T *obj, void (T::*func)())
+{
+    auto item = createMenuItem(icon, text);
+    connect(item, &InteractiveButtonBase::clicked, this, [=]{
+        if (_showing_animation)
+            return ;
+        (obj->*func)();
+        emit signalActionTriggered(item);
+        toHide(items.indexOf(item));
+    });
+    connect(item, &InteractiveButtonBase::signalMouseEnter, this, [=]{ itemMouseEntered(item); });
+    return item;
 }
 
 FacileMenu *FacileMenu::addChipLayout()
@@ -135,20 +147,7 @@ FacileMenuItem *FacileMenu::addChip(QIcon icon, QString text, FuncType func)
             toHide(items.indexOf(item));
         });
     }
-    connect(item, &InteractiveButtonBase::signalMouseEnter, this, [=]{
-        if (_showing_animation)
-            return ;
-        int index = items.indexOf(item);
-        if (using_keyboard && current_index > -1 && current_index < items.size() && current_index != index) // 屏蔽键盘操作
-            items.at(current_index)->discardHoverPress(true);
-        current_index = index;
-
-        if (current_sub_menu) // 进入这个action，展开的子菜单隐藏起来
-        {
-           current_sub_menu->hide();
-           current_sub_menu = nullptr;
-        }
-    });
+    connect(item, &InteractiveButtonBase::signalMouseEnter, this, [=]{ itemMouseEntered(item); });
     return item;
 }
 
@@ -169,14 +168,7 @@ FacileMenuItem *FacileMenu::addChip(QString text, FuncType func)
  */
 FacileMenu *FacileMenu::addMenu(QIcon icon, QString text, FuncType func)
 {
-    auto key = getShortcutByText(text);
-    text.replace("&", "");
-    FacileMenuItem* item = new FacileMenuItem(icon, text, this);
-    item->setKey(key);
-
-    setActionButton(item);
-    main_vlayout->addWidget(item);
-    items.append(item);
+    auto item = createMenuItem(icon, text);
 
     // 子菜单项是否可点击
     if (func != nullptr)
@@ -199,12 +191,6 @@ FacileMenu *FacileMenu::addMenu(QIcon icon, QString text, FuncType func)
         });
     }
 
-    /*connect(item, &InteractiveButtonBase::signalMouseEnter, [=]{
-        if (current_index != items.indexOf(item) && current_index >= 0 && current_index < items.size())
-            items.at(current_index)->discardHoverPress(true);
-        current_index = items.indexOf(item);
-    });*/
-
     connect(item, &InteractiveButtonBase::signalMouseEnterLater, [=]{
         if (_showing_animation)
             return ;
@@ -218,11 +204,7 @@ FacileMenu *FacileMenu::addMenu(QIcon icon, QString text, FuncType func)
             showSubMenu(item);
     });
 
-    /*connect(item, &InteractiveButtonBase::signalMouseLeave, [=]{
-        if (item->isHovering())
-            item->discardHoverPress(true);
-    });*/
-
+    // 创建菜单项
     FacileMenu* menu = new FacileMenu(true, this);
     menu->hide();
     item->setSubMenu(menu);
@@ -298,7 +280,7 @@ void FacileMenu::addTipArea(QString longestTip)
     addin_tip_area = fm.horizontalAdvance(longestTip+"Ctrl");
 }
 
-void FacileMenu::execute(QPoint pos)
+void FacileMenu::exec(QPoint pos)
 {
     current_index = -1;
 
@@ -351,7 +333,7 @@ void FacileMenu::execute(QPoint pos)
         // 填充半透明的背景颜色，避免太透
         {
             QColor bg_c(normal_bg);
-            bg_c.setAlpha(normal_bg.alpha() / 2);
+            bg_c.setAlpha(normal_bg.alpha() * 3 / 4);
             painter.fillRect(0, 0, pixmap.width(), pixmap.height(), bg_c);
         }
         QImage img = pixmap.toImage(); // img -blur-> painter(pixmap)
@@ -369,9 +351,44 @@ void FacileMenu::execute(QPoint pos)
     startAnimationOnShowed();
 }
 
+void FacileMenu::execute(QPoint pos)
+{
+    return exec(pos);
+}
+
 void FacileMenu::toHide(int focusIndex)
 {
     startAnimationOnHidden(focusIndex);
+}
+
+void FacileMenu::itemMouseEntered(FacileMenuItem *item)
+{
+    if (_showing_animation)
+        return ;
+    int index = items.indexOf(item);
+    if (using_keyboard && current_index > -1 && current_index < items.size() && current_index != index) // 屏蔽键盘操作
+        items.at(current_index)->discardHoverPress(true);
+    current_index = index;
+
+    if (current_sub_menu) // 进入这个action，展开的子菜单隐藏起来
+    {
+       current_sub_menu->hide();
+       current_sub_menu = nullptr;
+    }
+}
+
+FacileMenuItem *FacileMenu::createMenuItem(QIcon icon, QString text)
+{
+    auto key = getShortcutByText(text);
+    text.replace("&", "");
+    FacileMenuItem* item = new FacileMenuItem(icon, text, this);
+    item->setKey(key);
+
+    setActionButton(item);
+    main_vlayout->addWidget(item);
+    items.append(item);
+
+    return item;
 }
 
 Qt::Key FacileMenu::getShortcutByText(QString text)
@@ -446,7 +463,7 @@ void FacileMenu::showSubMenu(FacileMenuItem *item)
         else
             pos.setY(tl.y() - current_sub_menu->height());
     }
-    current_sub_menu->execute(pos);
+    current_sub_menu->exec(pos);
     current_sub_menu->setKeyBoardUsed(using_keyboard);
 }
 
@@ -904,4 +921,10 @@ void FacileMenu::paintEvent(QPaintEvent *event)
         return ;
     }
     QWidget::paintEvent(event);
+}
+
+template<class T>
+void FacileMenu::fun2(int j, T *obp, void (T::*p)())
+{
+    (obp->*p)();
 }
