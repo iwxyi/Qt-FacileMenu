@@ -178,6 +178,18 @@ void MainWindow::on_pushButton_2_clicked()
         qDebug() << "=>暂停";
     })->tip("Ctrl+P");
 
+    QPushButton* button = new QPushButton("外部添加的按钮", this);
+    menu->addWidget(button);
+
+    QHBoxLayout* btn_hlayout = new QHBoxLayout;
+    QPushButton* btn1= new QPushButton("按钮1", this);
+    QPushButton* btn2 = new QPushButton("按钮2", this);
+    btn_hlayout->addSpacing(40);
+    btn_hlayout->addWidget(btn1);
+    btn_hlayout->addItem(new QSpacerItem(4, 0));
+    btn_hlayout->addWidget(btn2);
+    menu->addLayout(btn_hlayout);
+
     menu->addAction(QIcon(":/icons/resume"), "继续 (&R)", [=]{
         qDebug() << "=>继续";
     })->disable()->tip("Ctrl+R");

@@ -21,7 +21,7 @@ FacileMenu::FacileMenu(QWidget *parent) : QWidget(parent)
     main_vlayout->setMargin(0);
     main_vlayout->setSpacing(0);
 
-    setStyleSheet("background: "+QVariant(normal_bg).toString()+"; border: none; border-radius:5px;");
+    setStyleSheet("#FacileMenu { background: "+QVariant(normal_bg).toString()+"; border: none; border-radius:5px; }");
 
     setMouseTracking(true);
 }
@@ -214,6 +214,48 @@ FacileMenu *FacileMenu::addMenu(QIcon icon, QString text, FuncType func)
 FacileMenu *FacileMenu::addMenu(QString text, FuncType func)
 {
     return addMenu(QIcon(), text, func);
+}
+
+FacileMenu *FacileMenu::addWidget(QWidget *widget)
+{
+    if (!widget)
+        return this;
+    if (adding_horizone && row_hlayouts.size()) // 如果是正在添加横向按钮
+    {
+        if (split_in_row && row_hlayouts.last()->count() > 0)
+            addVSeparator(); // 添加竖向分割线
+        row_hlayouts.last()->addWidget(widget);
+    }
+    else
+    {
+        main_vlayout->addWidget(widget);
+    }
+    other_widgets.append(widget);
+    return this;
+}
+
+FacileMenu *FacileMenu::addLayout(QLayout *layout)
+{
+    if (!layout)
+        return this;
+    if (adding_horizone && row_hlayouts.size()) // 如果是正在添加横向按钮
+    {
+        if (split_in_row && row_hlayouts.last()->count() > 0)
+            addVSeparator(); // 添加竖向分割线
+        row_hlayouts.last()->addLayout(layout);
+    }
+    else
+    {
+        main_vlayout->addLayout(layout);
+    }
+    for (int i = 0; i < layout->count(); i++)
+    {
+        auto it = layout->itemAt(i);
+        auto widget = qobject_cast<QWidget*>(it->widget());
+        if (widget) // 如果这个 LayoutItem 是 widget
+            other_widgets.append(widget);
+    }
+    return this;
 }
 
 /**
@@ -612,6 +654,17 @@ void FacileMenu::startAnimationOnShowed()
         });
         ani->start();
     }
+    for (int i = 0; i < other_widgets.size(); i++)
+    {
+        QWidget* btn = other_widgets.at(i);
+        QPropertyAnimation* ani = new QPropertyAnimation(btn, "pos");
+        ani->setStartValue(start_pos);
+        ani->setEndValue(btn->pos());
+        ani->setEasingCurve(curve);
+        ani->setDuration(300);
+        connect(ani, SIGNAL(finished()), ani, SLOT(deleteLater()));
+        ani->start();
+    }
 
     // 分割线动画
     foreach (auto item, h_separators + v_separators)
@@ -665,11 +718,9 @@ void FacileMenu::startAnimationOnHidden(int focusIndex)
     int up_end = items.size() ? -items.at(0)->height() : 0;
     int flow_end = height();
     int focus_top = focusIndex > -1 ? items.at(focusIndex)->pos().y() : 0;
-//    QList<QPoint> ori_poss;
     for (int i = 0; i < items.size(); i++)
     {
         InteractiveButtonBase* btn = items.at(i);
-//        ori_poss.append(btn->pos());
         btn->setBlockHover(true);
         QPropertyAnimation* ani = new QPropertyAnimation(btn, "pos");
         ani->setStartValue(btn->pos());
@@ -704,6 +755,40 @@ void FacileMenu::startAnimationOnHidden(int focusIndex)
         ani->start();
     }
 
+    // 第三方控件动画
+    for (int i = 0; i < other_widgets.size(); i++)
+    {
+        QWidget* btn = other_widgets.at(i);
+        QPropertyAnimation* ani = new QPropertyAnimation(btn, "pos");
+        ani->setStartValue(btn->pos());
+        ani->setEasingCurve(QEasingCurve::OutCubic);
+        if (focusIndex > -1)
+        {
+            if (i < focusIndex) // 上面的项
+            {
+                ani->setEndValue(QPoint(0, up_end - (focus_top - btn->pos().y()) / 8));
+                ani->setDuration(dur_max - qAbs(focusIndex-i)*(dur_max-dur_min)/up_flow_count);
+            }
+            else if (i == focusIndex) // 中间的项
+            {
+                ani->setEndValue(btn->pos());
+                ani->setDuration(dur_max);
+            }
+            else // 下面的项
+            {
+                ani->setEndValue(QPoint(0, flow_end + (btn->pos().y()-focus_top) / 8));
+                ani->setDuration(dur_max - qAbs(i-focusIndex)*(dur_max-dur_min)/up_flow_count);
+            }
+        }
+        else
+        {
+            ani->setEndValue(QPoint(0, up_end));
+            ani->setDuration(dur_max);
+        }
+        connect(ani, SIGNAL(finished()), ani, SLOT(deleteLater()));
+        ani->start();
+    }
+
     // 变淡动画（针对Popup，一切透明无效）
     /*QGraphicsOpacityEffect* effect = new QGraphicsOpacityEffect(this);
     effect->setOpacity(1);
@@ -722,8 +807,6 @@ void FacileMenu::startAnimationOnHidden(int focusIndex)
     QTimer::singleShot(dur_max, this, [=]{
         _showing_animation = false;
         // 挨个还原之前的位置（不知道为什么main_vlayout不能恢复了）
-//        for (int i = 0; i < ori_poss.size(); i++)
-//            items.at(i)->move(ori_poss.at(i));
         main_vlayout->setEnabled(true);
         main_vlayout->activate(); // 恢复原来的位置
 

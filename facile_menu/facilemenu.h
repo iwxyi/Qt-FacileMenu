@@ -37,6 +37,9 @@ public:
     FacileMenu* addMenu(QIcon icon, QString text, FuncType func = nullptr);
     FacileMenu* addMenu(QString text, FuncType func = nullptr);
 
+    FacileMenu* addWidget(QWidget* widget);
+    FacileMenu* addLayout(QLayout* layout);
+
     FacileMenuItem* addSeparator();
     FacileMenu* split();
 
@@ -84,7 +87,7 @@ public:
 private:
     QList<FacileMenuItem*> items;
     QList<FacileMenuItem*> v_separators, h_separators;
-    QList<QWidget*> all_widgets;
+    QList<QWidget*> other_widgets; // 手动添加的widget
     QVBoxLayout* main_vlayout;
     QList<QHBoxLayout*> row_hlayouts;
     QList<QAction*> import_actions;
