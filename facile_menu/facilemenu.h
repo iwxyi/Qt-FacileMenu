@@ -23,16 +23,20 @@ public:
     ~FacileMenu() override;
 
     FacileMenuItem* addAction(QIcon icon, QString text, FuncType func = []{});
+    FacileMenuItem* addAction(QIcon icon, FuncType func = []{});
     FacileMenuItem* addAction(QString text, FuncType func = []{});
     FacileMenuItem* addAction(QAction* action, bool deleteWithMenu = true);
     FacileMenuItem* addAction(QIcon icon, QString text, void (*func)());
     template <class T>
-    FacileMenuItem* addAction(QIcon icon, QString text, T *obj, void (T::*func)()); // 这个用不来
+    FacileMenuItem* addAction(QIcon icon, QString text, T *obj, void (T::*func)());
 
-    FacileMenu* addChipLayout();
-    FacileMenuItem* addChip(QIcon icon, QString text, FuncType func = nullptr);
-    FacileMenuItem* addChip(QIcon icon, FuncType func = nullptr);
-    FacileMenuItem* addChip(QString text, FuncType func = nullptr);
+    FacileMenuItem* addLinger(QIcon icon, QString text, FuncType func = []{});
+    FacileMenuItem* addLinger(QIcon icon, FuncType func = []{});
+    FacileMenuItem* addLinger(QString text, FuncType func = []{});
+
+    FacileMenu* addRow(FuncType func = []{});
+    FacileMenu* beginRow();
+    FacileMenu* endRow();
 
     FacileMenu* addMenu(QIcon icon, QString text, FuncType func = nullptr);
     FacileMenu* addMenu(QString text, FuncType func = nullptr);
@@ -40,15 +44,13 @@ public:
     FacileMenuItem* addSeparator();
     FacileMenu* split();
 
-    void addTipArea(int x = 48);
-    void addTipArea(QString longestTip);
-
     void exec(QPoint pos = QPoint(-1, -1));
     void execute(QPoint pos = QPoint(-1, -1));
     void toHide(int focusIndex = -1);
 
-    template <class T>
-    void fun2(int j, T *obp, void (T::*p)());
+    FacileMenu* setTipArea(int x = 48);
+    FacileMenu* setTipArea(QString longestTip);
+    FacileMenu* setSplitInRow(bool split = true);
 
 signals:
     void signalActionTriggered(FacileMenuItem* action);
@@ -59,13 +61,13 @@ public slots:
 
 protected:
     FacileMenuItem* createMenuItem(QIcon icon, QString text);
-    Qt::Key getShortcutByText(QString text);
+    Qt::Key getShortcutByText(QString text) const;
     void setActionButton(InteractiveButtonBase* btn, bool isChip = false);
     void showSubMenu(FacileMenuItem* item);
     bool isCursorInArea(QPoint pos, FacileMenu* child = nullptr);
     void setKeyBoardUsed(bool use = true);
-    bool isSubMenu();
-    FacileMenu* addVSeparator();
+    bool isSubMenu() const;
+    FacileMenuItem* addVSeparator();
     void startAnimationOnShowed();
     void startAnimationOnHidden(int focusIndex);
 
@@ -84,8 +86,9 @@ public:
 private:
     QList<FacileMenuItem*> items;
     QList<FacileMenuItem*> v_separators, h_separators;
+    QList<QWidget*> all_widgets;
     QVBoxLayout* main_vlayout;
-    QList<QHBoxLayout*> chip_hlayouts;
+    QList<QHBoxLayout*> row_hlayouts;
     QList<QAction*> import_actions;
     QPixmap bg_pixmap;
 
@@ -93,9 +96,13 @@ private:
     FacileMenu* parent_menu = nullptr; // 父类的菜单
 
     int addin_tip_area = 0; // 右边用来显示提示文字的区域
+    bool adding_horizone = false; // 是否正在添加横向菜单
+    bool align_mid_if_alone = false; // 是否居中对齐，如果只有icon或text
     bool _showing_animation = false;
     int current_index = -1; // 当前索引
     bool using_keyboard = false; // 是否正在使用键盘挑选菜单
+    bool split_in_row = false; // 同一行是否默认添加分割线
+    int blur_bg_alpha = 33; // 背景图显示程度，0禁用，1~100为模糊透明度
 };
 
 #endif // FACILEMENU_H

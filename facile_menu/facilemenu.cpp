@@ -55,6 +55,11 @@ FacileMenuItem *FacileMenu::addAction(QIcon icon, QString text, FuncType func)
     return item;
 }
 
+FacileMenuItem *FacileMenu::addAction(QIcon icon, FuncType func)
+{
+    return addAction(icon, "", func);
+}
+
 FacileMenuItem *FacileMenu::addAction(QString text, FuncType func)
 {
     return addAction(QIcon(), text, func);
@@ -85,7 +90,7 @@ FacileMenuItem *FacileMenu::addAction(QIcon icon, QString text, void (*func)())
 }
 
 /**
- * 回调：类内方法
+ * 回调：类内方法（学艺不精，用不来……）
  */
 template<class T>
 FacileMenuItem *FacileMenu::addAction(QIcon icon, QString text, T *obj, void (T::*func)())
@@ -102,63 +107,64 @@ FacileMenuItem *FacileMenu::addAction(QIcon icon, QString text, T *obj, void (T:
     return item;
 }
 
-FacileMenu *FacileMenu::addChipLayout()
-{
-    QHBoxLayout* layout = new QHBoxLayout;
-    chip_hlayouts.append(layout);
-    main_vlayout->addLayout(layout);
-    return this;
-}
-
 /**
- * 添加小部件
+ * 等同于 addAction，但是点击后不隐藏菜单，可多次点击
  */
-FacileMenuItem *FacileMenu::addChip(QIcon icon, QString text, FuncType func)
+FacileMenuItem *FacileMenu::addLinger(QIcon icon, QString text, FuncType func)
 {
-    auto key = getShortcutByText(text);
-    text.replace("&", "");
-    FacileMenuItem* item;
-    if (icon.isNull())
-        item =  new FacileMenuItem(text, this);
-    else if (text.isEmpty())
-        item = new FacileMenuItem(icon, this);
-    else
-        item =  new FacileMenuItem(icon, text, this);
-    item->setKey(key);
-
-    setActionButton(item, true);
-    if (chip_hlayouts.size())
-    {
-        if (chip_hlayouts.last()->count() > 0)
-            addVSeparator(); // 添加竖向分割线
-        chip_hlayouts.last()->addWidget(item);
-    }
-    else
-        main_vlayout->addWidget(item);
-    items.append(item);
-
-    if (func != nullptr)
-    {
-        connect(item, &InteractiveButtonBase::clicked, this, [=]{
-            if (_showing_animation)
-                return ;
-            func();
-            emit signalActionTriggered(item);
-            toHide(items.indexOf(item));
-        });
-    }
+    auto item = createMenuItem(icon, text);
+    connect(item, &InteractiveButtonBase::clicked, this, [=]{
+        if (_showing_animation)
+            return ;
+        func();
+    });
     connect(item, &InteractiveButtonBase::signalMouseEnter, this, [=]{ itemMouseEntered(item); });
     return item;
 }
 
-FacileMenuItem *FacileMenu::addChip(QIcon icon, FuncType func)
+FacileMenuItem *FacileMenu::addLinger(QIcon icon, FuncType func)
 {
-    return addChip(icon, "", func);
+    return addLinger(icon, "", func);
 }
 
-FacileMenuItem *FacileMenu::addChip(QString text, FuncType func)
+FacileMenuItem *FacileMenu::addLinger(QString text, FuncType func)
 {
-    return addChip(QIcon(), text, func);
+    return addLinger(QIcon(), text, func);
+}
+
+FacileMenu *FacileMenu::addRow(FuncType func)
+{
+    QHBoxLayout* layout = new QHBoxLayout;
+    row_hlayouts.append(layout);
+    main_vlayout->addLayout(layout);
+
+    align_mid_if_alone = true;
+    adding_horizone = true;
+
+    func();
+
+    align_mid_if_alone = false;
+    adding_horizone = false;
+
+    return this;
+}
+
+FacileMenu *FacileMenu::beginRow()
+{
+    QHBoxLayout* layout = new QHBoxLayout;
+    row_hlayouts.append(layout);
+    main_vlayout->addLayout(layout);
+
+    align_mid_if_alone = true;
+    adding_horizone = true;
+
+    return this;
+}
+
+FacileMenu *FacileMenu::endRow()
+{
+    align_mid_if_alone = false;
+    adding_horizone = false;
 }
 
 /**
@@ -233,6 +239,9 @@ FacileMenu *FacileMenu::addMenu(QString text, FuncType func)
  */
 FacileMenuItem *FacileMenu::addSeparator()
 {
+    if (adding_horizone)
+        return addVSeparator();
+
     FacileMenuItem* item = new FacileMenuItem(this);
     item->setNormalColor(QColor(64, 64, 64, 64));
     item->setFixedHeight(1);
@@ -255,7 +264,7 @@ FacileMenu *FacileMenu::split()
  * 一行有多个按钮时的竖向分割线
  * 只有添加chip前有效
  */
-FacileMenu *FacileMenu::addVSeparator()
+FacileMenuItem *FacileMenu::addVSeparator()
 {
     FacileMenuItem* item = new FacileMenuItem(this);
     item->setNormalColor(QColor(64, 64, 64, 64));
@@ -263,21 +272,10 @@ FacileMenu *FacileMenu::addVSeparator()
     item->setPaddings(0, 0, 0, 0);
     item->setDisabled(true);
 
-    chip_hlayouts.last()->addWidget(item);
+    row_hlayouts.last()->addWidget(item);
     v_separators.append(item);
 
-    return this;
-}
-
-void FacileMenu::addTipArea(int x)
-{
-    addin_tip_area = x;
-}
-
-void FacileMenu::addTipArea(QString longestTip)
-{
-    QFontMetrics fm(this->font());
-    addin_tip_area = fm.horizontalAdvance(longestTip+"Ctrl");
+    return item;
 }
 
 void FacileMenu::exec(QPoint pos)
@@ -314,7 +312,7 @@ void FacileMenu::exec(QPoint pos)
     }
 
     // 是否捕获背景模糊图片
-    if (blue_bg)
+    if (blur_bg_alpha > 0)
     {
         // 获取图片
         QRect rect = this->geometry();
@@ -333,7 +331,7 @@ void FacileMenu::exec(QPoint pos)
         // 填充半透明的背景颜色，避免太透
         {
             QColor bg_c(normal_bg);
-            bg_c.setAlpha(normal_bg.alpha() * 3 / 4);
+            bg_c.setAlpha(normal_bg.alpha() * (100 - blur_bg_alpha) / 100);
             painter.fillRect(0, 0, pixmap.width(), pixmap.height(), bg_c);
         }
         QImage img = pixmap.toImage(); // img -blur-> painter(pixmap)
@@ -361,6 +359,33 @@ void FacileMenu::toHide(int focusIndex)
     startAnimationOnHidden(focusIndex);
 }
 
+/**
+ * 设置右边提示的区域内容
+ * 一般是快捷键
+ */
+FacileMenu *FacileMenu::setTipArea(int x)
+{
+    addin_tip_area = x;
+    return this;
+}
+
+FacileMenu *FacileMenu::setTipArea(QString longestTip)
+{
+    QFontMetrics fm(this->font());
+    addin_tip_area = fm.horizontalAdvance(longestTip+"Ctrl");
+    return this;
+}
+
+/**
+ * 设置是否默认分割同一行的菜单项
+ * 如果关闭，可手动使用 split() 或 addVSeparator() 分割
+ */
+FacileMenu *FacileMenu::setSplitInRow(bool split)
+{
+    split_in_row = split;
+    return this;
+}
+
 void FacileMenu::itemMouseEntered(FacileMenuItem *item)
 {
     if (_showing_animation)
@@ -377,21 +402,47 @@ void FacileMenu::itemMouseEntered(FacileMenuItem *item)
     }
 }
 
+/**
+ * 所有的创建菜单项的方法
+ */
 FacileMenuItem *FacileMenu::createMenuItem(QIcon icon, QString text)
 {
     auto key = getShortcutByText(text);
     text.replace("&", "");
-    FacileMenuItem* item = new FacileMenuItem(icon, text, this);
+    FacileMenuItem* item;
+    if (!align_mid_if_alone)
+    {
+        item = new FacileMenuItem(icon, text, this);
+    }
+    else // 如果只有一项，则居中对齐
+    {
+        if (icon.isNull())
+            item =  new FacileMenuItem(text, this);
+        else if (text.isEmpty())
+            item = new FacileMenuItem(icon, this);
+        else
+            item =  new FacileMenuItem(icon, text, this);
+    }
     item->setKey(key);
 
-    setActionButton(item);
-    main_vlayout->addWidget(item);
+    setActionButton(item, adding_horizone);
+
+    if (adding_horizone && row_hlayouts.size()) // 如果是正在添加横向按钮
+    {
+        if (split_in_row && row_hlayouts.last()->count() > 0)
+            addVSeparator(); // 添加竖向分割线
+        row_hlayouts.last()->addWidget(item);
+    }
+    else
+    {
+        main_vlayout->addWidget(item);
+    }
     items.append(item);
 
     return item;
 }
 
-Qt::Key FacileMenu::getShortcutByText(QString text)
+Qt::Key FacileMenu::getShortcutByText(QString text) const
 {
     Qt::Key key = Qt::Key_Exit;
     QRegularExpression re("&([\\d\\w])");
@@ -467,6 +518,14 @@ void FacileMenu::showSubMenu(FacileMenuItem *item)
     current_sub_menu->setKeyBoardUsed(using_keyboard);
 }
 
+/**
+ * 根据 mouseMove 事件，判断鼠标的位置
+ * 如果是在父菜单另一个item，则隐藏子菜单（接着触发关闭信号）
+ * 如果是在父菜单的父菜单，则关闭子菜单后，父菜单也依次关闭
+ * @param pos   鼠标位置（全局）
+ * @param child 子菜单
+ * @return      是否在父或递归父菜单的 geometry 中
+ */
 bool FacileMenu::isCursorInArea(QPoint pos, FacileMenu *child)
 {
     // 不在这范围内
@@ -498,7 +557,7 @@ void FacileMenu::setKeyBoardUsed(bool use)
     }
 }
 
-bool FacileMenu::isSubMenu()
+bool FacileMenu::isSubMenu() const
 {
     return parent_menu != nullptr;
 }
@@ -921,10 +980,4 @@ void FacileMenu::paintEvent(QPaintEvent *event)
         return ;
     }
     QWidget::paintEvent(event);
-}
-
-template<class T>
-void FacileMenu::fun2(int j, T *obp, void (T::*p)())
-{
-    (obp->*p)();
 }

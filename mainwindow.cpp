@@ -19,8 +19,9 @@ void MainWindow::on_pushButton_clicked()
     static bool faster_checked = true;
     static bool slower_checked = false;
 
-    FacileMenu* menu = new FacileMenu(this);
-    menu->addTipArea("Ctrl+P");
+    FacileMenu* menu = (new FacileMenu(this))
+        ->setTipArea("Ctrl+P")
+        ->setSplitInRow(true);
 
     menu->addAction(QIcon(":/icons/run"), "开始播放 (&S)", [=]{
         qDebug() << "=>开始播放";
@@ -39,20 +40,21 @@ void MainWindow::on_pushButton_clicked()
     })->tip("Ctrl+T");
     menu->addSeparator();
 
-    menu->addAction(QIcon(":/icons/faster"), "加速", [=]{
+    menu->addLinger(QIcon(":/icons/faster"), "加速", [=]{
         qDebug() << "=>加速";
         faster_checked = !faster_checked;
     })->setChecked(faster_checked);
 
-    menu->addAction(QIcon(":/icons/slower"), "减速", [=]{
+    menu->addLinger(QIcon(":/icons/slower"), "减速", [=]{
         qDebug() << "=>减速";
         slower_checked = !slower_checked;
     })->setChecked(slower_checked);
 
-    menu->addChipLayout();
-    menu->addChip("按钮1");
-    menu->addChip("按钮2");
-    menu->addChip("按钮3");
+    menu->addRow([=]{
+        menu->addAction("按钮1");
+        menu->addAction("按钮2");
+        menu->addAction("按钮3");
+    });
 
     auto subMenu = menu->addMenu("子菜单0");
     {
@@ -119,11 +121,11 @@ void MainWindow::on_pushButton_clicked()
     auto subMenu3 = menu->addMenu("子菜单2");
     {
 
-        subMenu3->addAction(QIcon(":/icons/resume"), "继续", [=]{
+        subMenu3->addLinger(QIcon(":/icons/resume"), "继续", [=]{
             qDebug() << "=>继续";
         })->disable();
 
-        subMenu3->addAction(QIcon(":/icons/stop"), "停止", [=]{
+        subMenu3->addLinger(QIcon(":/icons/stop"), "停止", [=]{
             qDebug() << "=>停止";
         });
     }
@@ -146,12 +148,13 @@ void MainWindow::on_pushButton_2_clicked()
     static bool slower_checked = false;
 
     FacileMenu* menu = new FacileMenu(this);
-    menu->addTipArea("Ctrl+P");
+    menu->setTipArea("Ctrl+P");
 
-    menu->addChipLayout();
-    menu->addChip("按钮1")->disable();
-    menu->addChip("按钮2")->disable();
-    menu->addChip("按钮3");
+    menu->addRow([=]{
+        menu->addAction("按钮1")->disable();
+        menu->addAction("按钮2")->disable();
+        menu->addAction("按钮3");
+    });
 
     menu->addAction(QIcon(":/icons/run"), "开始播放 (&S)", [=]{
         qDebug() << "=>开始播放";
@@ -183,11 +186,12 @@ void MainWindow::on_pushButton_2_clicked()
         slower_checked = !slower_checked;
     })->setChecked(slower_checked);
 
-    menu->addChipLayout();
-    menu->addChip(QIcon(":/icons/run"));
-    menu->addChip(QIcon(":/icons/pause"));
-    menu->addChip(QIcon(":/icons/resume"));
-    menu->addChip(QIcon(":/icons/stop"))->disable();
+    menu->beginRow();
+    menu->addAction(QIcon(":/icons/run"));
+    menu->addAction(QIcon(":/icons/pause"));
+    menu->split()->addAction(QIcon(":/icons/resume"));
+    menu->addAction(QIcon(":/icons/stop"))->disable();
+    menu->endRow();
 
     menu->addAction(QIcon(":/icons/faster"), "加速", [=]{
         qDebug() << "=>加速";
@@ -199,10 +203,11 @@ void MainWindow::on_pushButton_2_clicked()
         slower_checked = !slower_checked;
     })->setChecked(slower_checked)->disable();
 
-    menu->addChipLayout();
-    menu->addChip("按钮1");
-    menu->addChip("按钮2")->disable();
-    menu->addChip("按钮3")->disable();
+    menu->beginRow();
+    menu->addAction("按钮1");
+    menu->addAction("按钮2")->disable();
+    menu->addAction("按钮3")->disable();
+    menu->endRow();
 
 
     menu->exec(QCursor::pos());
