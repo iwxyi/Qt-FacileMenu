@@ -37,6 +37,9 @@ public:
 
     FacileMenu* addMenu(QIcon icon, QString text, FuncType func = nullptr);
     FacileMenu* addMenu(QString text, FuncType func = nullptr);
+    FacileMenuItem* parentAction();
+    FacileMenuItem* lastAction();
+    FacileMenuItem* currentAction();
 
     FacileMenu* addLayout(QLayout *layout, int stretch = 0);
     FacileMenu* addLayoutItem(QLayoutItem *item);
@@ -90,11 +93,11 @@ protected:
     void paintEvent(QPaintEvent *event) override;
 
 public:
+    static void setColors(QColor normal, QColor hover, QColor press, QColor text);
     static QColor normal_bg; // 普通背景（用作全局是为了方便设置）
     static QColor hover_bg;  // 悬浮背景
     static QColor press_bg;  // 按下背景
     static QColor text_fg;   // 字体/变色图标颜色
-    static bool blue_bg;     // 背景是否透明
 
 private:
     QList<FacileMenuItem*> items;

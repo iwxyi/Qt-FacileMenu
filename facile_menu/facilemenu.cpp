@@ -1,10 +1,9 @@
 #include "facilemenu.h"
 
 QColor FacileMenu::normal_bg = QColor(255, 255, 255);
-QColor FacileMenu::hover_bg = QColor(64, 64, 64, 64);
+QColor FacileMenu::hover_bg = QColor(128, 128, 128, 64);
 QColor FacileMenu::press_bg = QColor(128, 128, 128, 128);
 QColor FacileMenu::text_fg = QColor(0, 0, 0);
-bool FacileMenu::blue_bg = true;
 
 FacileMenu::FacileMenu(QWidget *parent) : QWidget(parent)
 {
@@ -229,6 +228,38 @@ FacileMenu *FacileMenu::addMenu(QIcon icon, QString text, FuncType func)
 FacileMenu *FacileMenu::addMenu(QString text, FuncType func)
 {
     return addMenu(QIcon(), text, func);
+}
+
+/**
+ * 子菜单所属的action
+ */
+FacileMenuItem *FacileMenu::parentAction()
+{
+    if (!parent_menu) // 不是子菜单
+        return nullptr;
+    foreach (auto item, parent_menu->items)
+    {
+        if (item->isSubMenu() && item->subMenu() == this)
+            return item;
+    }
+    return nullptr;
+}
+
+/**
+ * 获取最后一个action
+ * 不只是最后一个，更是正在编辑的这个
+ * 如果添加了子菜单，那么就需要这个返回值
+ */
+FacileMenuItem *FacileMenu::lastAction()
+{
+    if (items.size() == 0)
+        return nullptr;
+    return items.last();
+}
+
+FacileMenuItem *FacileMenu::currentAction()
+{
+    return lastAction();
 }
 
 FacileMenu *FacileMenu::addLayout(QLayout *layout, int stretch)
@@ -1164,4 +1195,12 @@ void FacileMenu::paintEvent(QPaintEvent *event)
         return ;
     }
     QWidget::paintEvent(event);
+}
+
+void FacileMenu::setColors(QColor normal, QColor hover, QColor press, QColor text)
+{
+    normal_bg = normal;
+    hover_bg = hover;
+    press_bg = press;
+    text_fg = text;
 }

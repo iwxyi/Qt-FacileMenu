@@ -25,6 +25,12 @@ FacileMenuItem::FacileMenuItem(QPixmap p, QString t, QWidget *parent) : Interact
 
 }
 
+FacileMenuItem *FacileMenuItem::setEnabled(bool e)
+{
+    InteractiveButtonBase::setEnabled(e);
+    return this;
+}
+
 FacileMenuItem *FacileMenuItem::setCheckable(bool c)
 {
     checkable = c;
@@ -120,6 +126,10 @@ FacileMenuItem *FacileMenuItem::hide(bool hi)
     return this;
 }
 
+/**
+ * 默认就是show状态
+ * 为了和show区分开
+ */
 FacileMenuItem *FacileMenuItem::visible(bool vi)
 {
     if (vi)
@@ -158,6 +168,18 @@ FacileMenuItem *FacileMenuItem::text(bool te, QString str)
     return this;
 }
 
+/**
+ * 设置字符串，成立时 tru，不成立时 fal
+ */
+FacileMenuItem *FacileMenuItem::text(bool exp, QString tru, QString fal)
+{
+    if (exp)
+        setText(tru);
+    else
+        setText(fal);
+    return this;
+}
+
 FacileMenuItem *FacileMenuItem::icon(bool ic, QIcon ico)
 {
     if (ic)
@@ -178,6 +200,53 @@ FacileMenuItem *FacileMenuItem::borderR(int radius, QColor co)
 FacileMenuItem *FacileMenuItem::linger()
 {
     trigger_linger = true;
+    return this;
+}
+
+/**
+ * 适用于连续设置
+ * 当 iff 成立时继续
+ * 否则取消后面所有设置
+ */
+FacileMenuItem *FacileMenuItem::ifer(bool iff)
+{
+    if (iff)
+        return this;
+
+    // 返回一个无用item，在自己delete时也delete掉
+    auto useless = new FacileMenuItem("", this);
+    useless->parent_menu_item_in_if = this;
+    useless->hide();
+    useless->setEnabled(false);
+    useless->setMinimumSize(0, 0);
+    useless->setFixedSize(0, 0);
+    useless->move(-999, -999);
+    return useless;
+}
+
+FacileMenuItem *FacileMenuItem::elser()
+{
+    return parent_menu_item_in_if;
+}
+
+/**
+ * 适用于连续设置action时，满足条件则退出
+ * 相当于一个控制语句
+ * 当br成立时，取消后面所有设置
+ */
+FacileMenuItem *FacileMenuItem::breaker(bool br)
+{
+    if (!br)
+        return this;
+
+    // 返回一个无用item，在自己delete时也delete掉
+    auto useless = new FacileMenuItem("", this);
+    useless->hide();
+    useless->setEnabled(false);
+    useless->setMinimumSize(0, 0);
+    useless->setFixedSize(0, 0);
+    useless->move(-999, -999);
+    return useless;
 }
 
 FacileMenu *FacileMenuItem::subMenu()

@@ -17,6 +17,7 @@ public:
     FacileMenuItem(QIcon i, QString t, QWidget* parent = nullptr);
     FacileMenuItem(QPixmap p, QString t, QWidget* parent = nullptr);
 
+    FacileMenuItem* setEnabled(bool e);
     FacileMenuItem* setCheckable(bool c);
     bool isCheckable() const;
     FacileMenuItem* setChecked(bool c);
@@ -37,9 +38,13 @@ public:
     FacileMenuItem* check(bool ch = true);
     FacileMenuItem* uncheck(bool uc = true);
     FacileMenuItem* text(bool te, QString str);
+    FacileMenuItem* text(bool exp, QString tru, QString fal);
     FacileMenuItem* icon(bool ic, QIcon icon);
     FacileMenuItem* borderR(int radius = 3, QColor co = Qt::transparent);
     FacileMenuItem* linger();
+    FacileMenuItem* ifer(bool iff = true);
+    FacileMenuItem* elser();
+    FacileMenuItem* breaker(bool br = true);
 
     FacileMenu* subMenu();
 
@@ -53,6 +58,7 @@ private:
     bool trigger_linger = false; // 点击后是否保存菜单
     FacileMenu* sub_menu = nullptr;
     QString shortcut_tip = ""; // 快捷键提示
+    FacileMenuItem* parent_menu_item_in_if = nullptr; // elser专用
 };
 
 #endif // FACILEMENUITEM_H

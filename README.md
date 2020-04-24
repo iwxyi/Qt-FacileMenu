@@ -154,6 +154,53 @@ menu->addOptions(texts, selected, [=](int index){
 
 
 
+### 菜单项 API
+
+`addAction()`后，可直接设置菜单项的一些属性，包括以下：
+
+> 第一个参数为`bool`类型的，表示满足此条件才修改设置，例如：
+>
+> ```C++
+> bool needHide = false;
+> action->hide(needHide); // 不满足隐藏条件，不隐藏
+> ```
+
+```C++
+// 菜单项右边快捷键区域的文字
+// 如果要使用，建议用：setTipArea 来额外添加设置右边空白宽度
+FacileMenuItem* tip(QString sc);
+
+// 鼠标悬浮提示
+FacileMenuItem* tooltip(QString tt);
+
+// 触发（单击、回车键）后，参数为 Lambda 表达式
+FacileMenuItem* triggered(FuncType func);
+
+FacileMenuItem* disable(bool dis = true);
+
+FacileMenuItem* enable(bool en = true);
+
+FacileMenuItem* hide(bool hi = true);
+
+FacileMenuItem* visible(bool vi = true);
+
+FacileMenuItem* check(bool ch = true);
+
+FacileMenuItem* uncheck(bool uc = true);
+
+FacileMenuItem* text(bool te, QString str);
+
+FacileMenuItem* icon(bool ic, QIcon icon);
+
+// 设置边界：半径、颜色
+FacileMenuItem* borderR(int radius = 3, QColor co = Qt::transparent);
+
+// 点击后是否保持菜单显示（默认点一下就隐藏菜单）
+FacileMenuItem* linger();
+```
+
+
+
 
 
 ## 截图
