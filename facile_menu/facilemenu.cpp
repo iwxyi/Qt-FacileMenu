@@ -147,6 +147,21 @@ FacileMenu *FacileMenu::endRow()
 {
     align_mid_if_alone = false;
     adding_horizone = false;
+
+    return this;
+}
+
+/**
+ * 获取当前的layout
+ * 如果是正在横向布局，则返回横向布局的layout（子）
+ * 否则返回竖直布局的总layout
+ */
+QBoxLayout *FacileMenu::currentLayout() const
+{
+    if (adding_horizone && row_hlayouts.size())
+        return row_hlayouts.last();
+    else
+        return main_vlayout;
 }
 
 /**
@@ -216,25 +231,7 @@ FacileMenu *FacileMenu::addMenu(QString text, FuncType func)
     return addMenu(QIcon(), text, func);
 }
 
-FacileMenu *FacileMenu::addWidget(QWidget *widget)
-{
-    if (!widget)
-        return this;
-    if (adding_horizone && row_hlayouts.size()) // 如果是正在添加横向按钮
-    {
-        if (split_in_row && row_hlayouts.last()->count() > 0)
-            addVSeparator(); // 添加竖向分割线
-        row_hlayouts.last()->addWidget(widget);
-    }
-    else
-    {
-        main_vlayout->addWidget(widget);
-    }
-    other_widgets.append(widget);
-    return this;
-}
-
-FacileMenu *FacileMenu::addLayout(QLayout *layout)
+FacileMenu *FacileMenu::addLayout(QLayout *layout, int stretch)
 {
     if (!layout)
         return this;
@@ -242,11 +239,11 @@ FacileMenu *FacileMenu::addLayout(QLayout *layout)
     {
         if (split_in_row && row_hlayouts.last()->count() > 0)
             addVSeparator(); // 添加竖向分割线
-        row_hlayouts.last()->addLayout(layout);
+        row_hlayouts.last()->addLayout(layout, stretch);
     }
     else
     {
-        main_vlayout->addLayout(layout);
+        main_vlayout->addLayout(layout, stretch);
     }
     for (int i = 0; i < layout->count(); i++)
     {
@@ -256,6 +253,72 @@ FacileMenu *FacileMenu::addLayout(QLayout *layout)
             other_widgets.append(widget);
     }
     return this;
+}
+
+FacileMenu *FacileMenu::addLayoutItem(QLayoutItem* item)
+{
+    currentLayout()->addItem(item);
+    return this;
+}
+
+FacileMenu *FacileMenu::addSpacerItem(QSpacerItem *spacerItem)
+{
+    currentLayout()->addSpacerItem(spacerItem);
+    return this;
+}
+
+FacileMenu *FacileMenu::addSpacing(int size)
+{
+    currentLayout()->addSpacing(size);
+    return this;
+}
+
+FacileMenu *FacileMenu::addStretch(int stretch)
+{
+    currentLayout()->addStretch(stretch);
+    return this;
+}
+
+FacileMenu *FacileMenu::addStrut(int size)
+{
+    currentLayout()->addStrut(size);
+    return this;
+}
+
+FacileMenu *FacileMenu::addWidget(QWidget *widget, int stretch, Qt::Alignment alignment)
+{
+    if (!widget)
+        return this;
+    QBoxLayout* layout = nullptr;
+    if (adding_horizone && row_hlayouts.size()) // 如果是正在添加横向按钮
+    {
+        if (split_in_row && row_hlayouts.last()->count() > 0)
+            addVSeparator(); // 添加竖向分割线
+        layout = row_hlayouts.last();
+    }
+    else
+    {
+        layout = main_vlayout;
+    }
+    layout->addWidget(widget, stretch, alignment);
+    other_widgets.append(widget);
+    return this;
+}
+
+FacileMenu *FacileMenu::setSpacing(int spacing)
+{
+    currentLayout()->setSpacing(spacing);
+    return this;
+}
+
+FacileMenu *FacileMenu::setStretchFactor(QWidget *widget, int stretch)
+{
+
+}
+
+FacileMenu *FacileMenu::setStretchFactor(QLayout *layout, int stretch)
+{
+
 }
 
 /**

@@ -33,12 +33,21 @@ public:
     FacileMenu* addRow(FuncType func = []{});
     FacileMenu* beginRow();
     FacileMenu* endRow();
+    QBoxLayout* currentLayout() const;
 
     FacileMenu* addMenu(QIcon icon, QString text, FuncType func = nullptr);
     FacileMenu* addMenu(QString text, FuncType func = nullptr);
 
-    FacileMenu* addWidget(QWidget* widget);
-    FacileMenu* addLayout(QLayout* layout);
+    FacileMenu* addLayout(QLayout *layout, int stretch = 0);
+    FacileMenu* addLayoutItem(QLayoutItem *item);
+    FacileMenu* addSpacerItem(QSpacerItem *spacerItem);
+    FacileMenu* addSpacing(int size);
+    FacileMenu* addStretch(int stretch = 0);
+    FacileMenu* addStrut(int size);
+    FacileMenu* addWidget(QWidget *widget, int stretch = 0, Qt::Alignment alignment = Qt::Alignment());
+    FacileMenu* setSpacing(int spacing);
+    FacileMenu* setStretchFactor(QWidget *widget, int stretch);
+    FacileMenu* setStretchFactor(QLayout *layout, int stretch);
 
     FacileMenu* addOptions(QList<QString>texts, QList<bool>states, FuncIntType func);
     FacileMenu* addOptions(QList<QString>texts, int select, FuncIntType func);

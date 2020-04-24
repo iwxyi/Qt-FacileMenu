@@ -85,6 +85,12 @@ FacileMenuItem *FacileMenuItem::tip(QString sc)
     return this;
 }
 
+FacileMenuItem *FacileMenuItem::tooltip(QString tt)
+{
+    setToolTip(tt);
+    return this;
+}
+
 FacileMenuItem *FacileMenuItem::triggered(FuncType func)
 {
     connect(this, &InteractiveButtonBase::clicked, this, [=]{
@@ -156,6 +162,16 @@ FacileMenuItem *FacileMenuItem::icon(bool ic, QIcon ico)
 {
     if (ic)
         setIcon(ico);
+    return this;
+}
+
+FacileMenuItem *FacileMenuItem::borderR(int radius, QColor co)
+{
+    setRadius(radius);
+    if (co != Qt::transparent)
+        setBorderColor(co);
+    else
+        setBorderColor(press_bg);
     return this;
 }
 

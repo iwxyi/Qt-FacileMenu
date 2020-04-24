@@ -52,7 +52,7 @@ void MainWindow::on_pushButton_clicked()
 
     menu->addRow([=]{
         menu->addAction("按钮1");
-        menu->addAction("按钮2");
+        menu->addAction("按钮2")->borderR();
         menu->addAction("按钮3");
     });
 

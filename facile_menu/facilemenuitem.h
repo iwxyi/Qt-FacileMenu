@@ -28,6 +28,7 @@ public:
     bool isLinger() const;
 
     FacileMenuItem* tip(QString sc);
+    FacileMenuItem* tooltip(QString tt);
     FacileMenuItem* triggered(FuncType func);
     FacileMenuItem* disable(bool dis = true); // 满足情况下触发，不满足不变，下同
     FacileMenuItem* enable(bool en = true);
@@ -37,6 +38,7 @@ public:
     FacileMenuItem* uncheck(bool uc = true);
     FacileMenuItem* text(bool te, QString str);
     FacileMenuItem* icon(bool ic, QIcon icon);
+    FacileMenuItem* borderR(int radius = 3, QColor co = Qt::transparent);
     FacileMenuItem* linger();
 
     FacileMenu* subMenu();
