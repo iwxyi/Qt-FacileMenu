@@ -125,22 +125,16 @@ void MainWindow::on_pushButton_clicked()
         });
     }
 
-    auto subMenu3 = menu->addMenu("可选菜单");
+    auto subMenu3 = menu->addMenu("判断语句");
     {
-        auto ac1 = subMenu3->addAction(QIcon(":/icons/run"), "选中1")->check()->linger();
-        auto ac2 = subMenu3->addAction("选中2")->uncheck()->linger();
-        auto ac3 = subMenu3->addAction("选中3")->uncheck()->linger();
-
-        // 点击事件
-        ac1->triggered([=]{
-            subMenu2->uncheckAll(ac1);
-        });
-        ac2->triggered([=]{
-            subMenu2->uncheckAll(ac2);
-        });
-        ac3->triggered([=]{
-            subMenu2->uncheckAll(ac3);
-        });
+        static bool b = false;
+        subMenu3->addAction("if else 判断")
+                ->tooltip("试一下 ifer elser")
+                ->triggered([=]{b = !b;})
+                ->ifer(b)
+                ->check()
+                ->elser()
+                ->uncheck();
     }
 
     auto subMenu4 = menu->addMenu("批量菜单");

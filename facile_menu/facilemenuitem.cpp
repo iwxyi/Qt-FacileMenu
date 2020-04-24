@@ -214,19 +214,14 @@ FacileMenuItem *FacileMenuItem::ifer(bool iff)
         return this;
 
     // 返回一个无用item，在自己delete时也delete掉
-    auto useless = new FacileMenuItem("", this);
-    useless->parent_menu_item_in_if = this;
-    useless->hide();
-    useless->setEnabled(false);
-    useless->setMinimumSize(0, 0);
-    useless->setFixedSize(0, 0);
-    useless->move(-999, -999);
-    return useless;
+    return createTempItem();
 }
 
 FacileMenuItem *FacileMenuItem::elser()
 {
-    return parent_menu_item_in_if;
+    if (parent_menu_item_in_if)
+        return parent_menu_item_in_if;
+    return createTempItem();
 }
 
 /**
@@ -317,4 +312,16 @@ void FacileMenuItem::drawIconBeforeText(QPainter &painter, QRect icon_rect)
     }
 
     InteractiveButtonBase::drawIconBeforeText(painter, icon_rect);
+}
+
+FacileMenuItem *FacileMenuItem::createTempItem()
+{
+    auto useless = new FacileMenuItem(QIcon(), "", this);
+    useless->parent_menu_item_in_if = this;
+    useless->hide();
+    useless->setEnabled(false);
+    useless->setMinimumSize(0, 0);
+    useless->setFixedSize(0, 0);
+    useless->move(-999, -999);
+    return useless;
 }

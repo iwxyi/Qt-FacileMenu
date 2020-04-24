@@ -52,6 +52,8 @@ protected:
     void paintEvent(QPaintEvent *event) override;
     void drawIconBeforeText(QPainter &painter, QRect icon_rect) override;
 
+    FacileMenuItem* createTempItem();
+
 private:
     Qt::Key key;
     bool checkable = false;
