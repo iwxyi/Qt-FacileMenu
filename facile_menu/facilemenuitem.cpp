@@ -204,6 +204,18 @@ FacileMenuItem *FacileMenuItem::linger()
 }
 
 /**
+ * 绑定某一布尔类型的变量
+ * 点击即切换值
+ */
+FacileMenuItem *FacileMenuItem::bind(bool &val)
+{
+    connect(this, &InteractiveButtonBase::clicked, this, [&]{
+        val = !val;
+    });
+    return this;
+}
+
+/**
  * 适用于连续设置
  * 当 iff 成立时继续
  * 否则取消后面所有设置
@@ -242,6 +254,19 @@ FacileMenuItem *FacileMenuItem::breaker(bool br)
     useless->setFixedSize(0, 0);
     useless->move(-999, -999);
     return useless;
+}
+
+/**
+ * 适用于连续设置
+ * 满足某一条件则执行 func(this)
+ */
+FacileMenuItem *FacileMenuItem::ifer(bool iff, FuncItemType func, FuncItemType elseFunc)
+{
+    if (iff)
+        func(this);
+    else if (elseFunc != nullptr)
+        elseFunc(this);
+    return this;
 }
 
 FacileMenu *FacileMenuItem::subMenu()

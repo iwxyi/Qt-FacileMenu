@@ -3,10 +3,12 @@
 
 #include "interactivebuttonbase.h"
 
+class FacileMenu;
+class FacileMenuItem;
+
 typedef std::function<void()> const FuncType;
 typedef std::function<void(int)> const FuncIntType;
-
-class FacileMenu;
+typedef std::function<void(FacileMenuItem*)> const FuncItemType;
 
 class FacileMenuItem : public InteractiveButtonBase
 {
@@ -42,9 +44,11 @@ public:
     FacileMenuItem* icon(bool ic, QIcon icon);
     FacileMenuItem* borderR(int radius = 3, QColor co = Qt::transparent);
     FacileMenuItem* linger();
+    FacileMenuItem* bind(bool &val);
     FacileMenuItem* ifer(bool iff = true);
     FacileMenuItem* elser();
     FacileMenuItem* breaker(bool br = true);
+    FacileMenuItem* ifer(bool iff, FuncItemType func, FuncItemType elseFunc = nullptr);
 
     FacileMenu* subMenu();
 
