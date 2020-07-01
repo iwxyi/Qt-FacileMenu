@@ -59,7 +59,8 @@ public:
     FacileMenu* split();
 
     void exec(QPoint pos = QPoint(-1, -1));
-    void execute(QPoint pos = QPoint(-1, -1));
+    void exec(QRect expt, bool vertical = false, QPoint pos = QPoint(-1, -1));
+    void execute();
     void toHide(int focusIndex = -1);
 
     FacileMenu* uncheckAll(FacileMenuItem* except = nullptr, int begin = -1, int end = -1);

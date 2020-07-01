@@ -228,8 +228,7 @@ void MainWindow::on_pushButton_2_clicked()
     menu->addAction("按钮3")->disable();
     menu->endRow();
 
-
-    menu->exec(QCursor::pos());
+    menu->exec(QRect(mapToGlobal(ui->pushButton_2->pos()), ui->pushButton_2->size()), true, QCursor::pos());
 }
 
 void MainWindow::staticFunction()

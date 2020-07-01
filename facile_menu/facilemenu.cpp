@@ -434,10 +434,12 @@ FacileMenuItem *FacileMenu::addVSeparator()
     return item;
 }
 
+/**
+ * 在鼠标或指定点展开
+ * 自动避开屏幕边缘
+ */
 void FacileMenu::exec(QPoint pos)
 {
-    current_index = -1;
-
     if (pos == QPoint(-1,-1))
         pos = QCursor::pos();
     main_vlayout->setEnabled(true);
@@ -446,13 +448,70 @@ void FacileMenu::exec(QPoint pos)
     // 获取屏幕大小
     QRect avai = QApplication::desktop()->availableGeometry();
     // 如果超过范围，则调整位置
-    if (pos.x() >= width() && pos.x() + width() > avai.width())
+    if (pos.x() >= width() && pos.x() + width() > avai.right())
         pos.setX(pos.x() - width());
-    if (pos.y() >= height() && pos.y() + height() > avai.height())
+    if (pos.y() >= height() && pos.y() + height() > avai.bottom())
         pos.setY(pos.y() - height());
 
     // 移动窗口
     move(pos);
+
+    execute();
+}
+
+/**
+ * 在这个矩形框之外展开
+ * @param expt     这个是相对整个屏幕的坐标，用 mapToGlobal(geometry())
+ * @param vertical 优先左边对齐（出现在下边），还是顶部对齐（出现在右边）
+ * @param pos      默认位置。如果在expt外且非边缘，则不受expt影响
+ */
+void FacileMenu::exec(QRect expt, bool vertical, QPoint pos)
+{
+    if (pos == QPoint(-1,-1))
+        pos = QCursor::pos();
+    main_vlayout->setEnabled(true);
+    main_vlayout->activate(); // 先调整所有控件大小
+
+    // 获取屏幕大小
+    QRect avai = QApplication::desktop()->availableGeometry();
+
+    // 根据 rect 和 avai 自动调整范围
+    QRect rect = geometry();
+    rect.moveTo(pos);
+    if (!vertical) // 优先横向对齐（顶部）
+    {
+        if (rect.left() <= expt.right() && rect.right() > expt.right())
+            rect.moveLeft(expt.right());
+        rect.moveTop(expt.top());
+
+        // 避开屏幕位置
+        if (expt.left() > rect.width() && rect.right() >= avai.right())
+            rect.moveLeft(expt.right() - rect.width());
+        if (expt.top() > rect.height() && rect.bottom() >= avai.bottom())
+            rect.moveTop(expt.bottom() - rect.height());
+    }
+    else // 优先纵向对齐（左边）
+    {
+        if (rect.top() <= expt.bottom() && rect.bottom() > expt.bottom())
+            rect.moveTop(expt.bottom());
+        rect.moveLeft(expt.left());
+
+        // 避开屏幕位置
+        if (expt.left() > rect.width() && rect.right() >= avai.right())
+            rect.moveLeft(expt.right() - rect.width());
+        if (expt.top() > rect.height() && rect.bottom() >= avai.bottom())
+            rect.moveTop(expt.top() - rect.height());
+    }
+
+    // 移动窗口
+    move(rect.topLeft());
+
+    execute();
+}
+
+void FacileMenu::execute()
+{
+    current_index = -1;
 
     // 设置背景为圆角矩形
     if (height() > 0) // 没有菜单项的时候为0
@@ -503,11 +562,6 @@ void FacileMenu::exec(QPoint pos)
     QWidget::show();
     setFocus();
     startAnimationOnShowed();
-}
-
-void FacileMenu::execute(QPoint pos)
-{
-    return exec(pos);
 }
 
 void FacileMenu::toHide(int focusIndex)
