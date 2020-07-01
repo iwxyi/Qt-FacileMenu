@@ -70,7 +70,7 @@ public:
 
 signals:
     void signalActionTriggered(FacileMenuItem* action);
-    void signalHidden();
+    void signalHidden(); // 只是隐藏了自己
 
 private slots:
     void itemMouseEntered(FacileMenuItem* item);
@@ -98,6 +98,7 @@ public:
     static QColor hover_bg;  // 悬浮背景
     static QColor press_bg;  // 按下背景
     static QColor text_fg;   // 字体/变色图标颜色
+    bool hidden_by_another = false; // 是否是被要显示的另一个子菜单替换了。若否，隐藏全部菜单
 
 private:
     QList<FacileMenuItem*> items;

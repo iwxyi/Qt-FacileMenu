@@ -216,6 +216,12 @@ FacileMenu *FacileMenu::addMenu(QIcon icon, QString text, FuncType func)
             // 子菜单隐藏，当前按钮强制取消hover状态
             item->discardHoverPress(true);
         }
+
+        // 如果是用户主动隐藏子菜单，那么就隐藏全部菜单
+        if (!menu->hidden_by_another)
+        {
+            this->hide(); // 隐藏自己，在隐藏事件中继续向上传递隐藏的信号
+        }
     });
     connect(menu, &FacileMenu::signalActionTriggered, this, [=](FacileMenuItem* action){
         // 子菜单被点击了，副菜单依次隐藏
@@ -571,6 +577,7 @@ void FacileMenu::itemMouseEntered(FacileMenuItem *item)
 
     if (current_sub_menu) // 进入这个action，展开的子菜单隐藏起来
     {
+        current_sub_menu->hidden_by_another = true;
        current_sub_menu->hide();
        current_sub_menu = nullptr;
     }
@@ -668,6 +675,7 @@ void FacileMenu::showSubMenu(FacileMenuItem *item)
     {
         if (item->subMenu() == current_sub_menu && !current_sub_menu->isHidden()) // 当前显示的就是这个子菜单
             return ;
+        current_sub_menu->hidden_by_another = true; // 不隐藏父控件
         current_sub_menu->hide();
     }
 
@@ -708,6 +716,7 @@ bool FacileMenu::isCursorInArea(QPoint pos, FacileMenu *child)
         // 在自己的副菜单那里
         if (isSubMenu() && parent_menu->isCursorInArea(pos, this)) // 如果这也是子菜单（已展开），则递归遍历父菜单
         {
+            hidden_by_another = true;
             QTimer::singleShot(0, this, [=]{
                 close(); // 把自己也隐藏了
             });
