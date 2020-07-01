@@ -25,7 +25,7 @@ public:
     FacileMenuItem* addAction(QIcon icon, QString text, FuncType func = nullptr);
     FacileMenuItem* addAction(QIcon icon, FuncType func = nullptr);
     FacileMenuItem* addAction(QString text, FuncType func = nullptr);
-    FacileMenuItem* addAction(QAction* action, bool deleteWithMenu = true);
+    FacileMenuItem* addAction(QAction* action, bool deleteWithMenu = false);
     FacileMenuItem* addAction(QIcon icon, QString text, void (*func)());
     template <class T>
     FacileMenuItem* addAction(QIcon icon, QString text, T *obj, void (T::*func)());
