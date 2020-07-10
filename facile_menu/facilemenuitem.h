@@ -41,16 +41,25 @@ public:
     FacileMenuItem* uncheck(bool uc = true);
     FacileMenuItem* text(bool te, QString str);
     FacileMenuItem* text(bool exp, QString tru, QString fal);
+    FacileMenuItem* prefix(bool exp, QString pfix);
+    FacileMenuItem* suffix(bool exp, QString sfix, bool inLeftParenthesis = true);
+    FacileMenuItem* prefix(QString pfix);
+    FacileMenuItem* suffix(QString sfix, bool inLeftParenthesis = true);
     FacileMenuItem* icon(bool ic, QIcon icon);
     FacileMenuItem* borderR(int radius = 3, QColor co = Qt::transparent);
     FacileMenuItem* linger();
     FacileMenuItem* bind(bool &val);
-    FacileMenuItem* ifer(bool iff = true);
+
+    FacileMenuItem* ifer(bool iff);
+    FacileMenuItem* elifer(bool iff);
     FacileMenuItem* elser();
-    FacileMenuItem* breaker(bool br = true);
+    FacileMenuItem* exiter(bool ex = true);
     FacileMenuItem* ifer(bool iff, FuncItemType func, FuncItemType elseFunc = nullptr);
-    FacileMenuItem* prefix(bool exp, QString pfix);
-    FacileMenuItem* suffix(bool exp, QString sfix, bool inLeftParenthesis = true);
+    FacileMenuItem* switcher(int value);
+    FacileMenuItem* caser(int value, FuncType func);
+    FacileMenuItem* caser(int value);
+    FacileMenuItem* breaker();
+    FacileMenuItem* defaulter();
 
     FacileMenu* subMenu();
 
@@ -58,7 +67,7 @@ protected:
     void paintEvent(QPaintEvent *event) override;
     void drawIconBeforeText(QPainter &painter, QRect icon_rect) override;
 
-    FacileMenuItem* createTempItem();
+    FacileMenuItem* createTempItem(bool thisIsParent = true);
 
 private:
     Qt::Key key;
@@ -66,7 +75,9 @@ private:
     bool trigger_linger = false; // 点击后是否保存菜单
     FacileMenu* sub_menu = nullptr;
     QString shortcut_tip = ""; // 快捷键提示
-    FacileMenuItem* parent_menu_item_in_if = nullptr; // elser专用
+    FacileMenuItem* parent_menu_item_in_if = nullptr; // elser/caser专用
+    int switch_value = 0; // switcher的值，用来和caser比较（不需要breaker……）
+    bool switch_matched = true;
 };
 
 #endif // FACILEMENUITEM_H

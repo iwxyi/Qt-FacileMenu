@@ -45,10 +45,28 @@ void MainWindow::on_pushButton_clicked()
         faster_checked = !faster_checked;
     })->check(faster_checked)->linger();
 
+    int number = 3;
     menu->addAction(QIcon(":/icons/slower"), "减速", [=]{
         qDebug() << "=>减速";
         slower_checked = !slower_checked;
-    })->check(slower_checked)->linger();
+    })->check(slower_checked)->linger()
+            ->switcher(number)
+            ->caser(1)
+            ->suffix("1")
+            ->breaker()
+            ->caser(2)
+            ->suffix("2")
+            ->breaker()
+            ->caser(3)
+            ->suffix(" caser")
+            ->breaker()
+            ->caser(4)
+            ->suffix("4")
+            ->breaker()
+            ->caser(6, [=]{ qDebug() << "(^_−)☆"; })
+            ->defaulter()
+            ->suffix("5")
+            ->breaker();
 
     menu->addRow([=]{
         menu->addAction("按钮1");

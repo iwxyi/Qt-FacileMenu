@@ -181,6 +181,62 @@ FacileMenuItem *FacileMenuItem::text(bool exp, QString tru, QString fal)
     return this;
 }
 
+/**
+ * 满足条件时，text添加前缀
+ */
+FacileMenuItem *FacileMenuItem::prefix(bool exp, QString pfix)
+{
+    if (exp)
+        prefix(pfix);
+    return this;
+}
+
+/**
+ * 满足条件时，text添加后缀
+ * @param inLeftParenthesis 支持 text(xxx) 形式，会在左括号前添加后缀
+ */
+FacileMenuItem *FacileMenuItem::suffix(bool exp, QString sfix, bool inLeftParenthesis)
+{
+    if (exp)
+    {
+        suffix(sfix, inLeftParenthesis);
+    }
+    return this;
+}
+
+FacileMenuItem *FacileMenuItem::prefix(QString pfix)
+{
+    setText(pfix + getText());
+    return this;
+}
+
+FacileMenuItem *FacileMenuItem::suffix(QString sfix, bool inLeftParenthesis)
+{
+    if (!inLeftParenthesis)
+    {
+        setText(getText() + sfix);
+    }
+    else
+    {
+        QString text = getText();
+        int index = -1;
+        if ((index = text.lastIndexOf("(")) > -1)
+        {
+            while (index > 0 && text.mid(index-1, 1) == " ")
+                index--;
+        }
+        if (index <= 0) // 没有左括号或者以空格开头，直接加到最后面
+        {
+            setText(getText() + sfix);
+        }
+        else
+        {
+            setText(text.left(index) + sfix + text.right(text.length()-index));
+        }
+    }
+    return this;
+}
+
 FacileMenuItem *FacileMenuItem::icon(bool ic, QIcon ico)
 {
     if (ic)
@@ -224,10 +280,21 @@ FacileMenuItem *FacileMenuItem::bind(bool &val)
 FacileMenuItem *FacileMenuItem::ifer(bool iff)
 {
     if (iff)
-        return this;
+        return parent_menu_item_in_if = this;
 
     // 返回一个无用item，在自己delete时也delete掉
     return createTempItem();
+}
+
+/**
+ * 完全等于 ifer
+ * 如果已经在 ifer 里面，则先退出
+ */
+FacileMenuItem *FacileMenuItem::elifer(bool iff)
+{
+    if (parent_menu_item_in_if) // ifer 不成立后的，退出并转至新的 ifer
+        return parent_menu_item_in_if->ifer(iff);
+    return ifer(iff); // 直接使用，完全等同于 ifer
 }
 
 FacileMenuItem *FacileMenuItem::elser()
@@ -240,21 +307,15 @@ FacileMenuItem *FacileMenuItem::elser()
 /**
  * 适用于连续设置action时，满足条件则退出
  * 相当于一个控制语句
- * 当br成立时，取消后面所有设置
+ * 当ex成立时，取消后面所有设置
  */
-FacileMenuItem *FacileMenuItem::breaker(bool br)
+FacileMenuItem *FacileMenuItem::exiter(bool ex)
 {
-    if (!br)
+    if (!ex)
         return this;
 
     // 返回一个无用item，在自己delete时也delete掉
-    auto useless = new FacileMenuItem("", this);
-    useless->hide();
-    useless->setEnabled(false);
-    useless->setMinimumSize(0, 0);
-    useless->setFixedSize(0, 0);
-    useless->move(-999, -999);
-    return useless;
+    return createTempItem(false);
 }
 
 /**
@@ -264,54 +325,94 @@ FacileMenuItem *FacileMenuItem::breaker(bool br)
 FacileMenuItem *FacileMenuItem::ifer(bool iff, FuncItemType func, FuncItemType elseFunc)
 {
     if (iff)
-        func(this);
-    else if (elseFunc != nullptr)
-        elseFunc(this);
-    return this;
-}
-
-/**
- * 满足条件时，text添加前缀
- */
-FacileMenuItem *FacileMenuItem::prefix(bool exp, QString pfix)
-{
-    if (exp)
-        setText(pfix + getText());
-    return this;
-}
-
-/**
- * 满足条件时，text添加后缀
- * @param inLeftParenthesis 支持 text(xxx) 形式，会在左括号前添加后缀
- */
-FacileMenuItem *FacileMenuItem::suffix(bool exp, QString sfix, bool inLeftParenthesis)
-{
-    if (exp)
     {
-        if (!inLeftParenthesis)
-        {
-            setText(getText() + sfix);
-        }
-        else
-        {
-            QString text = getText();
-            int index = -1;
-            if ((index = text.lastIndexOf("(")) > -1)
-            {
-                while (index > 0 && text.mid(index-1, 1) == " ")
-                    index--;
-            }
-            if (index <= 0) // 没有左括号或者以空格开头，直接加到最后面
-            {
-                setText(getText() + sfix);
-            }
-            else
-            {
-                setText(text.left(index) + sfix + text.right(text.length()-index));
-            }
-        }
+        if (func)
+            func(this);
+    }
+    else
+    {
+        if (elseFunc)
+            elseFunc(this);
     }
     return this;
+}
+
+/**
+ * 适用于连续设置
+ * 类似 switch 语句，输入判断的值
+ * 当后续的 caser 满足 value 时，允许执行 caser 的 func 或后面紧跟着的的设置
+ */
+FacileMenuItem *FacileMenuItem::switcher(int value)
+{
+    switch_value = value;
+    switch_matched = false;
+    return this;
+}
+
+/**
+ * 当 value 等同于 switcher 判断的 value 时，执行 func
+ * 并返回原始 item
+ * 注意与重载的 caser(int) 进行区分
+ */
+FacileMenuItem *FacileMenuItem::caser(int value, FuncType func)
+{
+    if (value == switch_value)
+    {
+        switch_matched = true;
+        if (func)
+            func();
+    }
+    return this;
+}
+
+/**
+ * 当 value 等同于 switcher 的 value 时，返回原始 item
+ * 即执行 caser 后面的设置，直至 breaker
+ * 注意与重载的 caser(int FuncType) 进行区分
+ */
+FacileMenuItem *FacileMenuItem::caser(int value)
+{
+    // 可能已经接着一个 caser
+    if (this->parent_menu_item_in_if)
+    {
+        // 接着一个 !=的caser 后面
+        if (value == parent_menu_item_in_if->switch_value)
+        {
+            parent_menu_item_in_if->switch_matched = true;
+            return parent_menu_item_in_if; // 真正需要使用的实例
+        }
+        return this; // 继续使用自己（一个临时实例）
+    }
+    else // 自己是第一个 caser 或者 ==的caser 后面
+    {
+        if (value == switch_value)
+        {
+            switch_matched = true;
+            return this;
+        }
+        return createTempItem();
+    }
+}
+
+/**
+ * caser 的 value 不等于 switcher 的 value 时
+ * 此语句用来退出
+ */
+FacileMenuItem *FacileMenuItem::breaker()
+{
+    if (parent_menu_item_in_if)
+        return parent_menu_item_in_if;
+    return this; // 应该不会吧……
+}
+
+/**
+ * 如果switcher的caser没有满足
+ */
+FacileMenuItem *FacileMenuItem::defaulter()
+{
+    if (switch_matched) // 已经有 caser 匹配了
+        return createTempItem(); // 返回无效临时实例
+    return parent_menu_item_in_if = this; // 能用，返回自己
 }
 
 /**
@@ -387,10 +488,10 @@ void FacileMenuItem::drawIconBeforeText(QPainter &painter, QRect icon_rect)
     InteractiveButtonBase::drawIconBeforeText(painter, icon_rect);
 }
 
-FacileMenuItem *FacileMenuItem::createTempItem()
+FacileMenuItem *FacileMenuItem::createTempItem(bool thisIsParent)
 {
     auto useless = new FacileMenuItem(QIcon(), "", this);
-    useless->parent_menu_item_in_if = this;
+    useless->parent_menu_item_in_if = thisIsParent ? this : nullptr;
     useless->hide();
     useless->setEnabled(false);
     useless->setMinimumSize(0, 0);
