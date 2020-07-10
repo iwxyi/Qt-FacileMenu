@@ -170,6 +170,7 @@ FacileMenuItem *FacileMenuItem::text(bool te, QString str)
 
 /**
  * 设置字符串，成立时 tru，不成立时 fal
+ * 注意：这里是直接设置完整的文字，不会去掉快捷键&符号
  */
 FacileMenuItem *FacileMenuItem::text(bool exp, QString tru, QString fal)
 {
@@ -269,6 +270,53 @@ FacileMenuItem *FacileMenuItem::ifer(bool iff, FuncItemType func, FuncItemType e
     return this;
 }
 
+/**
+ * 满足条件时，text添加前缀
+ */
+FacileMenuItem *FacileMenuItem::prefix(bool exp, QString pfix)
+{
+    if (exp)
+        setText(pfix + getText());
+    return this;
+}
+
+/**
+ * 满足条件时，text添加后缀
+ * @param inLeftParenthesis 支持 text(xxx) 形式，会在左括号前添加后缀
+ */
+FacileMenuItem *FacileMenuItem::suffix(bool exp, QString sfix, bool inLeftParenthesis)
+{
+    if (exp)
+    {
+        if (!inLeftParenthesis)
+        {
+            setText(getText() + sfix);
+        }
+        else
+        {
+            QString text = getText();
+            int index = -1;
+            if ((index = text.lastIndexOf("(")) > -1)
+            {
+                while (index > 0 && text.mid(index-1, 1) == " ")
+                    index--;
+            }
+            if (index <= 0) // 没有左括号或者以空格开头，直接加到最后面
+            {
+                setText(getText() + sfix);
+            }
+            else
+            {
+                setText(text.left(index) + sfix + text.right(text.length()-index));
+            }
+        }
+    }
+    return this;
+}
+
+/**
+ * 返回自己的子菜单对象
+ */
 FacileMenu *FacileMenuItem::subMenu()
 {
     return sub_menu;

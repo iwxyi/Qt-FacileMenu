@@ -49,6 +49,8 @@ public:
     FacileMenuItem* elser();
     FacileMenuItem* breaker(bool br = true);
     FacileMenuItem* ifer(bool iff, FuncItemType func, FuncItemType elseFunc = nullptr);
+    FacileMenuItem* prefix(bool exp, QString pfix);
+    FacileMenuItem* suffix(bool exp, QString sfix, bool inLeftParenthesis = true);
 
     FacileMenu* subMenu();
 

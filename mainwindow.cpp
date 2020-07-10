@@ -29,7 +29,7 @@ void MainWindow::on_pushButton_clicked()
 
     menu->addAction(QIcon(":/icons/pause"), "暂停 (&P)", [=]{
         qDebug() << "=>暂停";
-    })->tip("Ctrl+P");
+    })->tip("Ctrl+P")->suffix(true, "☆");
 
     menu->addAction(QIcon(":/icons/resume"), "继续 (&R)", [=]{
         qDebug() << "=>继续";
