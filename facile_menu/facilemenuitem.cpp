@@ -372,7 +372,7 @@ FacileMenuItem *FacileMenuItem::caser(int value, FuncType func)
  */
 FacileMenuItem *FacileMenuItem::caser(int value)
 {
-    // 可能已经接着一个 caser
+    // 可能已经接着一个没有 breaker 的 caser
     if (this->parent_menu_item_in_if)
     {
         // 接着一个 !=的caser 后面

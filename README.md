@@ -189,6 +189,16 @@ FacileMenuItem* check(bool ch = true);
 FacileMenuItem* uncheck(bool uc = true);
 
 FacileMenuItem* text(bool te, QString str);
+FacileMenuItem* text(bool exp, QString tru, QString fal);
+
+// 满足条件使用前缀
+FacileMenuItem* prefix(bool exp, QString pfix);
+// 条件后缀，支持类似 "action (K)" 这样的格式
+FacileMenuItem* suffix(bool exp, QString sfix, bool inLeftParenthesis = true);
+
+// 直接设置前缀后缀
+FacileMenuItem* prefix(QString pfix);
+FacileMenuItem* suffix(QString sfix, bool inLeftParenthesis = true);
 
 FacileMenuItem* icon(bool ic, QIcon icon);
 
@@ -197,6 +207,23 @@ FacileMenuItem* borderR(int radius = 3, QColor co = Qt::transparent);
 
 // 点击后是否保持菜单显示（默认点一下就隐藏菜单）
 FacileMenuItem* linger();
+
+// 满足 iff 时执行 trueLambda 表达式，否则执行 falseLambda 表达式
+FacileMenuItem* ifer(bool iff, trueLambda, falseLambda = nullptr);
+
+// 逻辑控制
+FacileMenuItem* ifer(bool iff); // 满足条件时才继续，下同
+FacileMenuItem* elifer(bool iff);
+FacileMenuItem* elser();
+
+FacileMenuItem* switcher(int value);
+FacileMenuItem* caser(int value, matchedLambda); // 匹配时执行lambda，无需break
+FacileMenuItem* caser(int value); // 结束记得breaker（允许忘掉~）
+FacileMenuItem* breaker();
+FacileMenuItem* defaulter();
+
+// 取消后面所有命令（无视层级，相当于函数中return）
+FacileMenuItem* exiter(bool ex = true);
 ```
 
 
