@@ -43,7 +43,11 @@ void MainWindow::on_pushButton_clicked()
     menu->addAction(QIcon(":/icons/faster"), "加速", [=]{
         qDebug() << "=>加速";
         faster_checked = !faster_checked;
-    })->check(faster_checked)->linger();
+    })->check(faster_checked)->linger()
+            ->ifer(false)
+            ->prefix("1")
+            ->elser()
+            ->prefix("2");
 
     int number = 3;
     menu->addAction(QIcon(":/icons/slower"), "减速", [=]{

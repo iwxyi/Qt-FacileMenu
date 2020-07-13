@@ -280,7 +280,7 @@ FacileMenuItem *FacileMenuItem::bind(bool &val)
 FacileMenuItem *FacileMenuItem::ifer(bool iff)
 {
     if (iff)
-        return parent_menu_item_in_if = this;
+        return this;
 
     // 返回一个无用item，在自己delete时也delete掉
     return createTempItem();
@@ -412,7 +412,7 @@ FacileMenuItem *FacileMenuItem::defaulter()
 {
     if (switch_matched) // 已经有 caser 匹配了
         return createTempItem(); // 返回无效临时实例
-    return parent_menu_item_in_if = this; // 能用，返回自己
+    return this; // 能用，返回自己
 }
 
 /**
