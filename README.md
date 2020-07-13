@@ -227,6 +227,7 @@ FacileMenuItem* exiter(bool ex = true);
 ```
 
 
+> 注意：由于加了一些容错处理（例如caser可以不用写breaker），无法进行if/switch的多层嵌套（较多的逻辑运算不建议放在菜单中）
 
 
 
