@@ -4,6 +4,7 @@ QColor FacileMenu::normal_bg = QColor(255, 255, 255);
 QColor FacileMenu::hover_bg = QColor(128, 128, 128, 64);
 QColor FacileMenu::press_bg = QColor(128, 128, 128, 128);
 QColor FacileMenu::text_fg = QColor(0, 0, 0);
+int FacileMenu::blur_bg_alpha = DEFAULT_MENU_BLUR_ALPHA;
 
 FacileMenu::FacileMenu(QWidget *parent) : QWidget(parent)
 {

@@ -14,6 +14,8 @@
 #include <QAction>
 #include "facilemenuitem.h"
 
+#define DEFAULT_MENU_BLUR_ALPHA 33
+
 class FacileMenu : public QWidget
 {
     Q_OBJECT
@@ -100,6 +102,7 @@ public:
     static QColor press_bg;  // 按下背景
     static QColor text_fg;   // 字体/变色图标颜色
     bool hidden_by_another = false; // 是否是被要显示的另一个子菜单替换了。若否，隐藏全部菜单
+    static int blur_bg_alpha; // 背景图显示程度，0禁用，1~100为模糊透明度
 
 private:
     QList<FacileMenuItem*> items;
@@ -120,7 +123,6 @@ private:
     int current_index = -1; // 当前索引
     bool using_keyboard = false; // 是否正在使用键盘挑选菜单
     bool split_in_row = false; // 同一行是否默认添加分割线
-    int blur_bg_alpha = 33; // 背景图显示程度，0禁用，1~100为模糊透明度
 };
 
 #endif // FACILEMENU_H
