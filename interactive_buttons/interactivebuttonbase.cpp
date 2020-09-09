@@ -682,6 +682,10 @@ void InteractiveButtonBase::setPaddings(int x)
     setFixedForeSize();
 }
 
+/**
+ * 设置Icon模式旁边空多少
+ * @param x 0~1.0，越大越空
+ */
 void InteractiveButtonBase::setIconPaddingProper(double x)
 {
     icon_padding_proper = x;
@@ -1082,8 +1086,9 @@ void InteractiveButtonBase::mousePressEvent(QMouseEvent *event)
                     && last_press_timestamp+SINGLE_PRESS_INTERVAL>release_timestamp
                     && release_pos==press_pos) // 是双击(判断两次单击的间隔)
             {
-                double_prevent = true; // 阻止本次的release识别为双击
-                double_timer->stop();
+                double_prevent = true; // 阻止本次的release识别为单击
+                press_timestamp = 0;   // 避免很可能出现的三击、四击...
+                double_timer->stop();  // 取消延迟一小会儿的单击信号
                 emit doubleClicked();
                 return ;
             }
@@ -1165,6 +1170,11 @@ void InteractiveButtonBase::mouseReleaseEvent(QMouseEvent* event)
     else if (leave_after_clicked && !pressing && double_clicked && double_prevent) // 双击，失去焦点了，pressing 丢失
     {
         return ;
+    }
+    else if (event->button() == Qt::RightButton && event->buttons() == Qt::NoButton)
+    {
+        if ((release_pos - press_pos).manhattanLength() < QApplication::startDragDistance())
+            emit rightClicked();
     }
     mouse_release_event = event;
     emit signalMouseRelease(event);
@@ -1342,7 +1352,8 @@ void InteractiveButtonBase::paintEvent(QPaintEvent* event)
             painter.drawPixmap(QRect(l,t,r-l,b-t), paint_addin.pixmap);
         }
 
-        QRect rect(fore_paddings.left+(fixed_fore_pos?0:offset_pos.x()), fore_paddings.top+(fixed_fore_pos?0:offset_pos.y()), // 原来的位置，不包含点击、出现效果
+        QRect& rect = paint_rect;
+        rect = QRect(fore_paddings.left+(fixed_fore_pos?0:offset_pos.x()), fore_paddings.top+(fixed_fore_pos?0:offset_pos.y()), // 原来的位置，不包含点击、出现效果
                    (size().width()-fore_paddings.left-fore_paddings.right),
                    size().height()-fore_paddings.top-fore_paddings.bottom);
 
