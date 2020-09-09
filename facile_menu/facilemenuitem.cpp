@@ -155,19 +155,6 @@ FacileMenuItem *FacileMenuItem::uncheck(bool uc)
     return this;
 }
 
-FacileMenuItem *FacileMenuItem::tcolor(QColor color)
-{
-    setTextColor(color);
-    return this;
-}
-
-FacileMenuItem *FacileMenuItem::tcolor(bool ex, QColor color)
-{
-    if (ex)
-        return tcolor(color);
-    return this;
-}
-
 FacileMenuItem *FacileMenuItem::text(bool te, QString str)
 {
     if (te)
@@ -191,6 +178,32 @@ FacileMenuItem *FacileMenuItem::text(bool exp, QString tru, QString fal)
         setText(tru);
     else
         setText(fal);
+    return this;
+}
+
+FacileMenuItem *FacileMenuItem::fgColor(QColor color)
+{
+    setTextColor(color);
+    return this;
+}
+
+FacileMenuItem *FacileMenuItem::fgColor(bool exp, QColor color)
+{
+    if (exp)
+        return fgColor(color);
+    return this;
+}
+
+FacileMenuItem *FacileMenuItem::bgColor(QColor color)
+{
+    setBgColor(color);
+    return this;
+}
+
+FacileMenuItem *FacileMenuItem::bgColor(bool exp, QColor color)
+{
+    if (exp)
+        bgColor(color);
     return this;
 }
 

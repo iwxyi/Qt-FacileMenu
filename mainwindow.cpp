@@ -187,11 +187,11 @@ void MainWindow::on_pushButton_2_clicked()
 
     menu->addAction(QIcon(":/icons/run"), "开始播放 (&S)", [=]{
         qDebug() << "=>开始播放";
-    })->tip("Ctrl+S");
+    })->tip("Ctrl+S")->fgColor(Qt::blue);
 
     menu->addAction(QIcon(":/icons/pause"), "暂停 (&P)", [=]{
         qDebug() << "=>暂停";
-    })->tip("Ctrl+P");
+    })->tip("Ctrl+P")->bgColor(true, Qt::gray);
 
     QPushButton* button = new QPushButton("外部添加的按钮", this);
     menu->addWidget(button);

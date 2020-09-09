@@ -44,7 +44,7 @@ FacileMenu
 ```C++
 menu->addAction(QIcon(":/icons/run"), "开始播放 (&S)", [=]{})
     ->tip("Ctrl+S")
-    ->disable(true/*如果满足某条件(默认true)则disable，下同*/)
+    ->disable(playing/*如果满足某条件(默认true)则disable，不满足跳过，下同*/)
     ->hide(/*条件表达式*/)
     ->uncheck(false);
 ```
@@ -94,7 +94,7 @@ menu->endRow();
 
 ### 添加 QAction
 
-支持在菜单关闭时自动 delete 传入的 action，避免内存泄漏（默认开启）
+支持在菜单关闭时自动 delete 传入的 action，避免内存泄漏（默认关闭）
 
 ```C++
 QAction* action = ...;
@@ -176,6 +176,7 @@ FacileMenuItem* tooltip(QString tt);
 // 触发（单击、回车键）后，参数为 Lambda 表达式
 FacileMenuItem* triggered(FuncType func);
 
+// 当参数表达式为true时生效，false时忽略，下同
 FacileMenuItem* disable(bool dis = true);
 
 FacileMenuItem* enable(bool en = true);
@@ -191,13 +192,18 @@ FacileMenuItem* uncheck(bool uc = true);
 FacileMenuItem* text(bool te, QString str);
 FacileMenuItem* text(bool exp, QString tru, QString fal);
 
-// 满足条件使用前缀
-FacileMenuItem* prefix(bool exp, QString pfix);
-// 条件后缀，支持类似 "action (K)" 这样的格式
-FacileMenuItem* suffix(bool exp, QString sfix, bool inLeftParenthesis = true);
+FacileMenuItem* fgColor(QColor color);
+FacileMenuItem* fgColor(bool exp, QColor color);
 
-// 直接设置前缀后缀
+FacileMenuItem* bgColor(QColor color);
+FacileMenuItem* bgColor(bool exp, QColor color);
+
+// 插入前缀
+FacileMenuItem* prefix(bool exp, QString pfix);
 FacileMenuItem* prefix(QString pfix);
+
+// 插入后缀，参数3支持类似 "action后缀 (K)" 这样的格式
+FacileMenuItem* suffix(bool exp, QString sfix, bool inLeftParenthesis = true);
 FacileMenuItem* suffix(QString sfix, bool inLeftParenthesis = true);
 
 FacileMenuItem* icon(bool ic, QIcon icon);

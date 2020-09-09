@@ -39,10 +39,12 @@ public:
     FacileMenuItem* visible(bool vi = true);
     FacileMenuItem* check(bool ch = true);
     FacileMenuItem* uncheck(bool uc = true);
-    FacileMenuItem* tcolor(QColor color);
-    FacileMenuItem* tcolor(bool ex, QColor color);
     FacileMenuItem* text(bool te, QString str);
     FacileMenuItem* text(bool exp, QString tru, QString fal);
+    FacileMenuItem* fgColor(QColor color);
+    FacileMenuItem* fgColor(bool exp, QColor color);
+    FacileMenuItem* bgColor(QColor color);
+    FacileMenuItem* bgColor(bool exp, QColor color);
     FacileMenuItem* prefix(bool exp, QString pfix);
     FacileMenuItem* suffix(bool exp, QString sfix, bool inLeftParenthesis = true);
     FacileMenuItem* prefix(QString pfix);
