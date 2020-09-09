@@ -39,6 +39,8 @@ public:
     FacileMenuItem* visible(bool vi = true);
     FacileMenuItem* check(bool ch = true);
     FacileMenuItem* uncheck(bool uc = true);
+    FacileMenuItem* tcolor(QColor color);
+    FacileMenuItem* tcolor(bool ex, QColor color);
     FacileMenuItem* text(bool te, QString str);
     FacileMenuItem* text(bool exp, QString tru, QString fal);
     FacileMenuItem* prefix(bool exp, QString pfix);
@@ -49,6 +51,7 @@ public:
     FacileMenuItem* borderR(int radius = 3, QColor co = Qt::transparent);
     FacileMenuItem* linger();
     FacileMenuItem* bind(bool &val);
+    FacileMenuItem* longPress(FuncType func);
 
     FacileMenuItem* ifer(bool iff);
     FacileMenuItem* elifer(bool iff);

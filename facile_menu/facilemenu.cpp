@@ -26,6 +26,10 @@ FacileMenu::FacileMenu(QWidget *parent) : QWidget(parent)
     setMouseTracking(true);
 }
 
+/**
+ * 这是临时菜单，并不显示出来
+ * 只用来进行各种暗中的逻辑运算
+ */
 FacileMenu::FacileMenu(bool, QWidget *parent) : FacileMenu(parent)
 {
     setAttribute(Qt::WA_DeleteOnClose, false);
@@ -407,6 +411,7 @@ FacileMenuItem *FacileMenu::addSeparator()
 
     main_vlayout->addWidget(item);
     h_separators.append(item);
+    last_added_item = item;
 
     return item;
 }
@@ -415,6 +420,14 @@ FacileMenu *FacileMenu::split()
 {
     addSeparator();
     return this;
+}
+
+/**
+ * 返回最后添加的菜单项（包括分割线）
+ */
+FacileMenuItem *FacileMenu::lastAddedItem()
+{
+    return last_added_item;
 }
 
 /**
@@ -431,6 +444,7 @@ FacileMenuItem *FacileMenu::addVSeparator()
 
     row_hlayouts.last()->addWidget(item);
     v_separators.append(item);
+    last_added_item = item;
 
     return item;
 }
@@ -449,6 +463,10 @@ void FacileMenu::exec(QPoint pos)
     // 获取屏幕大小
     QRect avai = QApplication::desktop()->availableGeometry();
     // 如果超过范围，则调整位置
+    if (pos.x() + width() > avai.right())
+        pos.setX(avai.right() - width());
+    if (pos.y() + height() > avai.bottom())
+        pos.setY(avai.bottom() - height());
     if (pos.x() >= width() && pos.x() + width() > avai.right())
         pos.setX(pos.x() - width());
     if (pos.y() >= height() && pos.y() + height() > avai.bottom())
@@ -558,7 +576,6 @@ void FacileMenu::execute()
         bg_pixmap = pixmap.copy(c, c, pixmap.width()-c*2, pixmap.height()-c*2);
     }
 
-
     // 显示、动画
     QWidget::show();
     setFocus();
@@ -567,6 +584,16 @@ void FacileMenu::execute()
 
 void FacileMenu::toHide(int focusIndex)
 {
+    // 递归清理菜单（包括父菜单）焦点
+    // 关闭的时候，会一层层的向上传递焦点
+    // 虽然一般情况下问题不大，但在重命名（焦点不能丢失）时会出现严重问题
+    FacileMenu* menu = this;
+    do {
+        menu->setFocusPolicy(Qt::NoFocus);
+        menu = menu->parent_menu;
+    } while (menu);
+    this->clearFocus();
+
     startAnimationOnHidden(focusIndex);
 }
 
@@ -674,6 +701,7 @@ FacileMenuItem *FacileMenu::createMenuItem(QIcon icon, QString text)
         main_vlayout->addWidget(item);
     }
     items.append(item);
+    last_added_item = item;
 
     return item;
 }
@@ -809,6 +837,9 @@ void FacileMenu::startAnimationOnShowed()
     main_vlayout->setEnabled(false);
     _showing_animation = true;
     QEasingCurve curve = QEasingCurve::OutBack;
+    int duration = 300;
+//    QEasingCurve curve = QEasingCurve::OutCubic;
+//    int duration = 200;
     if (items.size() <= 1)
         curve = QEasingCurve::OutQuad;
 
@@ -837,7 +868,7 @@ void FacileMenu::startAnimationOnShowed()
         ani->setStartValue(start_pos);
         ani->setEndValue(btn->pos());
         ani->setEasingCurve(curve);
-        ani->setDuration(300);
+        ani->setDuration(duration);
         connect(ani, SIGNAL(finished()), ani, SLOT(deleteLater()));
         connect(ani, &QPropertyAnimation::finished, btn, [=]{
             btn->setBlockHover(false);
@@ -851,7 +882,7 @@ void FacileMenu::startAnimationOnShowed()
         ani->setStartValue(start_pos);
         ani->setEndValue(btn->pos());
         ani->setEasingCurve(curve);
-        ani->setDuration(300);
+        ani->setDuration(duration);
         connect(ani, SIGNAL(finished()), ani, SLOT(deleteLater()));
         ani->start();
     }
@@ -859,7 +890,7 @@ void FacileMenu::startAnimationOnShowed()
     // 分割线动画
     foreach (auto item, h_separators + v_separators)
         item->hide();
-    QTimer::singleShot(300, this, [=]{
+    QTimer::singleShot(duration, this, [=]{
         for (int i = 0; i < h_separators.size(); i++)
         {
             InteractiveButtonBase* btn = h_separators.at(i);
@@ -869,7 +900,7 @@ void FacileMenu::startAnimationOnShowed()
             ani->setStartValue(QRect(btn->geometry().center(), QSize(1,1)));
             ani->setEndValue(btn->geometry());
             ani->setEasingCurve(QEasingCurve::OutQuad);
-            ani->setDuration(300);
+            ani->setDuration(duration);
             connect(ani, SIGNAL(finished()), ani, SLOT(deleteLater()));
             ani->start();
         }
@@ -882,13 +913,13 @@ void FacileMenu::startAnimationOnShowed()
             ani->setStartValue(QRect(btn->geometry().center(), QSize(1,1)));
             ani->setEndValue(btn->geometry());
             ani->setEasingCurve(QEasingCurve::OutQuad);
-            ani->setDuration(300);
+            ani->setDuration(duration);
             connect(ani, SIGNAL(finished()), ani, SLOT(deleteLater()));
             ani->start();
         }
     });
 
-    QTimer::singleShot(300, this, [=]{
+    QTimer::singleShot(duration, this, [=]{
         main_vlayout->setEnabled(true);
         _showing_animation = false;
     });

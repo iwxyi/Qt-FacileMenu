@@ -59,6 +59,7 @@ public:
 
     FacileMenuItem* addSeparator();
     FacileMenu* split();
+    FacileMenuItem* lastAddedItem();
 
     void exec(QPoint pos = QPoint(-1, -1));
     void exec(QRect expt, bool vertical = false, QPoint pos = QPoint(-1, -1));
@@ -115,6 +116,7 @@ private:
 
     FacileMenu* current_sub_menu = nullptr; // 当前打开（不一定显示）的子菜单
     FacileMenu* parent_menu = nullptr; // 父类的菜单
+    FacileMenuItem* last_added_item = nullptr; // 最后添加的item
 
     int addin_tip_area = 0; // 右边用来显示提示文字的区域
     bool adding_horizone = false; // 是否正在添加横向菜单

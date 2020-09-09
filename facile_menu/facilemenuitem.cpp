@@ -155,6 +155,19 @@ FacileMenuItem *FacileMenuItem::uncheck(bool uc)
     return this;
 }
 
+FacileMenuItem *FacileMenuItem::tcolor(QColor color)
+{
+    setTextColor(color);
+    return this;
+}
+
+FacileMenuItem *FacileMenuItem::tcolor(bool ex, QColor color)
+{
+    if (ex)
+        return tcolor(color);
+    return this;
+}
+
 FacileMenuItem *FacileMenuItem::text(bool te, QString str)
 {
     if (te)
@@ -261,13 +274,27 @@ FacileMenuItem *FacileMenuItem::linger()
 }
 
 /**
- * 绑定某一布尔类型的变量
+ * 绑定某一布尔类型的变量（只能全局变量）
  * 点击即切换值
+ * 注意：局部变量会导致崩溃！
  */
 FacileMenuItem *FacileMenuItem::bind(bool &val)
 {
     connect(this, &InteractiveButtonBase::clicked, this, [&]{
         val = !val;
+    });
+    return this;
+}
+
+/**
+ * 短期长按效果
+ * 该操作不会影响其它任何交互效果
+ * 即不会隐藏菜单，也不会解除单击信号
+ */
+FacileMenuItem *FacileMenuItem::longPress(FuncType func)
+{
+    connect(this, &InteractiveButtonBase::signalMousePressLater, this, [=](QMouseEvent*){
+        func();
     });
     return this;
 }
