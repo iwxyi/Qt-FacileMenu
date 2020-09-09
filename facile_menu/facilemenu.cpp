@@ -15,15 +15,20 @@ FacileMenu::FacileMenu(QWidget *parent) : QWidget(parent)
     setAutoFillBackground(false);  //这个不设置的话就背景变黑
     setAttribute(Qt::WA_StyledBackground);
 
-    main_vlayout = new QVBoxLayout(this);
-    setLayout(main_vlayout);
-    main_vlayout->setEnabled(true);
-    main_vlayout->setMargin(0);
-    main_vlayout->setSpacing(0);
+    main_hlayout = new QHBoxLayout(this);
+    main_vlayout = new QVBoxLayout();
+    setLayout(main_hlayout);
+    main_hlayout->addLayout(main_vlayout);
+    main_hlayout->setMargin(0);
+    main_hlayout->setSpacing(0);
 
     setStyleSheet("#FacileMenu { background: "+QVariant(normal_bg).toString()+"; border: none; border-radius:5px; }");
 
     setMouseTracking(true);
+
+    // 获取窗口尺寸
+    window_rect = QApplication::desktop()->availableGeometry();
+    window_height = window_rect.height();
 }
 
 /**
@@ -153,6 +158,14 @@ FacileMenu *FacileMenu::endRow()
     adding_horizone = false;
 
     return this;
+}
+
+QVBoxLayout *FacileMenu::createNextColumn()
+{
+    main_vlayout = new QVBoxLayout;
+    main_hlayout->addLayout(main_vlayout);
+    main_vlayout->setAlignment(Qt::AlignLeft | Qt::AlignTop);
+    return main_vlayout;
 }
 
 /**
@@ -340,6 +353,8 @@ FacileMenu *FacileMenu::addWidget(QWidget *widget, int stretch, Qt::Alignment al
     }
     else
     {
+        if (main_vlayout->sizeHint().height() + widget->height() > window_height)
+            createNextColumn();
         layout = main_vlayout;
     }
     layout->addWidget(widget, stretch, alignment);
@@ -461,7 +476,7 @@ void FacileMenu::exec(QPoint pos)
     main_vlayout->activate(); // 先调整所有控件大小
 
     // 获取屏幕大小
-    QRect avai = QApplication::desktop()->availableGeometry();
+    QRect avai = window_rect;
     // 如果超过范围，则调整位置
     if (pos.x() + width() > avai.right())
         pos.setX(avai.right() - width());
@@ -479,7 +494,8 @@ void FacileMenu::exec(QPoint pos)
 }
 
 /**
- * 在这个矩形框之外展开
+ * 确保在指定矩形框之外展开
+ * 注意：即使菜单项超过了窗口范围，也不会覆盖这个矩形
  * @param expt     这个是相对整个屏幕的坐标，用 mapToGlobal(geometry())
  * @param vertical 优先左边对齐（出现在下边），还是顶部对齐（出现在右边）
  * @param pos      默认位置。如果在expt外且非边缘，则不受expt影响
@@ -491,10 +507,8 @@ void FacileMenu::exec(QRect expt, bool vertical, QPoint pos)
     main_vlayout->setEnabled(true);
     main_vlayout->activate(); // 先调整所有控件大小
 
-    // 获取屏幕大小
-    QRect avai = QApplication::desktop()->availableGeometry();
-
     // 根据 rect 和 avai 自动调整范围
+    QRect avai = window_rect;
     QRect rect = geometry();
     rect.moveTo(pos);
     if (!vertical) // 优先横向对齐（顶部）
@@ -698,6 +712,9 @@ FacileMenuItem *FacileMenu::createMenuItem(QIcon icon, QString text)
     }
     else
     {
+        // 超过了屏幕高度，需要添加另一列
+        if (main_vlayout->sizeHint().height() + item->sizeHint().height() > window_height)
+            createNextColumn();
         main_vlayout->addWidget(item);
     }
     items.append(item);
@@ -766,7 +783,7 @@ void FacileMenu::showSubMenu(FacileMenuItem *item)
     QPoint pos(-1, -1);
     if (using_keyboard) // 键盘模式，不是跟随鼠标位置来的
     {
-        QRect avai = QApplication::desktop()->availableGeometry();
+        QRect avai = window_rect;
 
         // 键盘模式，相对于点击项的右边
         QPoint tl = mapToGlobal(item->pos());

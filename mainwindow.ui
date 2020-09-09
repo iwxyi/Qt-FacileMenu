@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>238</width>
-    <height>102</height>
+    <width>311</width>
+    <height>105</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -40,13 +40,26 @@
      <string>菜单2</string>
     </property>
    </widget>
+   <widget class="InteractiveButtonBase" name="pushButton_3">
+    <property name="geometry">
+     <rect>
+      <x>200</x>
+      <y>20</y>
+      <width>75</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>菜单3</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>238</width>
+     <width>311</width>
      <height>23</height>
     </rect>
    </property>

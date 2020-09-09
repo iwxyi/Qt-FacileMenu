@@ -5,10 +5,10 @@
 #include <QDialog>
 #include <functional>
 #include <QRegularExpression>
+#include <QHBoxLayout>
 #include <QVBoxLayout>
 #include <QDesktopWidget>
 #include <QApplication>
-//#include <QGraphicsOpacityEffect>
 #include <QScreen>
 #include <QGraphicsDropShadowEffect>
 #include <QAction>
@@ -35,6 +35,7 @@ public:
     FacileMenu* addRow(FuncType func = []{});
     FacileMenu* beginRow();
     FacileMenu* endRow();
+    QVBoxLayout* createNextColumn();
     QBoxLayout* currentLayout() const;
 
     FacileMenu* addMenu(QIcon icon, QString text, FuncType func = nullptr);
@@ -109,6 +110,7 @@ private:
     QList<FacileMenuItem*> items;
     QList<FacileMenuItem*> v_separators, h_separators;
     QList<QWidget*> other_widgets; // 手动添加的widget
+    QHBoxLayout* main_hlayout;
     QVBoxLayout* main_vlayout;
     QList<QHBoxLayout*> row_hlayouts;
     QList<QAction*> import_actions;
@@ -125,6 +127,8 @@ private:
     int current_index = -1; // 当前索引
     bool using_keyboard = false; // 是否正在使用键盘挑选菜单
     bool split_in_row = false; // 同一行是否默认添加分割线
+    QRect window_rect;
+    int window_height = 0; // 窗口高度，每次打开都更新一次
 };
 
 #endif // FACILEMENU_H

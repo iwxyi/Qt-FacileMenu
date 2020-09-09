@@ -262,3 +262,16 @@ void MainWindow::classFunction()
 {
     qDebug() << "类内方法回调";
 }
+
+void MainWindow::on_pushButton_3_clicked()
+{
+
+    FacileMenu* menu = (new FacileMenu(this));
+
+    for (int i = 0; i < 80; i++)
+    {
+        menu->addAction("这是一个菜单" + QString::number(i));
+    }
+
+    menu->exec(QCursor::pos());
+}
