@@ -638,6 +638,16 @@ void FacileMenu::toHide(int focusIndex)
 }
 
 /**
+ * 用于单选
+ * 取消除了某项之外全部选择
+ */
+FacileMenu *FacileMenu::singleCheck(FacileMenuItem *item)
+{
+    uncheckAll(item);
+    return this;
+}
+
+/**
  * 取消所有 checkable 的项的check
  * @param except 如果不为空，则设置这一项为true（相当于单选）
  * @param begin 开始取消选择的项，默认-1，从头开始
@@ -658,6 +668,69 @@ FacileMenu *FacileMenu::uncheckAll(FacileMenuItem *except, int begin, int end)
     }
     if (except)
         except->setChecked(true);
+    return this;
+}
+
+/**
+ * 返回选中的菜单
+ */
+QList<FacileMenuItem *> FacileMenu::checkedItems()
+{
+    QList<FacileMenuItem*> checkeds;
+    foreach (auto item, items)
+    {
+        if (item->isCheckable() && item->isChecked())
+            checkeds.append(item);
+    }
+    return checkeds;
+}
+
+/**
+ * 返回选中项的索引
+ * 该索引不包括自定义控件、布局等
+ */
+QList<int> FacileMenu::checkedIndexes()
+{
+    QList<int> checkeds;
+    for (int i = 0; i < items.size(); i++)
+    {
+        auto item = items.at(i);
+        if (item->isCheckable() && item->isChecked())
+            checkeds.append(i);
+    }
+    return checkeds;
+}
+
+FacileMenu *FacileMenu::setSingleCheck(FuncCheckType func)
+{
+    for (int i = 0; i < items.size(); i++)
+    {
+        auto item = items.at(i);
+        if (!item->isCheckable())
+            item->setCheckable(true);
+
+        item->triggered([=]{
+            item->alter();
+            func(i, item->isChecked());
+        });
+    }
+    return this;
+}
+
+FacileMenu *FacileMenu::setMultiCheck(FuncCheckType func)
+{
+    for (int i = 0; i < items.size(); i++)
+    {
+        auto item = items.at(i);
+        if (!item->isCheckable())
+            item->setCheckable(true);
+        item->linger(); // 多选，点了一下不能消失
+
+        item->triggered([=]{
+            item->alter();
+            func(i, item->isChecked());
+        });
+    }
     return this;
 }
 

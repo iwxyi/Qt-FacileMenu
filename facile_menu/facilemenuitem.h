@@ -36,14 +36,14 @@ public:
     FacileMenuItem* tooltip(bool exp, QString tt);
     FacileMenuItem* triggered(FuncType func);
     FacileMenuItem* triggered(bool exp, FuncType func);
-    FacileMenuItem* disable(bool dis = true); // 满足情况下触发，不满足不变，下同
-    FacileMenuItem* enable(bool en = true);
-    FacileMenuItem* hide(bool hi = true);
-    FacileMenuItem* visible(bool vi = true);
-    FacileMenuItem* check(bool ch = true);
-    FacileMenuItem* uncheck(bool uc = true);
-    FacileMenuItem* alter(bool alt = true);
-    FacileMenuItem* text(bool te, QString str);
+    FacileMenuItem* disable(bool exp = true); // 满足情况下触发，不满足不变，下同
+    FacileMenuItem* enable(bool exp = true);
+    FacileMenuItem* hide(bool exp = true);
+    FacileMenuItem* visible(bool exp = true);
+    FacileMenuItem* check(bool exp = true);
+    FacileMenuItem* uncheck(bool exp = true);
+    FacileMenuItem* alter(bool exp = true);
+    FacileMenuItem* text(bool exp, QString str);
     FacileMenuItem* text(bool exp, QString tru, QString fal);
     FacileMenuItem* fgColor(QColor color);
     FacileMenuItem* fgColor(bool exp, QColor color);
@@ -53,17 +53,17 @@ public:
     FacileMenuItem* suffix(bool exp, QString sfix, bool inLeftParenthesis = true);
     FacileMenuItem* prefix(QString pfix);
     FacileMenuItem* suffix(QString sfix, bool inLeftParenthesis = true);
-    FacileMenuItem* icon(bool ic, QIcon icon);
+    FacileMenuItem* icon(bool exp, QIcon icon);
     FacileMenuItem* borderR(int radius = 3, QColor co = Qt::transparent);
     FacileMenuItem* linger();
     FacileMenuItem* bind(bool &val);
     FacileMenuItem* longPress(FuncType func);
 
-    FacileMenuItem* ifer(bool iff);
-    FacileMenuItem* elifer(bool iff);
+    FacileMenuItem* ifer(bool exp);
+    FacileMenuItem* elifer(bool exp);
     FacileMenuItem* elser();
-    FacileMenuItem* exiter(bool ex = true);
-    FacileMenuItem* ifer(bool iff, FuncItemType func, FuncItemType elseFunc = nullptr);
+    FacileMenuItem* exiter(bool exp = true);
+    FacileMenuItem* ifer(bool exp, FuncItemType func, FuncItemType elseFunc = nullptr);
     FacileMenuItem* switcher(int value);
     FacileMenuItem* caser(int value, FuncType func);
     FacileMenuItem* caser(int value);

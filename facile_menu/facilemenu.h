@@ -16,6 +16,8 @@
 
 #define DEFAULT_MENU_BLUR_ALPHA 33
 
+typedef std::function<void(int index, bool state)> const FuncCheckType;
+
 class FacileMenu : public QWidget
 {
     Q_OBJECT
@@ -70,7 +72,12 @@ public:
     void execute();
     void toHide(int focusIndex = -1);
 
+    FacileMenu* singleCheck(FacileMenuItem* item);
     FacileMenu* uncheckAll(FacileMenuItem* except = nullptr, int begin = -1, int end = -1);
+    QList<FacileMenuItem*> checkedItems();
+    QList<int> checkedIndexes();
+    FacileMenu* setSingleCheck(FuncCheckType func);
+    FacileMenu* setMultiCheck(FuncCheckType func);
 
     FacileMenu* setTipArea(int x = 48);
     FacileMenu* setTipArea(QString longestTip);

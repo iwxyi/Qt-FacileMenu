@@ -135,16 +135,16 @@ void MainWindow::on_pushButton_clicked()
         auto ac2 = subMenu2->addAction("无图标")->uncheck()->linger();
         auto ac3 = subMenu2->split()->addAction("全不选")->uncheck()->linger();
 
-        // 点击事件
+        // 连接点击事件
         ac1->triggered([=]{
-            subMenu2->uncheckAll(ac1); // 可选参数，用于单选，表示只选中ac1
+            subMenu2->singleCheck(ac1); // 用于单选，表示只选中ac1
             // 这里可以用于处理其他操作
         });
         ac2->triggered([=]{
-            subMenu2->uncheckAll(ac2);
+            subMenu2->singleCheck(ac2);
         });
         ac3->triggered([=]{
-            subMenu2->uncheckAll(); // 不带参数就是全不选
+            subMenu2->uncheckAll(); // 全不选
         });
     }
 
@@ -169,7 +169,7 @@ void MainWindow::on_pushButton_clicked()
         }
     }
 
-    auto subMenu4 = menu->addMenu("批量单选项");
+    auto subMenu4 = menu->addMenu("快速批量单选项");
     {
         QStringList texts;
         for (int i = 0; i < 10; i++)
@@ -178,6 +178,24 @@ void MainWindow::on_pushButton_clicked()
 
         subMenu4->addOptions(texts, selected, [=](int index){
             qDebug() << "选中了：" << (selected = index) << texts.at(index);
+        });
+    }
+
+    auto subMenu6 = menu->addMenu("快速批量多选项");
+    {
+        // 假装是某一个需要多选的属性
+        QList<int>* list = new QList<int>();
+
+        for (int i = 0; i < 10; i++)
+        {
+            subMenu6->addAction("选项"+QString::number(i))->uncheck()->linger();
+        }
+        subMenu6->setMultiCheck([=](int index, bool checked){
+            if (checked)
+                list->append(index);
+            else
+                list->removeOne(index);
+            qDebug() << "当前选中的有：" << *list;
         });
     }
 

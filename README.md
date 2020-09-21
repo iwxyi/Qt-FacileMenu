@@ -125,16 +125,16 @@ auto ac1 = subMenu2->addAction(QIcon(":/icons/run"), "带图标")->check()->ling
 auto ac2 = subMenu2->addAction("无图标")->uncheck()->linger();
 auto ac3 = subMenu2->split()->addAction("全不选")->uncheck()->linger();
 
-// 点击事件
+// 连接点击事件
 ac1->triggered([=]{
-    subMenu2->uncheckAll(ac1); // 可选参数，用于单选，表示只选中ac1
+    subMenu2->singleCheck(ac1); // 用于单选，表示只选中ac1
     // 这里可以用于处理其他操作
 });
 ac2->triggered([=]{
-    subMenu2->uncheckAll(ac2);
+    subMenu2->singleCheck(ac2);
 });
 ac3->triggered([=]{
-    subMenu2->uncheckAll(); // 不带参数就是全不选
+    subMenu2->uncheckAll(); // 全不选
 });
 ```
 
@@ -161,8 +161,6 @@ for (int i = 0; i < 10; i++)
     });
 }
 ```
-
-
 
 
 

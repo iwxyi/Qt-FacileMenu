@@ -127,23 +127,23 @@ FacileMenuItem *FacileMenuItem::triggered(bool exp, FuncType func)
     return this;
 }
 
-FacileMenuItem *FacileMenuItem::disable(bool dis)
+FacileMenuItem *FacileMenuItem::disable(bool exp)
 {
-    if (dis)
+    if (exp)
         setDisabled(true);
     return this;
 }
 
-FacileMenuItem *FacileMenuItem::enable(bool en)
+FacileMenuItem *FacileMenuItem::enable(bool exp)
 {
-    if (en)
+    if (exp)
         setEnabled(true);
     return this;
 }
 
-FacileMenuItem *FacileMenuItem::hide(bool hi)
+FacileMenuItem *FacileMenuItem::hide(bool exp)
 {
-    if (hi)
+    if (exp)
         InteractiveButtonBase::hide();
     return this;
 }
@@ -152,27 +152,27 @@ FacileMenuItem *FacileMenuItem::hide(bool hi)
  * 默认就是show状态
  * 为了和show区分开
  */
-FacileMenuItem *FacileMenuItem::visible(bool vi)
+FacileMenuItem *FacileMenuItem::visible(bool exp)
 {
-    if (vi)
+    if (exp)
         InteractiveButtonBase::setVisible(true);
     return this;
 }
 
-FacileMenuItem *FacileMenuItem::check(bool ch)
+FacileMenuItem *FacileMenuItem::check(bool exp)
 {
     setCheckable(true);
-    if (ch)
+    if (exp)
         setChecked(true);
     else if (InteractiveButtonBase::icon.isNull())
         model = IconText; // 强制显示check空白部分
     return this;
 }
 
-FacileMenuItem *FacileMenuItem::uncheck(bool uc)
+FacileMenuItem *FacileMenuItem::uncheck(bool exp)
 {
     setCheckable(true);
-    if (uc)
+    if (exp)
         setChecked(false);
     return this;
 }
@@ -182,9 +182,9 @@ FacileMenuItem *FacileMenuItem::uncheck(bool uc)
  * 如果选中了，则取消选中；反之亦然
  * （本来打算不只是选中状态，然而还没想到其他有什么能切换的）
  */
-FacileMenuItem *FacileMenuItem::alter(bool alt)
+FacileMenuItem *FacileMenuItem::alter(bool exp)
 {
-    if (!alt)
+    if (!exp)
         return this;
     if (isCheckable())
     {
@@ -194,9 +194,9 @@ FacileMenuItem *FacileMenuItem::alter(bool alt)
     return this;
 }
 
-FacileMenuItem *FacileMenuItem::text(bool te, QString str)
+FacileMenuItem *FacileMenuItem::text(bool exp, QString str)
 {
-    if (te)
+    if (exp)
     {
         // 去掉快捷键符号
         // 注意：这里设置文字不会改变原来的快捷键！
@@ -302,9 +302,9 @@ FacileMenuItem *FacileMenuItem::suffix(QString sfix, bool inLeftParenthesis)
     return this;
 }
 
-FacileMenuItem *FacileMenuItem::icon(bool ic, QIcon ico)
+FacileMenuItem *FacileMenuItem::icon(bool exp, QIcon ico)
 {
-    if (ic)
+    if (exp)
         setIcon(ico);
     return this;
 }
@@ -328,7 +328,7 @@ FacileMenuItem *FacileMenuItem::linger()
 /**
  * 绑定某一布尔类型的变量（只能全局变量）
  * 点击即切换值
- * 注意：局部变量会导致崩溃！
+ * 注意：因为是异步的，局部变量会导致崩溃！
  */
 FacileMenuItem *FacileMenuItem::bind(bool &val)
 {
@@ -356,9 +356,9 @@ FacileMenuItem *FacileMenuItem::longPress(FuncType func)
  * 当 iff 成立时继续
  * 否则取消后面所有设置
  */
-FacileMenuItem *FacileMenuItem::ifer(bool iff)
+FacileMenuItem *FacileMenuItem::ifer(bool exp)
 {
-    if (iff)
+    if (exp)
         return this;
 
     // 返回一个无用item，在自己delete时也delete掉
@@ -369,11 +369,11 @@ FacileMenuItem *FacileMenuItem::ifer(bool iff)
  * 完全等于 ifer
  * 如果已经在 ifer 里面，则先退出
  */
-FacileMenuItem *FacileMenuItem::elifer(bool iff)
+FacileMenuItem *FacileMenuItem::elifer(bool exp)
 {
     if (parent_menu_item_in_if) // ifer 不成立后的，退出并转至新的 ifer
-        return parent_menu_item_in_if->ifer(iff);
-    return ifer(iff); // 直接使用，完全等同于 ifer
+        return parent_menu_item_in_if->ifer(exp);
+    return ifer(exp); // 直接使用，完全等同于 ifer
 }
 
 FacileMenuItem *FacileMenuItem::elser()
@@ -388,9 +388,9 @@ FacileMenuItem *FacileMenuItem::elser()
  * 相当于一个控制语句
  * 当ex成立时，取消后面所有设置
  */
-FacileMenuItem *FacileMenuItem::exiter(bool ex)
+FacileMenuItem *FacileMenuItem::exiter(bool exp)
 {
-    if (!ex)
+    if (!exp)
         return this;
 
     // 返回一个无用item，在自己delete时也delete掉
@@ -401,9 +401,9 @@ FacileMenuItem *FacileMenuItem::exiter(bool ex)
  * 适用于连续设置
  * 满足某一条件则执行 func(this)
  */
-FacileMenuItem *FacileMenuItem::ifer(bool iff, FuncItemType func, FuncItemType elseFunc)
+FacileMenuItem *FacileMenuItem::ifer(bool exp, FuncItemType func, FuncItemType elseFunc)
 {
-    if (iff)
+    if (exp)
     {
         if (func)
             func(this);
