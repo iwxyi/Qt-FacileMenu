@@ -14,7 +14,7 @@ FacileMenu
 ## 简单使用
 
 1. 放入源代码
-   将 `facile_menu` 文件夹放入 Qt 程序，pro 文件的 `INCLUDEPATH` 加上对应路径，`resources` 里的资源文件 `sub_menu_arrow.png` （子菜单箭头）也导入
+   将 `facile_menu` 文件夹放入 Qt 程序，pro 文件的 `INCLUDEPATH` 加上对应路径，`resources` 里的资源文件 `sub_menu_arrow.png` （子菜单箭头）也导入，前缀别名为：`:/icons/sub_menu_arrow`（或按需修改）
 
 2. 包含头文件
    `#include "facile_menu.h"`
@@ -114,28 +114,55 @@ menu->addWidget(button);
 
 
 
-### 添加选择项
+### 添加单选菜单
 
 > 如果要设置为checkable，请在创建时调用一次其以下任一方法：
 >
 > setCheckable(bool) / setChecked(bool) / check(bool) / uncheck(bool)
 
 ```C++
-auto ac1 = subMenu2->addAction(QIcon(":/icons/run"), "选中1")->check()->linger();
-auto ac2 = subMenu2->addAction("选中2")->uncheck()->linger();
-auto ac3 = subMenu2->addAction("选中3")->uncheck()->linger();
+auto ac1 = subMenu2->addAction(QIcon(":/icons/run"), "带图标")->check()->linger();
+auto ac2 = subMenu2->addAction("无图标")->uncheck()->linger();
+auto ac3 = subMenu2->split()->addAction("全不选")->uncheck()->linger();
 
 // 点击事件
 ac1->triggered([=]{
-    subMenu2->uncheckAll(ac1); // 只选中ac1
+    subMenu2->uncheckAll(ac1); // 可选参数，用于单选，表示只选中ac1
+    // 这里可以用于处理其他操作
 });
 ac2->triggered([=]{
     subMenu2->uncheckAll(ac2);
 });
 ac3->triggered([=]{
-    subMenu2->uncheckAll(ac3);
+    subMenu2->uncheckAll(); // 不带参数就是全不选
 });
 ```
+
+
+
+### 添加多选菜单
+
+```C++
+// 假装是某一个需要多选的属性
+QList<QString>* list = new QList<QString>();
+
+for (int i = 0; i < 10; i++)
+{
+    auto action = subMenu5->addAction("选项"+QString::number(i))->uncheck()->linger();
+    action->triggered([=]{
+        action->alter(); // 切换选中状态
+
+        // 自己的处理流程，例如调用某个外部的方法
+        if (action->isChecked())
+            list->append(action->getText());
+        else
+            list->removeOne(action->getText());
+        qDebug() << "当前选中的有：" << *list;
+    });
+}
+```
+
+
 
 
 
@@ -148,7 +175,7 @@ for (int i = 0; i < 10; i++)
 static int selected = 2;
 
 menu->addOptions(texts, selected, [=](int index){
-    qDebug() << "选中了：" << (selected = index);
+    qDebug() << "选中了：" << (selected = index) << texts.at(index);
 });
 ```
 
@@ -177,19 +204,18 @@ FacileMenuItem* tooltip(QString tt);
 FacileMenuItem* triggered(FuncType func);
 
 // 当参数表达式为true时生效，false时忽略，下同
-FacileMenuItem* disable(bool dis = true);
+FacileMenuItem* disable(bool exp = true);
+FacileMenuItem* enable(bool exp = true);
 
-FacileMenuItem* enable(bool en = true);
+FacileMenuItem* hide(bool exp = true);
+FacileMenuItem* visible(bool exp = true);
 
-FacileMenuItem* hide(bool hi = true);
+FacileMenuItem* check(bool exp = true);
+FacileMenuItem* uncheck(bool exp = true);
+FacileMenuItem* alter(bool exp = true);
 
-FacileMenuItem* visible(bool vi = true);
-
-FacileMenuItem* check(bool ch = true);
-
-FacileMenuItem* uncheck(bool uc = true);
-
-FacileMenuItem* text(bool te, QString str);
+FacileMenuItem* text(bool exp, QString str);
+// 当表达式为true时，设置为tru文字，否则设置为fal文字
 FacileMenuItem* text(bool exp, QString tru, QString fal);
 
 FacileMenuItem* fgColor(QColor color);
@@ -214,12 +240,12 @@ FacileMenuItem* borderR(int radius = 3, QColor co = Qt::transparent);
 // 点击后是否保持菜单显示（默认点一下就隐藏菜单）
 FacileMenuItem* linger();
 
-// 满足 iff 时执行 trueLambda 表达式，否则执行 falseLambda 表达式
-FacileMenuItem* ifer(bool iff, trueLambda, falseLambda = nullptr);
+// 满足 exp 时执行 trueLambda 表达式，否则执行 falseLambda 表达式
+FacileMenuItem* ifer(bool exp, trueLambda, falseLambda = nullptr);
 
 // 逻辑控制
-FacileMenuItem* ifer(bool iff); // 满足条件时才继续，下同
-FacileMenuItem* elifer(bool iff);
+FacileMenuItem* ifer(bool exp); // 满足条件时才继续，下同
+FacileMenuItem* elifer(bool exp);
 FacileMenuItem* elser();
 
 FacileMenuItem* switcher(int value);

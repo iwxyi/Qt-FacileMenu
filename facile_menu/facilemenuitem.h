@@ -31,14 +31,18 @@ public:
     bool isLinger() const;
 
     FacileMenuItem* tip(QString sc);
+    FacileMenuItem* tip(bool exp, QString sc);
     FacileMenuItem* tooltip(QString tt);
+    FacileMenuItem* tooltip(bool exp, QString tt);
     FacileMenuItem* triggered(FuncType func);
+    FacileMenuItem* triggered(bool exp, FuncType func);
     FacileMenuItem* disable(bool dis = true); // 满足情况下触发，不满足不变，下同
     FacileMenuItem* enable(bool en = true);
     FacileMenuItem* hide(bool hi = true);
     FacileMenuItem* visible(bool vi = true);
     FacileMenuItem* check(bool ch = true);
     FacileMenuItem* uncheck(bool uc = true);
+    FacileMenuItem* alter(bool alt = true);
     FacileMenuItem* text(bool te, QString str);
     FacileMenuItem* text(bool exp, QString tru, QString fal);
     FacileMenuItem* fgColor(QColor color);

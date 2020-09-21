@@ -281,6 +281,10 @@ FacileMenuItem *FacileMenu::lastAction()
     return items.last();
 }
 
+/**
+ * 当前正在调整的菜单项
+ * 当然是最后添加的那个
+ */
 FacileMenuItem *FacileMenu::currentAction()
 {
     return lastAction();
@@ -443,6 +447,28 @@ FacileMenu *FacileMenu::split()
 FacileMenuItem *FacileMenu::lastAddedItem()
 {
     return last_added_item;
+}
+
+/**
+ * 返回菜单项的索引
+ * 不包括非菜单项的自定义控件、布局、分割线等
+ * 未找到返回-1
+ */
+int FacileMenu::indexOf(FacileMenuItem *item)
+{
+    return items.indexOf(item);
+}
+
+/**
+ * 返回索引对应的菜单项
+ * 不包括非菜单项的自定义控件、布局、分割线等
+ * 未找到返回nullptr
+ */
+FacileMenuItem *FacileMenu::at(int index)
+{
+    if (index < 0 || index >= items.size())
+        return nullptr;
+    return items.at(index);
 }
 
 /**
@@ -613,7 +639,7 @@ void FacileMenu::toHide(int focusIndex)
 
 /**
  * 取消所有 checkable 的项的check
- * @param except 如果不为空，则设置这一项为true
+ * @param except 如果不为空，则设置这一项为true（相当于单选）
  * @param begin 开始取消选择的项，默认-1，从头开始
  * @param end   结束取消选择的项（不包括此项），默认-1，直到末尾
  */

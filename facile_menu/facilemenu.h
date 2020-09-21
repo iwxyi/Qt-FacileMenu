@@ -62,6 +62,9 @@ public:
     FacileMenu* split();
     FacileMenuItem* lastAddedItem();
 
+    int indexOf(FacileMenuItem* item);
+    FacileMenuItem* at(int index);
+
     void exec(QPoint pos = QPoint(-1, -1));
     void exec(QRect expt, bool vertical = false, QPoint pos = QPoint(-1, -1));
     void execute();

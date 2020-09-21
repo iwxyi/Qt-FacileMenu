@@ -33,7 +33,9 @@ FacileMenuItem *FacileMenuItem::setEnabled(bool e)
 
 FacileMenuItem *FacileMenuItem::setCheckable(bool c)
 {
-    checkable = c;
+    if (checkable == c)
+        return this;
+    checkable = c;    
     update();
     return this;
 }
@@ -45,11 +47,10 @@ bool FacileMenuItem::isCheckable() const
 
 FacileMenuItem *FacileMenuItem::setChecked(bool c)
 {
-    checkable = true;
     _state = c;
     if (InteractiveButtonBase::icon.isNull())
         model = IconText; // 强制显示check空白部分
-    update();
+    setCheckable(true);
     return this;
 }
 
@@ -91,9 +92,23 @@ FacileMenuItem *FacileMenuItem::tip(QString sc)
     return this;
 }
 
+FacileMenuItem *FacileMenuItem::tip(bool exp, QString sc)
+{
+    if (exp)
+        tip(sc);
+    return this;
+}
+
 FacileMenuItem *FacileMenuItem::tooltip(QString tt)
 {
     setToolTip(tt);
+    return this;
+}
+
+FacileMenuItem *FacileMenuItem::tooltip(bool exp, QString tt)
+{
+    if (exp)
+        tooltip(tt);
     return this;
 }
 
@@ -102,6 +117,13 @@ FacileMenuItem *FacileMenuItem::triggered(FuncType func)
     connect(this, &InteractiveButtonBase::clicked, this, [=]{
         func();
     });
+    return this;
+}
+
+FacileMenuItem *FacileMenuItem::triggered(bool exp, FuncType func)
+{
+    if (!exp)
+        triggered(func);
     return this;
 }
 
@@ -152,6 +174,23 @@ FacileMenuItem *FacileMenuItem::uncheck(bool uc)
     setCheckable(true);
     if (uc)
         setChecked(false);
+    return this;
+}
+
+/**
+ * 切换状态
+ * 如果选中了，则取消选中；反之亦然
+ * （本来打算不只是选中状态，然而还没想到其他有什么能切换的）
+ */
+FacileMenuItem *FacileMenuItem::alter(bool alt)
+{
+    if (!alt)
+        return this;
+    if (isCheckable())
+    {
+        setChecked(!isChecked());
+    }
+    // 以后什么功能想到再加
     return this;
 }
 

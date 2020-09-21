@@ -129,21 +129,55 @@ void MainWindow::on_pushButton_clicked()
         }
     }
 
-    auto subMenu2 = menu->addMenu("可选菜单");
+    auto subMenu2 = menu->addMenu("单选菜单");
     {
-        auto ac1 = subMenu2->addAction(QIcon(":/icons/run"), "选中1")->check()->linger();
-        auto ac2 = subMenu2->addAction("选中2")->uncheck()->linger();
-        auto ac3 = subMenu2->addAction("选中3")->uncheck()->linger();
+        auto ac1 = subMenu2->addAction(QIcon(":/icons/run"), "带图标")->check()->linger();
+        auto ac2 = subMenu2->addAction("无图标")->uncheck()->linger();
+        auto ac3 = subMenu2->split()->addAction("全不选")->uncheck()->linger();
 
         // 点击事件
         ac1->triggered([=]{
-            subMenu2->uncheckAll(ac1);
+            subMenu2->uncheckAll(ac1); // 可选参数，用于单选，表示只选中ac1
+            // 这里可以用于处理其他操作
         });
         ac2->triggered([=]{
             subMenu2->uncheckAll(ac2);
         });
         ac3->triggered([=]{
-            subMenu2->uncheckAll(ac3);
+            subMenu2->uncheckAll(); // 不带参数就是全不选
+        });
+    }
+
+    auto subMenu5 = menu->addMenu("多选菜单");
+    {
+        // 假装是某一个需要多选的属性
+        QList<QString>* list = new QList<QString>();
+
+        for (int i = 0; i < 10; i++)
+        {
+            auto action = subMenu5->addAction("选项"+QString::number(i))->uncheck()->linger();
+            action->triggered([=]{
+                action->alter(); // 切换选中状态
+
+                // 自己的处理流程，例如调用某个外部的方法
+                if (action->isChecked())
+                    list->append(action->getText());
+                else
+                    list->removeOne(action->getText());
+                qDebug() << "当前选中的有：" << *list;
+            });
+        }
+    }
+
+    auto subMenu4 = menu->addMenu("批量单选项");
+    {
+        QStringList texts;
+        for (int i = 0; i < 10; i++)
+            texts << "项目"+QString::number(i);
+        static int selected = 2;
+
+        subMenu4->addOptions(texts, selected, [=](int index){
+            qDebug() << "选中了：" << (selected = index) << texts.at(index);
         });
     }
 
@@ -158,15 +192,6 @@ void MainWindow::on_pushButton_clicked()
                 ->elser()
                 ->uncheck();
     }
-
-    auto subMenu4 = menu->addMenu("批量菜单");
-    QStringList texts;
-    for (int i = 0; i < 10; i++)
-        texts << "项目"+QString::number(i);
-    static int selected = 2;
-    subMenu4->addOptions(texts, selected, [=](int index){
-        qDebug() << "选中了：" << (selected = index);
-    });
 
     menu->exec(QCursor::pos());
 }
