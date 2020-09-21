@@ -188,7 +188,7 @@ void MainWindow::on_pushButton_clicked()
 
         for (int i = 0; i < 10; i++)
         {
-            subMenu6->addAction("选项"+QString::number(i))->uncheck()->linger();
+            subMenu6->addAction("选项"+QString::number(i));
         }
         subMenu6->setMultiCheck([=](int index, bool checked){
             if (checked)

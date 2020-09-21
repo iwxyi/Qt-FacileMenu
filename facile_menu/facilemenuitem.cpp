@@ -35,7 +35,9 @@ FacileMenuItem *FacileMenuItem::setCheckable(bool c)
 {
     if (checkable == c)
         return this;
-    checkable = c;    
+    checkable = c;
+    if (c && InteractiveButtonBase::icon.isNull())
+        model = IconText;
     update();
     return this;
 }

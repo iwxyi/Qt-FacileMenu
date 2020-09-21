@@ -701,6 +701,9 @@ QList<int> FacileMenu::checkedIndexes()
     return checkeds;
 }
 
+/**
+ * 一键设置所有菜单项为单选
+ */
 FacileMenu *FacileMenu::setSingleCheck(FuncCheckType func)
 {
     for (int i = 0; i < items.size(); i++)
@@ -717,14 +720,15 @@ FacileMenu *FacileMenu::setSingleCheck(FuncCheckType func)
     return this;
 }
 
+/**
+ * 一键设置所有菜单项为多选
+ */
 FacileMenu *FacileMenu::setMultiCheck(FuncCheckType func)
 {
     for (int i = 0; i < items.size(); i++)
     {
         auto item = items.at(i);
-        if (!item->isCheckable())
-            item->setCheckable(true);
-        item->linger(); // 多选，点了一下不能消失
+        item->setCheckable(true)->linger(); // 多选，点了一下不能消失
 
         item->triggered([=]{
             item->alter();
