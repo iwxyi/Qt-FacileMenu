@@ -151,12 +151,17 @@ void MainWindow::on_pushButton_clicked()
     auto subMenu4 = menu->addMenu("快速批量单选项");
     {
         QStringList texts;
+        QList<int> values;
         for (int i = 0; i < 10; i++)
-            texts << "项目"+QString::number(i);
+        {
+            int val = qrand() % 1000;
+            texts << "项目"+QString::number(val);
+            values << val;
+        }
         static int selected = 2;
 
         subMenu4->addOptions(texts, selected, [=](int index){
-            qDebug() << "选中了：" << (selected = index) << texts.at(index);
+            qDebug() << "选中了：" << (selected = index) << "，值：" << values.at(index);
         });
         // 这里不建议（也没有必要）修改checked状态，因为点了就隐藏掉了
     }
@@ -164,17 +169,18 @@ void MainWindow::on_pushButton_clicked()
     auto subMenu5 = menu->addMenu("多选菜单");
     {
         // 假装是某一个需要多选的属性
-        QList<QString>* list = new QList<QString>();
+        QList<int>* list = new QList<int>();
 
         for (int i = 0; i < 10; i++)
         {
-            auto action = subMenu5->addAction("选项"+QString::number(i))->uncheck()->autoAlter()->linger();
+            int val = qrand() % 1000; // 放入菜单项的自定义数据
+            auto action = subMenu5->addAction("选项"+QString::number(val))->setData(val)->uncheck()->autoAlter()->linger();
             action->triggered([=]{
                 // 自己的处理流程，例如调用某个外部的方法
                 if (action->isChecked())
-                    list->append(action->getText());
+                    list->append(action->getData().toInt());
                 else
-                    list->removeOne(action->getText());
+                    list->removeOne(action->getData().toInt());
                 qDebug() << "当前选中的有：" << *list;
             });
         }

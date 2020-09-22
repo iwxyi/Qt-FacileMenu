@@ -26,24 +26,24 @@ public:
     FacileMenu(bool sub, QWidget* parent = nullptr);
     ~FacileMenu() override;
 
-    FacileMenuItem* addAction(QIcon icon, QString text, FuncType func = nullptr);
-    FacileMenuItem* addAction(QIcon icon, FuncType func = nullptr);
-    FacileMenuItem* addAction(QString text, FuncType func = nullptr);
+    FacileMenuItem* addAction(QIcon icon, QString text, FuncType clicked = nullptr);
+    FacileMenuItem* addAction(QIcon icon, FuncType clicked = nullptr);
+    FacileMenuItem* addAction(QString text, FuncType clicked = nullptr);
     FacileMenuItem* addAction(QAction* action, bool deleteWithMenu = false);
     FacileMenuItem* addAction(QIcon icon, QString text, void (*func)());
     template <class T>
     FacileMenuItem* addAction(QIcon icon, QString text, T *obj, void (T::*func)());
-    FacileMenu* addNumberedActions(QString pattern, int numberStart, int numberEnd, FuncItemType config = nullptr, FuncIntType func = nullptr);
-    FacileMenu* addNumberedActions(QString pattern, int numberStart, int numberEnd, FuncItemIntType config, FuncIntType func = nullptr);
+    FacileMenu* addNumberedActions(QString pattern, int numberStart, int numberEnd, FuncItemType config = nullptr, FuncIntType clicked = nullptr);
+    FacileMenu* addNumberedActions(QString pattern, int numberStart, int numberEnd, FuncItemIntType config, FuncIntType clicked = nullptr);
 
-    FacileMenu* addRow(FuncType func = []{});
+    FacileMenu* addRow(FuncType addActions = []{});
     FacileMenu* beginRow();
     FacileMenu* endRow();
     QVBoxLayout* createNextColumn();
     QBoxLayout* currentLayout() const;
 
-    FacileMenu* addMenu(QIcon icon, QString text, FuncType func = nullptr);
-    FacileMenu* addMenu(QString text, FuncType func = nullptr);
+    FacileMenu* addMenu(QIcon icon, QString text, FuncType clicked = nullptr);
+    FacileMenu* addMenu(QString text, FuncType clicked = nullptr);
     FacileMenuItem* parentAction();
     FacileMenuItem* lastAction();
     FacileMenuItem* currentAction();
@@ -72,15 +72,16 @@ public:
     void toHide(int focusIndex = -1);
     FacileMenu* finished(FuncType func);
 
-    FacileMenu* addOptions(QList<QString>texts, QList<bool>states, FuncIntType func);
-    FacileMenu* addOptions(QList<QString>texts, int select, FuncIntType func);
+    FacileMenu* addOptions(QList<QString>texts, QList<bool>states, FuncIntType clicked);
+    FacileMenu* addOptions(QList<QString>texts, int select, FuncIntType clicked);
     FacileMenu* singleCheck(FacileMenuItem* item);
     FacileMenu* uncheckAll(FacileMenuItem* except = nullptr, int begin = -1, int end = -1);
     QList<FacileMenuItem*> checkedItems();
     QList<int> checkedIndexes();
     QStringList checkedItemTexts();
-    FacileMenu* setSingleCheck(FuncCheckType func = nullptr);
-    FacileMenu* setMultiCheck(FuncCheckType func = nullptr);
+    QList<QVariant> checkedItemDatas();
+    FacileMenu* setSingleCheck(FuncCheckType clicked = nullptr);
+    FacileMenu* setMultiCheck(FuncCheckType clicked = nullptr);
 
     FacileMenu* setTipArea(int x = 48);
     FacileMenu* setTipArea(QString longestTip);

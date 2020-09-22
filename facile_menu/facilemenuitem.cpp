@@ -86,6 +86,17 @@ bool FacileMenuItem::isLinger() const
     return trigger_linger;
 }
 
+FacileMenuItem *FacileMenuItem::setData(QVariant data)
+{
+    this->data = data;
+    return this;
+}
+
+QVariant FacileMenuItem::getData()
+{
+    return data;
+}
+
 FacileMenuItem *FacileMenuItem::tip(QString sc)
 {
     shortcut_tip = sc;

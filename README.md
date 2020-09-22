@@ -249,6 +249,10 @@ FacileMenuItem* check(bool exp = true);
 FacileMenuItem* uncheck(bool exp = true);
 FacileMenuItem* alter(bool exp = true);
 
+// 设置data，一般用于单选、多选
+FacileMenuItem* setData(QVariant data);
+QVariant getData();
+
 FacileMenuItem* text(bool exp, QString str);
 // 当表达式为true时，设置为tru文字，否则设置为fal文字
 FacileMenuItem* text(bool exp, QString tru, QString fal);

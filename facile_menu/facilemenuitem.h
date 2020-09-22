@@ -30,6 +30,8 @@ public:
     FacileMenuItem* setSubMenu(FacileMenu* menu);
     bool isSubMenu() const;
     bool isLinger() const;
+    FacileMenuItem* setData(QVariant data);
+    QVariant getData();
 
     FacileMenuItem* tip(QString sc);
     FacileMenuItem* tip(bool exp, QString sc);
@@ -89,6 +91,7 @@ private:
     FacileMenuItem* parent_menu_item_in_if = nullptr; // elser/caser专用
     int switch_value = 0; // switcher的值，用来和caser比较（不需要breaker……）
     bool switch_matched = true;
+    QVariant data;
 };
 
 #endif // FACILEMENUITEM_H

@@ -55,14 +55,14 @@ FacileMenu::~FacileMenu()
         action->deleteLater();
 }
 
-FacileMenuItem *FacileMenu::addAction(QIcon icon, QString text, FuncType func)
+FacileMenuItem *FacileMenu::addAction(QIcon icon, QString text, FuncType clicked)
 {
     auto item = createMenuItem(icon, text);
     connect(item, &InteractiveButtonBase::clicked, this, [=]{
         if (_showing_animation)
             return ;
-        if (func != nullptr)
-            func();
+        if (clicked != nullptr)
+            clicked();
         if (item->isLinger())
             return ;
         emit signalActionTriggered(item);
@@ -72,14 +72,14 @@ FacileMenuItem *FacileMenu::addAction(QIcon icon, QString text, FuncType func)
     return item;
 }
 
-FacileMenuItem *FacileMenu::addAction(QIcon icon, FuncType func)
+FacileMenuItem *FacileMenu::addAction(QIcon icon, FuncType clicked)
 {
-    return addAction(icon, "", func);
+    return addAction(icon, "", clicked);
 }
 
-FacileMenuItem *FacileMenu::addAction(QString text, FuncType func)
+FacileMenuItem *FacileMenu::addAction(QString text, FuncType clicked)
 {
-    return addAction(QIcon(), text, func);
+    return addAction(QIcon(), text, clicked);
 }
 
 FacileMenuItem *FacileMenu::addAction(QAction *action, bool deleteWithMenu)
@@ -132,14 +132,14 @@ FacileMenuItem *FacileMenu::addAction(QIcon icon, QString text, T *obj, void (T:
  * 批量添加带数字（可以不带）的action
  * 相当于只是少了个for循环……
  */
-FacileMenu *FacileMenu::addNumberedActions(QString pattern, int numberStart, int numberEnd, FuncItemType config, FuncIntType func)
+FacileMenu *FacileMenu::addNumberedActions(QString pattern, int numberStart, int numberEnd, FuncItemType config, FuncIntType clicked)
 {
     int step = numberStart <= numberEnd ? 1 : -1;
     for (int i = numberStart; i != numberEnd; i += step)
     {
         auto ac = addAction(pattern.arg(i), [=]{
-            if (func)
-                func(i);
+            if (clicked)
+                clicked(i);
         });
         if (config)
             config(ac);
@@ -151,14 +151,14 @@ FacileMenu *FacileMenu::addNumberedActions(QString pattern, int numberStart, int
  * 同上
  * @param config (Item*, int) 其中参数2表示number遍历的位置，不是当前item的index
  */
-FacileMenu *FacileMenu::addNumberedActions(QString pattern, int numberStart, int numberEnd, FuncItemIntType config, FuncIntType func)
+FacileMenu *FacileMenu::addNumberedActions(QString pattern, int numberStart, int numberEnd, FuncItemIntType config, FuncIntType clicked)
 {
     int step = numberStart <= numberEnd ? 1 : -1;
     for (int i = numberStart; i != numberEnd; i += step)
     {
         auto ac = addAction(pattern.arg(i), [=]{
-            if (func)
-                func(i);
+            if (clicked)
+                clicked(i);
         });
         if (config)
             config(ac, i);
@@ -166,7 +166,7 @@ FacileMenu *FacileMenu::addNumberedActions(QString pattern, int numberStart, int
     return this;
 }
 
-FacileMenu *FacileMenu::addRow(FuncType func)
+FacileMenu *FacileMenu::addRow(FuncType addActions)
 {
     QHBoxLayout* layout = new QHBoxLayout;
     row_hlayouts.append(layout);
@@ -175,7 +175,7 @@ FacileMenu *FacileMenu::addRow(FuncType func)
     align_mid_if_alone = true;
     adding_horizone = true;
 
-    func();
+    addActions();
 
     align_mid_if_alone = false;
     adding_horizone = false;
@@ -229,17 +229,17 @@ QBoxLayout *FacileMenu::currentLayout() const
  * 鼠标浮在上面展开
  * 同时也可以设置点击事件
  */
-FacileMenu *FacileMenu::addMenu(QIcon icon, QString text, FuncType func)
+FacileMenu *FacileMenu::addMenu(QIcon icon, QString text, FuncType clicked)
 {
     auto item = createMenuItem(icon, text);
 
     // 子菜单项是否可点击
-    if (func != nullptr)
+    if (clicked != nullptr)
     {
         connect(item, &InteractiveButtonBase::clicked, this, [=]{
             if (_showing_animation)
                 return ;
-            func();
+            clicked();
             emit signalActionTriggered(item);
             toHide(items.indexOf(item));
         });
@@ -292,9 +292,9 @@ FacileMenu *FacileMenu::addMenu(QIcon icon, QString text, FuncType func)
     return menu;
 }
 
-FacileMenu *FacileMenu::addMenu(QString text, FuncType func)
+FacileMenu *FacileMenu::addMenu(QString text, FuncType clicked)
 {
-    return addMenu(QIcon(), text, func);
+    return addMenu(QIcon(), text, clicked);
 }
 
 /**
@@ -670,20 +670,20 @@ FacileMenu* FacileMenu::finished(FuncType func)
  * @param func   回调
  * @return
  */
-FacileMenu *FacileMenu::addOptions(QList<QString> texts, QList<bool> states, FuncIntType func)
+FacileMenu *FacileMenu::addOptions(QList<QString> texts, QList<bool> states, FuncIntType clicked)
 {
     int si = qMin(texts.size(), states.size());
     for (int i = 0; i < si; i++)
     {
         addAction(texts.at(i), [=]{
-            func(i);
+            clicked(i);
         })->check(states.at(i));
     }
 
     return this;
 }
 
-FacileMenu *FacileMenu::addOptions(QList<QString> texts, int select, FuncIntType func)
+FacileMenu *FacileMenu::addOptions(QList<QString> texts, int select, FuncIntType clicked)
 {
     QList<bool>states;
     for (int i = 0; i < texts.size(); i++)
@@ -692,7 +692,7 @@ FacileMenu *FacileMenu::addOptions(QList<QString> texts, int select, FuncIntType
     if (select >= 0 && select < states.size())
         states[select] = true;
 
-    return addOptions(texts, states, func);
+    return addOptions(texts, states, clicked);
 }
 
 /**
@@ -774,10 +774,25 @@ QStringList FacileMenu::checkedItemTexts()
 }
 
 /**
+ * 返回选中项的自定义data列表
+ * 如果没设置的话，会是无效的QVariant
+ */
+QList<QVariant> FacileMenu::checkedItemDatas()
+{
+    QList<QVariant> datas;
+    foreach (auto item, items)
+    {
+        if (item->isCheckable() && item->isChecked())
+            datas.append(item->getData());
+    }
+    return datas;
+}
+
+/**
  * 一键设置已有菜单项为单选项
  * 注意，一定要在添加后设置，否则对后添加的项无效
  */
-FacileMenu *FacileMenu::setSingleCheck(FuncCheckType func)
+FacileMenu *FacileMenu::setSingleCheck(FuncCheckType clicked)
 {
     for (int i = 0; i < items.size(); i++)
     {
@@ -787,8 +802,8 @@ FacileMenu *FacileMenu::setSingleCheck(FuncCheckType func)
 
         item->triggered([=]{
             item->alter();
-            if (func)
-                func(i, item->isChecked());
+            if (clicked)
+                clicked(i, item->isChecked());
         });
     }
     return this;
@@ -798,7 +813,7 @@ FacileMenu *FacileMenu::setSingleCheck(FuncCheckType func)
  * 一键设置已经菜单项为多选项
  * 注意，一定要在添加后设置，否则对后添加的项无效
  */
-FacileMenu *FacileMenu::setMultiCheck(FuncCheckType func)
+FacileMenu *FacileMenu::setMultiCheck(FuncCheckType clicked)
 {
     for (int i = 0; i < items.size(); i++)
     {
@@ -807,8 +822,8 @@ FacileMenu *FacileMenu::setMultiCheck(FuncCheckType func)
 
         item->triggered([=]{
             item->alter();
-            if (func)
-                func(i, item->isChecked());
+            if (clicked)
+                clicked(i, item->isChecked());
         });
     }
     return this;
