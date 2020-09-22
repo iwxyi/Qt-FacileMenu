@@ -148,7 +148,7 @@ QList<QString>* list = new QList<QString>();
 
 for (int i = 0; i < 10; i++)
 {
-    auto action = subMenu5->addAction("选项"+QString::number(i))->uncheck()->linger()->autoAlter()/*点击自动切换选中状态*/;
+    auto action = subMenu5->addAction("选项"+QString::number(i))->uncheck()->linger()->autoToggle()/*点击自动切换选中状态*/;
     action->triggered([=]{
         // 自己的处理流程，例如调用某个外部的方法
         if (action->isChecked())
@@ -247,7 +247,7 @@ FacileMenuItem* visible(bool exp = true);
 
 FacileMenuItem* check(bool exp = true);
 FacileMenuItem* uncheck(bool exp = true);
-FacileMenuItem* alter(bool exp = true);
+FacileMenuItem* toggle(bool exp = true);
 
 // 设置data，一般用于单选、多选
 FacileMenuItem* setData(QVariant data);

@@ -174,7 +174,7 @@ void MainWindow::on_pushButton_clicked()
         for (int i = 0; i < 10; i++)
         {
             int val = qrand() % 1000; // 放入菜单项的自定义数据
-            auto action = subMenu5->addAction("选项"+QString::number(val))->setData(val)->uncheck()->autoAlter()->linger();
+            auto action = subMenu5->addAction("选项"+QString::number(val))->setData(val)->uncheck()->autoToggle()->linger();
             action->triggered([=]{
                 // 自己的处理流程，例如调用某个外部的方法
                 if (action->isChecked())
@@ -220,7 +220,7 @@ void MainWindow::on_pushButton_clicked()
     auto subMenu8 = menu->addMenu("批量数字项");
     {
         subMenu8->addNumberedActions("选项%1", 3, 13, [&](FacileMenuItem* item, int i){
-            item->setChecked(i%5==0)->linger()->autoAlter();
+            item->setChecked(i%5==0)->linger()->autoToggle();
         })->finished([=]{
             auto list = subMenu8->checkedItemTexts();
             if (list.size() != 2)
@@ -239,6 +239,29 @@ void MainWindow::on_pushButton_clicked()
                 ->check()
                 ->elser()
                 ->uncheck();
+    }
+
+    // 导入QMenu和QAction
+    {
+        QMenu* m = new QMenu("QMenu菜单", this);
+        QAction* action1 = new QAction("子action1", this);
+        QAction* action2 = new QAction("子action2", this);
+        QAction* action3 = new QAction("子action3", this);
+        m->addAction(action1);
+        m->addAction(action2);
+        m->addAction(action3);
+        QMenu* m2 = new QMenu("QMenu菜单2", this);
+        QAction* action21 = new QAction("子action21", this);
+        QAction* action22 = new QAction("子action22", this);
+        QAction* action23 = new QAction("子action23", this);
+        m2->addAction(action21);
+        m2->addAction(action22);
+        m2->addAction(action23);
+        action2->setMenu(m2);
+        connect(action1, &QAction::triggered, this, [=]{ qDebug() << "action1.triggered"; });
+        connect(action21, &QAction::triggered, this, [=]{ qDebug() << "action21.triggered"; });
+
+        menu->addMenu(m);
     }
 
     menu->exec(QCursor::pos());

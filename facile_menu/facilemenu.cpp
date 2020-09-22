@@ -86,7 +86,16 @@ FacileMenuItem *FacileMenu::addAction(QAction *action, bool deleteWithMenu)
 {
     if (deleteWithMenu)
         import_actions.append(action); // 加入列表，菜单delete时一起删了
-    return addAction(action->icon(), action->text(), [=]{action->trigger();});
+    if (action->menu() != nullptr) // 这是个菜单
+    {
+        auto menu = addMenu(action->icon(), action->text(), [=]{ action->trigger(); });
+        menu->addActions(action->menu()->actions());
+        return menu->parentAction();
+    }
+    else // 普通的action
+    {
+        return addAction(action->icon(), action->text(), [=]{ action->trigger(); });
+    }
 }
 
 /**
@@ -162,6 +171,15 @@ FacileMenu *FacileMenu::addNumberedActions(QString pattern, int numberStart, int
         });
         if (config)
             config(ac, i);
+    }
+    return this;
+}
+
+FacileMenu *FacileMenu::addActions(QList<QAction *> actions)
+{
+    foreach (auto action, actions)
+    {
+        addAction(action);
     }
     return this;
 }
@@ -295,6 +313,20 @@ FacileMenu *FacileMenu::addMenu(QIcon icon, QString text, FuncType clicked)
 FacileMenu *FacileMenu::addMenu(QString text, FuncType clicked)
 {
     return addMenu(QIcon(), text, clicked);
+}
+
+/**
+ * 从已有menu中导入actions
+ */
+FacileMenu *FacileMenu::addMenu(QMenu *menu)
+{
+    FacileMenu* m = addMenu(menu->icon(), menu->title());
+    auto actions = menu->actions();
+    for (int i = 0; i < actions.size(); i++)
+    {
+        m->addAction(actions.at(i));
+    }
+    return m;
 }
 
 /**
@@ -801,7 +833,7 @@ FacileMenu *FacileMenu::setSingleCheck(FuncCheckType clicked)
             item->setCheckable(true);
 
         item->triggered([=]{
-            item->alter();
+            item->toggle();
             if (clicked)
                 clicked(i, item->isChecked());
         });
@@ -821,7 +853,7 @@ FacileMenu *FacileMenu::setMultiCheck(FuncCheckType clicked)
         item->setCheckable(true)->linger(); // 多选，点了一下不能消失
 
         item->triggered([=]{
-            item->alter();
+            item->toggle();
             if (clicked)
                 clicked(i, item->isChecked());
         });
@@ -839,6 +871,11 @@ FacileMenu *FacileMenu::setTipArea(int x)
     return this;
 }
 
+/**
+ * 设置左边提示的区域内容
+ * 一般是用来放快捷键
+ * @param tip 内容是什么不重要，只要等同于需要容纳的最长字符串即可（例如"ctrl+shit+alt+s"）
+ */
 FacileMenu *FacileMenu::setTipArea(QString longestTip)
 {
     QFontMetrics fm(this->font());
@@ -865,11 +902,11 @@ void FacileMenu::itemMouseEntered(FacileMenuItem *item)
         items.at(current_index)->discardHoverPress(true);
     current_index = index;
 
-    if (current_sub_menu) // 进入这个action，展开的子菜单隐藏起来
+    if (current_sub_menu) // 进入这个action，其他action展开的子菜单隐藏起来
     {
         current_sub_menu->hidden_by_another = true;
-       current_sub_menu->hide();
-       current_sub_menu = nullptr;
+        current_sub_menu->hide();
+        current_sub_menu = nullptr;
     }
 }
 

@@ -193,7 +193,7 @@ FacileMenuItem *FacileMenuItem::uncheck(bool exp)
  * 如果选中了，则取消选中；反之亦然
  * （本来打算不只是选中状态，然而还没想到其他有什么能切换的）
  */
-FacileMenuItem *FacileMenuItem::alter(bool exp)
+FacileMenuItem *FacileMenuItem::toggle(bool exp)
 {
     if (!exp)
         return this;
@@ -211,10 +211,10 @@ FacileMenuItem *FacileMenuItem::alter(bool exp)
  * 建议只用于和顺序无关的自动切换
  * （还不知道怎么修改信号槽的调用顺序）
  */
-FacileMenuItem *FacileMenuItem::autoAlter()
+FacileMenuItem *FacileMenuItem::autoToggle()
 {
     connect(this, &InteractiveButtonBase::clicked, this, [=]{
-        alter();
+        toggle();
     });
     return this;
 }

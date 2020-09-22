@@ -45,8 +45,8 @@ public:
     FacileMenuItem* visible(bool exp = true);
     FacileMenuItem* check(bool exp = true);
     FacileMenuItem* uncheck(bool exp = true);
-    FacileMenuItem* alter(bool exp = true);
-    FacileMenuItem* autoAlter();
+    FacileMenuItem* toggle(bool exp = true);
+    FacileMenuItem* autoToggle();
     FacileMenuItem* text(bool exp, QString str);
     FacileMenuItem* text(bool exp, QString tru, QString fal);
     FacileMenuItem* fgColor(QColor color);

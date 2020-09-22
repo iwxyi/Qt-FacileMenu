@@ -11,6 +11,7 @@
 #include <QApplication>
 #include <QScreen>
 #include <QGraphicsDropShadowEffect>
+#include <QMenu>
 #include <QAction>
 #include "facilemenuitem.h"
 
@@ -23,7 +24,6 @@ class FacileMenu : public QWidget
     Q_OBJECT
 public:
     FacileMenu(QWidget *parent = nullptr);
-    FacileMenu(bool sub, QWidget* parent = nullptr);
     ~FacileMenu() override;
 
     FacileMenuItem* addAction(QIcon icon, QString text, FuncType clicked = nullptr);
@@ -35,6 +35,7 @@ public:
     FacileMenuItem* addAction(QIcon icon, QString text, T *obj, void (T::*func)());
     FacileMenu* addNumberedActions(QString pattern, int numberStart, int numberEnd, FuncItemType config = nullptr, FuncIntType clicked = nullptr);
     FacileMenu* addNumberedActions(QString pattern, int numberStart, int numberEnd, FuncItemIntType config, FuncIntType clicked = nullptr);
+    FacileMenu* addActions(QList<QAction*> actions);
 
     FacileMenu* addRow(FuncType addActions = []{});
     FacileMenu* beginRow();
@@ -44,6 +45,7 @@ public:
 
     FacileMenu* addMenu(QIcon icon, QString text, FuncType clicked = nullptr);
     FacileMenu* addMenu(QString text, FuncType clicked = nullptr);
+    FacileMenu* addMenu(QMenu* menu);
     FacileMenuItem* parentAction();
     FacileMenuItem* lastAction();
     FacileMenuItem* currentAction();
@@ -95,6 +97,7 @@ private slots:
     void itemMouseEntered(FacileMenuItem* item);
 
 protected:
+    FacileMenu(bool sub, QWidget* parent = nullptr);
     FacileMenuItem* createMenuItem(QIcon icon, QString text);
     Qt::Key getShortcutByText(QString text) const;
     void setActionButton(InteractiveButtonBase* btn, bool isChip = false);
@@ -131,7 +134,7 @@ private:
     QPixmap bg_pixmap;
 
     FacileMenu* current_sub_menu = nullptr; // 当前打开（不一定显示）的子菜单
-    FacileMenu* parent_menu = nullptr; // 父类的菜单
+    FacileMenu* parent_menu = nullptr; // 父对象的菜单
     FacileMenuItem* last_added_item = nullptr; // 最后添加的item
     FuncType* finished_func = nullptr;
 
