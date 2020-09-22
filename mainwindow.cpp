@@ -148,27 +148,6 @@ void MainWindow::on_pushButton_clicked()
         });
     }
 
-    auto subMenu5 = menu->addMenu("多选菜单");
-    {
-        // 假装是某一个需要多选的属性
-        QList<QString>* list = new QList<QString>();
-
-        for (int i = 0; i < 10; i++)
-        {
-            auto action = subMenu5->addAction("选项"+QString::number(i))->uncheck()->linger();
-            action->triggered([=]{
-                action->alter(); // 切换选中状态
-
-                // 自己的处理流程，例如调用某个外部的方法
-                if (action->isChecked())
-                    list->append(action->getText());
-                else
-                    list->removeOne(action->getText());
-                qDebug() << "当前选中的有：" << *list;
-            });
-        }
-    }
-
     auto subMenu4 = menu->addMenu("快速批量单选项");
     {
         QStringList texts;
@@ -179,23 +158,67 @@ void MainWindow::on_pushButton_clicked()
         subMenu4->addOptions(texts, selected, [=](int index){
             qDebug() << "选中了：" << (selected = index) << texts.at(index);
         });
+        // 这里不建议（也没有必要）修改checked状态，因为点了就隐藏掉了
+    }
+
+    auto subMenu5 = menu->addMenu("多选菜单");
+    {
+        // 假装是某一个需要多选的属性
+        QList<QString>* list = new QList<QString>();
+
+        for (int i = 0; i < 10; i++)
+        {
+            auto action = subMenu5->addAction("选项"+QString::number(i))->uncheck()->autoAlter()->linger();
+            action->triggered([=]{
+                // 自己的处理流程，例如调用某个外部的方法
+                if (action->isChecked())
+                    list->append(action->getText());
+                else
+                    list->removeOne(action->getText());
+                qDebug() << "当前选中的有：" << *list;
+            });
+        }
+
+        subMenu5->finished([=]{
+            if (list->size())
+                qDebug() << "多选 最终选中：" << *list;
+            delete list;
+        });
     }
 
     auto subMenu6 = menu->addMenu("快速批量多选项");
     {
         // 假装是某一个需要多选的属性
         QList<int>* list = new QList<int>();
+        subMenu6->addNumberedActions("选项%1", 0, 10)
+            ->setMultiCheck([=](int index, bool checked){
+                if (checked)
+                    list->append(index);
+                else
+                    list->removeOne(index);
+                qDebug() << "当前选中的有：" << *list;
+            });
+    }
 
-        for (int i = 0; i < 10; i++)
-        {
-            subMenu6->addAction("选项"+QString::number(i));
-        }
-        subMenu6->setMultiCheck([=](int index, bool checked){
-            if (checked)
-                list->append(index);
-            else
-                list->removeOne(index);
-            qDebug() << "当前选中的有：" << *list;
+    auto subMenu7 = menu->addMenu("极简批量多选项");
+    {
+        QList<QString>* list = new QList<QString>();
+        subMenu7->addNumberedActions("选项%1", 0, 15)->setMultiCheck()
+                ->finished([=]{
+            *list = subMenu7->checkedItemTexts();
+            if (list->size())
+                qDebug() << "极简多选项 最终选中：" << *list;
+        });
+    }
+
+    auto subMenu8 = menu->addMenu("批量数字项");
+    {
+        subMenu8->addNumberedActions("选项%1", 3, 13, [&](FacileMenuItem* item, int i){
+            item->setChecked(i%5==0)->linger()->autoAlter();
+        })->finished([=]{
+            auto list = subMenu8->checkedItemTexts();
+            if (list.size() != 2)
+                qDebug() << "批量数字项 最终选中：" << list;
         });
     }
 
@@ -204,6 +227,7 @@ void MainWindow::on_pushButton_clicked()
         static bool b = false;
         subMenu3->addAction("if else 判断")
                 ->tooltip("试一下 ifer elser")
+                ->text(b, "当前：if", "当前：else")
                 ->triggered([=]{b = !b;})
                 ->ifer(b)
                 ->check()

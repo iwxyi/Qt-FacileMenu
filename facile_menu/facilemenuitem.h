@@ -9,6 +9,7 @@ class FacileMenuItem;
 typedef std::function<void()> const FuncType;
 typedef std::function<void(int)> const FuncIntType;
 typedef std::function<void(FacileMenuItem*)> const FuncItemType;
+typedef std::function<void(FacileMenuItem*, int)> const FuncItemIntType;
 
 class FacileMenuItem : public InteractiveButtonBase
 {
@@ -43,6 +44,7 @@ public:
     FacileMenuItem* check(bool exp = true);
     FacileMenuItem* uncheck(bool exp = true);
     FacileMenuItem* alter(bool exp = true);
+    FacileMenuItem* autoAlter();
     FacileMenuItem* text(bool exp, QString str);
     FacileMenuItem* text(bool exp, QString tru, QString fal);
     FacileMenuItem* fgColor(QColor color);

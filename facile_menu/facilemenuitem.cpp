@@ -33,10 +33,8 @@ FacileMenuItem *FacileMenuItem::setEnabled(bool e)
 
 FacileMenuItem *FacileMenuItem::setCheckable(bool c)
 {
-    if (checkable == c)
-        return this;
     checkable = c;
-    if (c && InteractiveButtonBase::icon.isNull())
+    if (c && model != IconText && InteractiveButtonBase::icon.isNull())
         model = IconText;
     update();
     return this;
@@ -56,7 +54,7 @@ FacileMenuItem *FacileMenuItem::setChecked(bool c)
     return this;
 }
 
-inline bool FacileMenuItem::isChecked()
+bool FacileMenuItem::isChecked()
 {
     return getState();
 }
@@ -193,6 +191,20 @@ FacileMenuItem *FacileMenuItem::alter(bool exp)
         setChecked(!isChecked());
     }
     // 以后什么功能想到再加
+    return this;
+}
+
+/**
+ * 点击自动切换状态
+ * 小心点，因为信号槽顺序的关系，若放在triggered后面，可能会出现相反的check
+ * 建议只用于和顺序无关的自动切换
+ * （还不知道怎么修改信号槽的调用顺序）
+ */
+FacileMenuItem *FacileMenuItem::autoAlter()
+{
+    connect(this, &InteractiveButtonBase::clicked, this, [=]{
+        alter();
+    });
     return this;
 }
 

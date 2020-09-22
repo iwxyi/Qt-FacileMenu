@@ -33,6 +33,8 @@ public:
     FacileMenuItem* addAction(QIcon icon, QString text, void (*func)());
     template <class T>
     FacileMenuItem* addAction(QIcon icon, QString text, T *obj, void (T::*func)());
+    FacileMenu* addNumberedActions(QString pattern, int numberStart, int numberEnd, FuncItemType config = nullptr, FuncIntType func = nullptr);
+    FacileMenu* addNumberedActions(QString pattern, int numberStart, int numberEnd, FuncItemIntType config, FuncIntType func = nullptr);
 
     FacileMenu* addRow(FuncType func = []{});
     FacileMenu* beginRow();
@@ -57,9 +59,6 @@ public:
     FacileMenu* setStretchFactor(QWidget *widget, int stretch);
     FacileMenu* setStretchFactor(QLayout *layout, int stretch);
 
-    FacileMenu* addOptions(QList<QString>texts, QList<bool>states, FuncIntType func);
-    FacileMenu* addOptions(QList<QString>texts, int select, FuncIntType func);
-
     FacileMenuItem* addSeparator();
     FacileMenu* split();
     FacileMenuItem* lastAddedItem();
@@ -71,13 +70,17 @@ public:
     void exec(QRect expt, bool vertical = false, QPoint pos = QPoint(-1, -1));
     void execute();
     void toHide(int focusIndex = -1);
+    FacileMenu* finished(FuncType func);
 
+    FacileMenu* addOptions(QList<QString>texts, QList<bool>states, FuncIntType func);
+    FacileMenu* addOptions(QList<QString>texts, int select, FuncIntType func);
     FacileMenu* singleCheck(FacileMenuItem* item);
     FacileMenu* uncheckAll(FacileMenuItem* except = nullptr, int begin = -1, int end = -1);
     QList<FacileMenuItem*> checkedItems();
     QList<int> checkedIndexes();
-    FacileMenu* setSingleCheck(FuncCheckType func);
-    FacileMenu* setMultiCheck(FuncCheckType func);
+    QStringList checkedItemTexts();
+    FacileMenu* setSingleCheck(FuncCheckType func = nullptr);
+    FacileMenu* setMultiCheck(FuncCheckType func = nullptr);
 
     FacileMenu* setTipArea(int x = 48);
     FacileMenu* setTipArea(QString longestTip);
@@ -129,6 +132,7 @@ private:
     FacileMenu* current_sub_menu = nullptr; // 当前打开（不一定显示）的子菜单
     FacileMenu* parent_menu = nullptr; // 父类的菜单
     FacileMenuItem* last_added_item = nullptr; // 最后添加的item
+    FuncType* finished_func = nullptr;
 
     int addin_tip_area = 0; // 右边用来显示提示文字的区域
     bool adding_horizone = false; // 是否正在添加横向菜单

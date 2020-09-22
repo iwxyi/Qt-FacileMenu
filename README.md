@@ -148,10 +148,8 @@ QList<QString>* list = new QList<QString>();
 
 for (int i = 0; i < 10; i++)
 {
-    auto action = subMenu5->addAction("选项"+QString::number(i))->uncheck()->linger();
+    auto action = subMenu5->addAction("选项"+QString::number(i))->uncheck()->linger()->autoAlter()/*点击自动切换选中状态*/;
     action->triggered([=]{
-        action->alter(); // 切换选中状态
-
         // 自己的处理流程，例如调用某个外部的方法
         if (action->isChecked())
             list->append(action->getText());
@@ -164,7 +162,7 @@ for (int i = 0; i < 10; i++)
 
 
 
-### 批量添加单选项
+### 快速批量单选项
 
 ```C++
 QStringList texts;
@@ -179,27 +177,66 @@ menu->addOptions(texts, selected, [=](int index){
 
 
 
+### 快速批量多选项
+
+监听每一项改变的结果
+
+```C++
+// 假装是某一个需要多选的属性
+QList<int>* list = new QList<int>();
+subMenu6->addNumberedActions("选项%1", 0, 10)
+    ->setMultiCheck([=](int index, bool checked){
+        if (checked)
+            list->append(index);
+        else
+            list->removeOne(index);
+        qDebug() << "当前选中的有：" << *list;
+    });
+```
+
+
+
+### 极简批量多选项
+
+直接读取多选项结果，而不是监听多选项每一项（也可以两者结合）
+
+在`finished()`中获取`checkedItems()`，即为选中项
+
+```C++
+QList<QString>* list = new QList<QString>();
+subMenu7->addNumberedActions("选项%1", 0, 15)->setMultiCheck()
+    ->finished([=]{
+        *list = subMenu7->checkedItemTexts();
+        qDebug() << "最终选中：" << *list;
+    });
+```
+
+
+
 ### 菜单项 API
 
 `addAction()`后，可直接设置菜单项的一些属性，包括以下：
 
-> 第一个参数为`bool`类型的，表示满足此条件才修改设置，例如：
+> 第一个参数为`bool`类型的，表示**满足此条件才修改设置**，例如：
 >
 > ```C++
 > bool needHide = false;
-> action->hide(needHide); // 不满足隐藏条件，不隐藏
+> action->hide(needHide); // 不满足隐藏条件，即无视此语句
 > ```
 
 ```C++
 // 菜单项右边快捷键区域的文字
 // 如果要使用，建议用：setTipArea 来额外添加设置右边空白宽度
 FacileMenuItem* tip(QString sc);
+FacileMenuItem* tip(bool exp, QString sc);
 
 // 鼠标悬浮提示
 FacileMenuItem* tooltip(QString tt);
+FacileMenuItem* tooltip(bool exp, QString tt);
 
 // 触发（单击、回车键）后，参数为 Lambda 表达式
 FacileMenuItem* triggered(FuncType func);
+FacileMenuItem* triggered(bool exp, FuncType func);
 
 // 当参数表达式为true时生效，false时忽略，下同
 FacileMenuItem* disable(bool exp = true);

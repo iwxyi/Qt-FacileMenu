@@ -46,6 +46,11 @@ FacileMenu::FacileMenu(bool, QWidget *parent) : FacileMenu(parent)
 
 FacileMenu::~FacileMenu()
 {
+    if (finished_func)
+    {
+        (*finished_func)();
+        delete  finished_func;
+    }
     foreach (auto action, import_actions)
         action->deleteLater();
 }
@@ -121,6 +126,44 @@ FacileMenuItem *FacileMenu::addAction(QIcon icon, QString text, T *obj, void (T:
     });
     connect(item, &InteractiveButtonBase::signalMouseEnter, this, [=]{ itemMouseEntered(item); });
     return item;
+}
+
+/**
+ * 批量添加带数字（可以不带）的action
+ * 相当于只是少了个for循环……
+ */
+FacileMenu *FacileMenu::addNumberedActions(QString pattern, int numberStart, int numberEnd, FuncItemType config, FuncIntType func)
+{
+    int step = numberStart <= numberEnd ? 1 : -1;
+    for (int i = numberStart; i != numberEnd; i += step)
+    {
+        auto ac = addAction(pattern.arg(i), [=]{
+            if (func)
+                func(i);
+        });
+        if (config)
+            config(ac);
+    }
+    return this;
+}
+
+/**
+ * 同上
+ * @param config (Item*, int) 其中参数2表示number遍历的位置，不是当前item的index
+ */
+FacileMenu *FacileMenu::addNumberedActions(QString pattern, int numberStart, int numberEnd, FuncItemIntType config, FuncIntType func)
+{
+    int step = numberStart <= numberEnd ? 1 : -1;
+    for (int i = numberStart; i != numberEnd; i += step)
+    {
+        auto ac = addAction(pattern.arg(i), [=]{
+            if (func)
+                func(i);
+        });
+        if (config)
+            config(ac, i);
+    }
+    return this;
 }
 
 FacileMenu *FacileMenu::addRow(FuncType func)
@@ -374,44 +417,14 @@ FacileMenu *FacileMenu::setSpacing(int spacing)
 
 FacileMenu *FacileMenu::setStretchFactor(QWidget *widget, int stretch)
 {
-
+    main_vlayout->setStretchFactor(widget, stretch);
+    return this;
 }
 
 FacileMenu *FacileMenu::setStretchFactor(QLayout *layout, int stretch)
 {
-
-}
-
-/**
- * 添加可选菜单，快速添加多个选项
- * @param texts  文字
- * @param states 选中状态
- * @param func   回调
- * @return
- */
-FacileMenu *FacileMenu::addOptions(QList<QString> texts, QList<bool> states, FuncIntType func)
-{
-    int si = qMin(texts.size(), states.size());
-    for (int i = 0; i < si; i++)
-    {
-        addAction(texts.at(i), [=]{
-            func(i);
-        })->check(states.at(i));
-    }
-
+    main_vlayout->setStretchFactor(layout, stretch);
     return this;
-}
-
-FacileMenu *FacileMenu::addOptions(QList<QString> texts, int select, FuncIntType func)
-{
-    QList<bool>states;
-    for (int i = 0; i < texts.size(); i++)
-        states << false;
-
-    if (select >= 0 && select < states.size())
-        states[select] = true;
-
-    return addOptions(texts, states, func);
 }
 
 /**
@@ -622,6 +635,9 @@ void FacileMenu::execute()
     startAnimationOnShowed();
 }
 
+/**
+ * 逐级隐藏菜单，并带有选中项动画
+ */
 void FacileMenu::toHide(int focusIndex)
 {
     // 递归清理菜单（包括父菜单）焦点
@@ -635,6 +651,48 @@ void FacileMenu::toHide(int focusIndex)
     this->clearFocus();
 
     startAnimationOnHidden(focusIndex);
+}
+
+/**
+ * 菜单结束的时候调用
+ * 例如多选，确认多选后可调用此项
+ */
+FacileMenu* FacileMenu::finished(FuncType func)
+{
+    this->finished_func = new FuncType(func);
+    return this;
+}
+
+/**
+ * 添加可选菜单，快速添加多个单选项
+ * @param texts  文字
+ * @param states 选中状态
+ * @param func   回调
+ * @return
+ */
+FacileMenu *FacileMenu::addOptions(QList<QString> texts, QList<bool> states, FuncIntType func)
+{
+    int si = qMin(texts.size(), states.size());
+    for (int i = 0; i < si; i++)
+    {
+        addAction(texts.at(i), [=]{
+            func(i);
+        })->check(states.at(i));
+    }
+
+    return this;
+}
+
+FacileMenu *FacileMenu::addOptions(QList<QString> texts, int select, FuncIntType func)
+{
+    QList<bool>states;
+    for (int i = 0; i < texts.size(); i++)
+        states << false;
+
+    if (select >= 0 && select < states.size())
+        states[select] = true;
+
+    return addOptions(texts, states, func);
 }
 
 /**
@@ -702,7 +760,22 @@ QList<int> FacileMenu::checkedIndexes()
 }
 
 /**
- * 一键设置所有菜单项为单选
+ * 返回选中项中的text列表
+ */
+QStringList FacileMenu::checkedItemTexts()
+{
+    QStringList texts;
+    foreach (auto item, items)
+    {
+        if (item->isCheckable() && item->isChecked())
+            texts.append(item->getText());
+    }
+    return texts;
+}
+
+/**
+ * 一键设置已有菜单项为单选项
+ * 注意，一定要在添加后设置，否则对后添加的项无效
  */
 FacileMenu *FacileMenu::setSingleCheck(FuncCheckType func)
 {
@@ -714,14 +787,16 @@ FacileMenu *FacileMenu::setSingleCheck(FuncCheckType func)
 
         item->triggered([=]{
             item->alter();
-            func(i, item->isChecked());
+            if (func)
+                func(i, item->isChecked());
         });
     }
     return this;
 }
 
 /**
- * 一键设置所有菜单项为多选
+ * 一键设置已经菜单项为多选项
+ * 注意，一定要在添加后设置，否则对后添加的项无效
  */
 FacileMenu *FacileMenu::setMultiCheck(FuncCheckType func)
 {
@@ -732,7 +807,8 @@ FacileMenu *FacileMenu::setMultiCheck(FuncCheckType func)
 
         item->triggered([=]{
             item->alter();
-            func(i, item->isChecked());
+            if (func)
+                func(i, item->isChecked());
         });
     }
     return this;
