@@ -543,23 +543,29 @@ void FacileMenu::exec(QPoint pos)
 {
     if (pos == QPoint(-1,-1))
         pos = QCursor::pos();
+    QPoint originPos = pos; // 不包含像素偏移的原始点
     main_vlayout->setEnabled(true);
     main_vlayout->activate(); // 先调整所有控件大小
+
+    int x = pos.x() + 1;
+    int y = pos.y() + 1;
+    int w = width() + 1;
+    int h = height() + 1;
 
     // 获取屏幕大小
     QRect avai = window_rect;
     // 如果超过范围，则调整位置
-    if (pos.x() + width() > avai.right())
-        pos.setX(avai.right() - width());
-    if (pos.y() + height() > avai.bottom())
-        pos.setY(avai.bottom() - height());
-    if (pos.x() >= width() && pos.x() + width() > avai.right())
-        pos.setX(pos.x() - width());
-    if (pos.y() >= height() && pos.y() + height() > avai.bottom())
-        pos.setY(pos.y() - height());
+    if (x + w > avai.right())
+        x = avai.right() - w;
+    if (y + h > avai.bottom())
+        y = avai.bottom() - h;
+    if (x >= w && pos.x() + w > avai.right())
+        x = originPos.x() - w;
+    if (y >= h && pos.y() + h > avai.bottom())
+        y = originPos.y() - h;
 
     // 移动窗口
-    move(pos);
+    move(QPoint(x, y));
 
     execute();
 }
