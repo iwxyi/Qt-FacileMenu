@@ -297,7 +297,7 @@ FacileMenu *FacileMenu::addMenu(QIcon icon, QString text, FuncType clicked)
         }
 
         // 如果是用户主动隐藏子菜单，那么就隐藏全部菜单
-        if (!menu->hidden_by_another)
+        if (!menu->hidden_by_another && !linger_on_submenu_clicked)
         {
             this->hide(); // 隐藏自己，在隐藏事件中继续向上传递隐藏的信号
         }
@@ -305,7 +305,8 @@ FacileMenu *FacileMenu::addMenu(QIcon icon, QString text, FuncType clicked)
     connect(menu, &FacileMenu::signalActionTriggered, this, [=](FacileMenuItem* action){
         // 子菜单被点击了，副菜单依次隐藏
         emit signalActionTriggered(action);
-        toHide(items.indexOf(item));
+        if (!linger_on_submenu_clicked)
+            toHide(items.indexOf(item));
     });
     return menu;
 }
@@ -1196,6 +1197,7 @@ void FacileMenu::startAnimationOnHidden(int focusIndex)
     for (int i = 0; i < items.size(); i++)
     {
         InteractiveButtonBase* btn = items.at(i);
+        QPoint pos = btn->pos();
         btn->setBlockHover(true);
         QPropertyAnimation* ani = new QPropertyAnimation(btn, "pos");
         ani->setStartValue(btn->pos());
@@ -1226,6 +1228,7 @@ void FacileMenu::startAnimationOnHidden(int focusIndex)
         connect(ani, SIGNAL(finished()), ani, SLOT(deleteLater()));
         connect(ani, &QPropertyAnimation::finished, btn, [=]{
             btn->setBlockHover(false);
+            btn->move(pos);
         });
         ani->start();
     }
@@ -1234,6 +1237,7 @@ void FacileMenu::startAnimationOnHidden(int focusIndex)
     for (int i = 0; i < other_widgets.size(); i++)
     {
         QWidget* btn = other_widgets.at(i);
+        QPoint pos = btn->pos();
         QPropertyAnimation* ani = new QPropertyAnimation(btn, "pos");
         ani->setStartValue(btn->pos());
         ani->setEasingCurve(QEasingCurve::OutCubic);
@@ -1261,6 +1265,9 @@ void FacileMenu::startAnimationOnHidden(int focusIndex)
             ani->setDuration(dur_max);
         }
         connect(ani, SIGNAL(finished()), ani, SLOT(deleteLater()));
+        connect(ani, &QPropertyAnimation::finished, btn, [=]{
+            btn->move(pos);
+        });
         ani->start();
     }
 
