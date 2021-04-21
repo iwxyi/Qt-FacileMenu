@@ -140,10 +140,13 @@ FacileMenuItem *FacileMenu::addAction(QIcon icon, QString text, T *obj, void (T:
 /**
  * 批量添加带数字（可以不带）的action
  * 相当于只是少了个for循环……
+ * @param pattern 例如 项目%1
+ * @param numberEnd 注意，结数值不包括结尾！
  */
-FacileMenu *FacileMenu::addNumberedActions(QString pattern, int numberStart, int numberEnd, FuncItemType config, FuncIntType clicked)
+FacileMenu *FacileMenu::addNumberedActions(QString pattern, int numberStart, int numberEnd, FuncItemType config, FuncIntType clicked, int step)
 {
-    int step = numberStart <= numberEnd ? 1 : -1;
+	if (!step)
+		step = numberStart <= numberEnd ? 1 : -1;
     for (int i = numberStart; i != numberEnd; i += step)
     {
         auto ac = addAction(pattern.arg(i), [=]{
@@ -158,11 +161,14 @@ FacileMenu *FacileMenu::addNumberedActions(QString pattern, int numberStart, int
 
 /**
  * 同上
+ * @param pattern 例如 项目%1
+ * @param numberEnd 注意，结数值不包括结尾！
  * @param config (Item*, int) 其中参数2表示number遍历的位置，不是当前item的index
  */
-FacileMenu *FacileMenu::addNumberedActions(QString pattern, int numberStart, int numberEnd, FuncItemIntType config, FuncIntType clicked)
+FacileMenu *FacileMenu::addNumberedActions(QString pattern, int numberStart, int numberEnd, FuncItemIntType config, FuncIntType clicked, int step)
 {
-    int step = numberStart <= numberEnd ? 1 : -1;
+	if (!step)
+    	step = numberStart <= numberEnd ? 1 : -1;
     for (int i = numberStart; i != numberEnd; i += step)
     {
         auto ac = addAction(pattern.arg(i), [=]{
@@ -547,6 +553,12 @@ void FacileMenu::exec(QPoint pos)
     QPoint originPos = pos; // 不包含像素偏移的原始点
     main_vlayout->setEnabled(true);
     main_vlayout->activate(); // 先调整所有控件大小
+    
+    // 刷新所有控件大小
+    setAttribute(Qt::WA_DontShowOnScreen);
+    show();
+    hide();
+    setAttribute(Qt::WA_DontShowOnScreen, false);
 
     int x = pos.x() + 1;
     int y = pos.y() + 1;
@@ -584,6 +596,12 @@ void FacileMenu::exec(QRect expt, bool vertical, QPoint pos)
         pos = QCursor::pos();
     main_vlayout->setEnabled(true);
     main_vlayout->activate(); // 先调整所有控件大小
+
+    // 刷新所有控件大小
+    setAttribute(Qt::WA_DontShowOnScreen);
+    show();
+    hide();
+    setAttribute(Qt::WA_DontShowOnScreen, false);
 
     // 根据 rect 和 avai 自动调整范围
     QRect avai = window_rect;
