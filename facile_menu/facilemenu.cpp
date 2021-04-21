@@ -553,12 +553,11 @@ void FacileMenu::exec(QPoint pos)
     QPoint originPos = pos; // 不包含像素偏移的原始点
     main_vlayout->setEnabled(true);
     main_vlayout->activate(); // 先调整所有控件大小
-    
-    // 刷新所有控件大小
-    setAttribute(Qt::WA_DontShowOnScreen);
+
+    // setAttribute(Qt::WA_DontShowOnScreen); // 会触发 setMouseGrabEnabled 错误
     show();
-    hide();
-    setAttribute(Qt::WA_DontShowOnScreen, false);
+    // hide(); // 直接显示吧
+    // setAttribute(Qt::WA_DontShowOnScreen, false);
 
     int x = pos.x() + 1;
     int y = pos.y() + 1;
@@ -597,11 +596,10 @@ void FacileMenu::exec(QRect expt, bool vertical, QPoint pos)
     main_vlayout->setEnabled(true);
     main_vlayout->activate(); // 先调整所有控件大小
 
-    // 刷新所有控件大小
-    setAttribute(Qt::WA_DontShowOnScreen);
+    // setAttribute(Qt::WA_DontShowOnScreen); // 会触发 setMouseGrabEnabled 错误
     show();
-    hide();
-    setAttribute(Qt::WA_DontShowOnScreen, false);
+    // hide(); // 直接显示吧
+    // setAttribute(Qt::WA_DontShowOnScreen, false);
 
     // 根据 rect 和 avai 自动调整范围
     QRect avai = window_rect;
