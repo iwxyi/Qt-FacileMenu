@@ -32,7 +32,6 @@ public:
     FacileMenuItem* addAction(QIcon icon, FuncType clicked = nullptr);
     FacileMenuItem* addAction(QString text, FuncType clicked = nullptr);
     FacileMenuItem* addAction(QAction* action, bool deleteWithMenu = false);
-    FacileMenuItem* addAction(QIcon icon, QString text, void (*func)());
     template <class T>
     FacileMenuItem* addAction(QIcon icon, QString text, T *obj, void (T::*func)());
     FacileMenu* addNumberedActions(QString pattern, int numberStart, int numberEnd, FuncItemType config = nullptr, FuncIntType clicked = nullptr, int step = 0);

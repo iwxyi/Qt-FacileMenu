@@ -99,25 +99,6 @@ FacileMenuItem *FacileMenu::addAction(QAction *action, bool deleteWithMenu)
 }
 
 /**
- * 回调：普通/静态函数
- */
-FacileMenuItem *FacileMenu::addAction(QIcon icon, QString text, void (*func)())
-{
-    auto item = createMenuItem(icon, text);
-    connect(item, &InteractiveButtonBase::clicked, this, [=]{
-        if (_showing_animation)
-            return ;
-        func();
-        if (item->isLinger())
-            return ;
-        emit signalActionTriggered(item);
-        toHide(items.indexOf(item));
-    });
-    connect(item, &InteractiveButtonBase::signalMouseEnter, this, [=]{ itemMouseEntered(item); });
-    return item;
-}
-
-/**
  * 回调：类内方法（学艺不精，用不来……）
  */
 template<class T>
