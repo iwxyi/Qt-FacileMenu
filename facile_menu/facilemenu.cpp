@@ -537,9 +537,10 @@ void FacileMenu::exec(QPoint pos)
     QPoint originPos = pos; // 不包含像素偏移的原始点
     main_vlayout->setEnabled(true);
     main_vlayout->activate(); // 先调整所有控件大小
-
+	this->adjustSize();
+	
     // setAttribute(Qt::WA_DontShowOnScreen); // 会触发 setMouseGrabEnabled 错误
-    show();
+    // show();
     // hide(); // 直接显示吧
     // setAttribute(Qt::WA_DontShowOnScreen, false);
 
