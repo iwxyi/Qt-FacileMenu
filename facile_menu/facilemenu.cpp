@@ -485,6 +485,15 @@ FacileMenuItem *FacileMenu::lastAddedItem()
     return last_added_item;
 }
 
+bool FacileMenu::hasFocus() const
+{
+    if (QWidget::hasFocus())
+        return true;
+    if (current_sub_menu && current_sub_menu->hasFocus())
+        return true;
+    return false;
+}
+
 /**
  * 返回菜单项的索引
  * 不包括非菜单项的自定义控件、布局、分割线等
@@ -1300,6 +1309,7 @@ void FacileMenu::startAnimationOnHidden(int focusIndex)
 void FacileMenu::hideEvent(QHideEvent *event)
 {
     emit signalHidden();
+    this->close(); // 子菜单关闭，不会导致自己关闭，需要手动close
     return QWidget::hideEvent(event);
 }
 

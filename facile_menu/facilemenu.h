@@ -65,6 +65,7 @@ public:
     FacileMenuItem* addSeparator();
     FacileMenu* split();
     FacileMenuItem* lastAddedItem();
+    bool hasFocus() const;
 
     int indexOf(FacileMenuItem* item);
     FacileMenuItem* at(int index);
