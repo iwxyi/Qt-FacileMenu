@@ -1207,7 +1207,7 @@ void FacileMenu::startAnimationOnHidden(int focusIndex)
     for (int i = 0; i < items.size(); i++)
     {
         InteractiveButtonBase* btn = items.at(i);
-        QPoint pos = btn->pos();
+        // QPoint pos = btn->pos();
         btn->setBlockHover(true);
         QPropertyAnimation* ani = new QPropertyAnimation(btn, "pos");
         ani->setStartValue(btn->pos());
@@ -1238,7 +1238,7 @@ void FacileMenu::startAnimationOnHidden(int focusIndex)
         connect(ani, SIGNAL(finished()), ani, SLOT(deleteLater()));
         connect(ani, &QPropertyAnimation::finished, btn, [=]{
             btn->setBlockHover(false);
-            btn->move(pos);
+            // btn->move(pos);
         });
         ani->start();
     }
@@ -1275,9 +1275,9 @@ void FacileMenu::startAnimationOnHidden(int focusIndex)
             ani->setDuration(dur_max);
         }
         connect(ani, SIGNAL(finished()), ani, SLOT(deleteLater()));
-        connect(ani, &QPropertyAnimation::finished, btn, [=]{
-            btn->move(pos);
-        });
+        // connect(ani, &QPropertyAnimation::finished, btn, [=]{
+        //     btn->move(pos);
+        // });
         ani->start();
     }
 
@@ -1304,6 +1304,13 @@ void FacileMenu::startAnimationOnHidden(int focusIndex)
 
         close();
     });
+}
+
+void FacileMenu::showEvent(QShowEvent *event)
+{
+    QWidget::showEvent(event);
+
+    main_vlayout->activate();
 }
 
 void FacileMenu::hideEvent(QHideEvent *event)

@@ -111,6 +111,7 @@ protected:
     void startAnimationOnShowed();
     void startAnimationOnHidden(int focusIndex);
 
+    void showEvent(QShowEvent *event) override;
     void hideEvent(QHideEvent *event) override;
     void mouseMoveEvent(QMouseEvent *event) override;
     void keyPressEvent(QKeyEvent *event) override;
