@@ -310,7 +310,7 @@ FacileMenuItem* exiter(bool ex = true);
 
 ## 注意点
 
-Lambda 表达式中打开**模态对话框**可能会引起崩溃
+### 打开**模态对话框**可能会引起崩溃
 
 需要在打开模态对话框之前，关闭当前 menu
 
@@ -322,3 +322,12 @@ menu->addAction("选择文件", [=]{
 });
 ```
 
+
+### 菜单关闭后退出程序
+
+在 `main.cpp` 中添加以下代码，使窗口关闭后不会退出整个程序：
+
+```C++
+QApplication a(argc, argv);
+a.setQuitOnLastWindowClosed(false);
+```
