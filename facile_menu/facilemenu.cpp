@@ -464,11 +464,19 @@ FacileMenu *FacileMenu::setStretchFactor(QLayout *layout, int stretch)
 
 /**
  * 添加水平分割线
+ * 不一定需要
  */
 FacileMenuItem *FacileMenu::addSeparator()
 {
     if (adding_horizone)
+    {
+        if (!row_hlayouts.last()->count())
+            return nullptr;
         return addVSeparator();
+    }
+
+    if (!main_vlayout->count())
+        return nullptr;
 
     FacileMenuItem* item = new FacileMenuItem(this);
     item->setNormalColor(QColor(64, 64, 64, 64));
@@ -485,8 +493,7 @@ FacileMenuItem *FacileMenu::addSeparator()
 
 FacileMenu *FacileMenu::split()
 {
-	if (items.size())
-        addSeparator();
+    addSeparator();
     return this;
 }
 
@@ -715,6 +722,14 @@ void FacileMenu::toHide(int focusIndex)
     startAnimationOnHidden(focusIndex);
 }
 
+void FacileMenu::toClose()
+{
+    if (parent_menu)
+        parent_menu->toClose();
+    else
+        this->close();
+}
+
 /**
  * 菜单结束的时候调用
  * 例如多选，确认多选后可调用此项
@@ -909,7 +924,7 @@ FacileMenu *FacileMenu::setTipArea(int x)
 FacileMenu *FacileMenu::setTipArea(QString longestTip)
 {
     QFontMetrics fm(this->font());
-    addin_tip_area = fm.horizontalAdvance(longestTip+"Ctrl");
+    addin_tip_area = fm.horizontalAdvance(longestTip);
     return this;
 }
 
@@ -921,6 +936,16 @@ FacileMenu *FacileMenu::setSplitInRow(bool split)
 {
     split_in_row = split;
     return this;
+}
+
+void FacileMenu::setAppearAnimation(bool en)
+{
+    this->enable_appear_animation = en;
+}
+
+void FacileMenu::setDisappearAnimation(bool en)
+{
+    this->enable_disappear_animation = en;
 }
 
 void FacileMenu::itemMouseEntered(FacileMenuItem *item)
@@ -1012,7 +1037,7 @@ void FacileMenu::setActionButton(InteractiveButtonBase *btn, bool isChip)
     // 设置尺寸
     if (isChip)
     {
-        btn->setPaddings(8, 8, 8, 8);
+        btn->setPaddings(4);
     }
     else
     {
@@ -1115,6 +1140,9 @@ bool FacileMenu::isSubMenu() const
  */
 void FacileMenu::startAnimationOnShowed()
 {
+    if (!enable_appear_animation)
+        return ;
+
     main_vlayout->setEnabled(false);
     _showing_animation = true;
     QEasingCurve curve = QEasingCurve::OutBack;
@@ -1212,6 +1240,9 @@ void FacileMenu::startAnimationOnShowed()
  */
 void FacileMenu::startAnimationOnHidden(int focusIndex)
 {
+    if (!enable_disappear_animation)
+        return ;
+
     _showing_animation = true;
     // 控件移动动画
     main_vlayout->setEnabled(false);

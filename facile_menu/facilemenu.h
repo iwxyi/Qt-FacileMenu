@@ -10,7 +10,6 @@
 #include <QDesktopWidget>
 #include <QApplication>
 #include <QScreen>
-#include <QGraphicsDropShadowEffect>
 #include <QMenu>
 #include <QAction>
 #include "facilemenuitem.h"
@@ -74,6 +73,7 @@ public:
     void exec(QRect expt, bool vertical = false, QPoint pos = QPoint(-1, -1));
     void execute();
     void toHide(int focusIndex = -1);
+    void toClose();
     FacileMenu* finished(FuncType func);
 
     FacileMenu* addOptions(QList<QString>texts, QList<bool>states, FuncIntType clicked);
@@ -90,6 +90,9 @@ public:
     FacileMenu* setTipArea(int x = 48);
     FacileMenu* setTipArea(QString longestTip);
     FacileMenu* setSplitInRow(bool split = true);
+
+    void setAppearAnimation(bool en);
+    void setDisappearAnimation(bool en);
 
 signals:
     void signalActionTriggered(FacileMenuItem* action);
@@ -152,6 +155,9 @@ private:
     QRect window_rect;
     int window_height = 0; // 窗口高度，每次打开都更新一次
     QPoint _enter_later_pos = QPoint(-1, -1); // 避免连续两次触发 enterLater 事件
+
+    bool enable_appear_animation = true;
+    bool enable_disappear_animation = true;
 };
 
 #endif // FACILEMENU_H
