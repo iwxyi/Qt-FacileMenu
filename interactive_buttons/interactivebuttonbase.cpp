@@ -749,13 +749,6 @@ void InteractiveButtonBase::setFixedForeSize(bool f, int addin)
 
     if (!f)
         return;
-    if (text.isEmpty())
-    {
-        if (model == PaintModel::IconText)
-            model = PaintModel::Icon;
-        else if (model == PaintModel::PixmapText)
-            model = PaintModel::PixmapMask;
-    }
     if (model == PaintModel::Text || model == PaintModel::IconText || model == PaintModel::PixmapText)
     {
         int icon_width = (model != PaintModel::Text && icon.isNull()) ? 0 : icon_text_size;
@@ -773,7 +766,6 @@ void InteractiveButtonBase::setFixedForeSize(bool f, int addin)
     {
         int size = height();
         int m = qMax(qMax(fore_paddings.left, fore_paddings.right), qMax(fore_paddings.top, fore_paddings.bottom));
-        m = 0;
         setMinimumSize(size + addin + m, size + addin + m);
     }
 }
