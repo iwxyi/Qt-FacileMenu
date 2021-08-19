@@ -92,8 +92,9 @@ public:
     FacileMenu* setTipArea(QString longestTip);
     FacileMenu* setSplitInRow(bool split = true);
 
-    void setAppearAnimation(bool en);
-    void setDisappearAnimation(bool en);
+    FacileMenu* setAppearAnimation(bool en);
+    FacileMenu* setDisappearAnimation(bool en);
+    FacileMenu* setSubMenuShowOnCursor(bool en);
 
 signals:
     void signalActionTriggered(FacileMenuItem* action);
@@ -127,7 +128,6 @@ public:
     static QColor hover_bg;  // 悬浮背景
     static QColor press_bg;  // 按下背景
     static QColor text_fg;   // 字体/变色图标颜色
-    bool hidden_by_another = false; // 是否是被要显示的另一个子菜单替换了。若否，隐藏全部菜单
     static int blur_bg_alpha; // 背景图显示程度，0禁用，1~100为模糊透明度
 
 private:
@@ -145,8 +145,8 @@ private:
     FacileMenuItem* last_added_item = nullptr; // 最后添加的item
     FuncType* finished_func = nullptr;
 
+    bool hidden_by_another = false; // 是否是被要显示的另一个子菜单替换了。若否，隐藏全部菜单
     const int item_padding = 8; // 每个item四周的空白
-    int addin_tip_area = 48; // 右边用来显示提示文字的区域
     const int tip_area_spacing = 8; // item正文和tip的间距
     bool adding_horizone = false; // 是否正在添加横向菜单
     bool align_mid_if_alone = false; // 是否居中对齐，如果只有icon或text
@@ -154,14 +154,19 @@ private:
     bool _showing_animation = false;
     int current_index = -1; // 当前索引
     bool using_keyboard = false; // 是否正在使用键盘挑选菜单
-    bool split_in_row = false; // 同一行是否默认添加分割线
     QRect window_rect;
     int window_height = 0; // 窗口高度，每次打开都更新一次
     QPoint _enter_later_pos = QPoint(-1, -1); // 避免连续两次触发 enterLater 事件
     bool closed_by_clicked = false; // 是否因为被单击了才隐藏，还是因为其他原因关闭
 
+    // 可修改的配置属性
+    int addin_tip_area = 48; // 右边用来显示提示文字的区域
+
+    // 可修改的配置属性（传递给子菜单）
+    bool split_in_row = false; // 同一行是否默认添加分割线
     bool enable_appear_animation = true;
     bool enable_disappear_animation = true;
+    bool sub_menu_show_on_cursor = true; // 子菜单跟随鼠标出现还是在主菜单边缘
 };
 
 #endif // FACILEMENU_H

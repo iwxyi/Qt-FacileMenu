@@ -302,6 +302,43 @@ FacileMenuItem* exiter(bool ex = true);
 
 
 
+## 配置项
+
+### 静态统一颜色
+
+都是静态变量，设置一次，所有菜单都生效。
+
+```C++
+FacileMenu::normal_bg = QColor(255, 255, 255);
+FacileMenu::hover_bg = QColor(128, 128, 128, 64);
+FacileMenu::press_bg = QColor(128, 128, 128, 128);
+FacileMenu::text_fg = QColor(0, 0, 0);
+FacileMenu::blur_bg_alpha = DEFAULT_MENU_BLUR_ALPHA;
+```
+
+
+
+### 单个菜单设置
+
+一些可选的设置项，按需加上去，也可以都不加。
+
+```C++
+FacileMenu* menu = (new FacileMenu(this))
+	->setTipArea("Ctrl+Alt+P") // 设置右边的快捷键提示区域的留空宽度，建议使用最长快捷键
+	->setSplitInRow(true) // 横向按钮是否使用分割线分隔
+    ->setSubMenuShowOnCursor(false) // 设置子菜单是从鼠标位置出现还是右边出现
+    ->setAppearAnimation(false) // 菜单出现动画
+    ->setDisappearAnimation(false); // 菜单消失动画
+```
+
+如果多级菜单中要将这些设置项传递给子菜单，需要在添加子菜单之前设置。
+
+其中仅 `setTipArea` 不会传递给下一级。
+
+可以直接修改源码中这些变量的默认值，全部菜单统一修改。
+
+
+
 ## 截图
 
 ![](picture.gif)
@@ -323,7 +360,7 @@ menu->addAction("选择文件", [=]{
 ```
 
 
-### 菜单关闭后退出程序
+### 菜单关闭导致退出程序
 
 在 `main.cpp` 中添加以下代码，使窗口关闭后不会退出整个程序：
 

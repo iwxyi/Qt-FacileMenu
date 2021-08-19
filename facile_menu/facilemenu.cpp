@@ -287,6 +287,10 @@ FacileMenu *FacileMenu::addMenu(QIcon icon, QString text, FuncType clicked)
 
     // 创建菜单项
     FacileMenu* menu = new FacileMenu(true, this);
+    menu->split_in_row = this->split_in_row;
+    menu->enable_appear_animation = this->enable_appear_animation;
+    menu->enable_disappear_animation = this->enable_disappear_animation;
+    menu->sub_menu_show_on_cursor = this->sub_menu_show_on_cursor;
     menu->hide();
     item->setSubMenu(menu);
     connect(menu, &FacileMenu::signalHidden, item, [=]{
@@ -954,14 +958,22 @@ FacileMenu *FacileMenu::setSplitInRow(bool split)
     return this;
 }
 
-void FacileMenu::setAppearAnimation(bool en)
+FacileMenu *FacileMenu::setAppearAnimation(bool en)
 {
     this->enable_appear_animation = en;
+    return this;
 }
 
-void FacileMenu::setDisappearAnimation(bool en)
+FacileMenu *FacileMenu::setDisappearAnimation(bool en)
 {
     this->enable_disappear_animation = en;
+    return this;
+}
+
+FacileMenu *FacileMenu::setSubMenuShowOnCursor(bool en)
+{
+    this->sub_menu_show_on_cursor = en;
+    return this;
 }
 
 void FacileMenu::itemMouseEntered(FacileMenuItem *item)
@@ -1086,9 +1098,9 @@ void FacileMenu::showSubMenu(FacileMenuItem *item)
 
     current_sub_menu = item->subMenu();
     QPoint pos(-1, -1);
+    QRect avai = window_rect;
     if (using_keyboard) // 键盘模式，不是跟随鼠标位置来的
     {
-        QRect avai = window_rect;
 
         // 键盘模式，相对于点击项的右边
         QPoint tl = mapToGlobal(item->pos());
@@ -1100,6 +1112,16 @@ void FacileMenu::showSubMenu(FacileMenuItem *item)
             pos.setY(tl.y());
         else
             pos.setY(tl.y() - current_sub_menu->height());
+    }
+    else if (!sub_menu_show_on_cursor)
+    {
+        // 出现在当前菜单的右边（优先）
+        QPoint itemPos = item->mapToGlobal(QPoint(0, 0));
+        pos = itemPos + QPoint(item->width(), 0);
+        if (pos.x() + current_sub_menu->width() > avai.width())
+            pos.setX(itemPos.x() - current_sub_menu->width());
+        if (pos.y() + current_sub_menu->height() > avai.height())
+            pos.setY(itemPos.y() + item->height() - current_sub_menu->height());
     }
     current_sub_menu->exec(pos);
     current_sub_menu->setKeyBoardUsed(using_keyboard);

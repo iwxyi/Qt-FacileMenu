@@ -21,7 +21,8 @@ void MainWindow::on_pushButton_clicked()
 
     FacileMenu* menu = (new FacileMenu(this))
         ->setTipArea("Ctrl+P")
-        ->setSplitInRow(true);
+        ->setSplitInRow(true)
+        ->setSubMenuShowOnCursor(false);
 
     menu->addAction(QIcon(":/icons/run"), "开始播放 (&S)", [=]{
         qDebug() << "=>开始播放";
