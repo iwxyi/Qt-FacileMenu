@@ -92,6 +92,16 @@ menu->endRow();
 
 
 
+### 添加标题
+
+```C++
+menu->addTitle("标题");
+```
+
+一个灰色文字的 QLabel，自带一条分割线。
+
+
+
 ### 添加 QAction
 
 支持在菜单关闭时自动 delete 传入的 action，避免内存泄漏（默认关闭）
