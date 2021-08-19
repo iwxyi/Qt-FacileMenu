@@ -16,7 +16,7 @@
 
 #define DEFAULT_MENU_BLUR_ALPHA 33
 
-#define newFacileMenu FacileMenu *menu = new FacileMenu(this)
+#define newFacileMenu FacileMenu *menu = (new FacileMenu(this)) // 加上括号是为了可以直接设置属性
 
 typedef std::function<void(int index, bool state)> const FuncCheckType;
 
@@ -69,7 +69,7 @@ public:
     int indexOf(FacileMenuItem* item);
     FacileMenuItem* at(int index);
 
-    void exec(QPoint pos = QPoint(-1, -1));
+    void exec(QPoint pos = QPoint(-1, -1), bool autoAdjust = true);
     void exec(QRect expt, bool vertical = false, QPoint pos = QPoint(-1, -1));
     void execute();
     void toHide(int focusIndex = -1);

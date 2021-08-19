@@ -564,7 +564,7 @@ FacileMenuItem *FacileMenu::addVSeparator()
  * 在鼠标或指定点展开
  * 自动避开屏幕边缘
  */
-void FacileMenu::exec(QPoint pos)
+void FacileMenu::exec(QPoint pos, bool autoAdjust)
 {
     if (pos == QPoint(-1,-1))
         pos = QCursor::pos();
@@ -580,20 +580,23 @@ void FacileMenu::exec(QPoint pos)
 
     int x = pos.x() + 1;
     int y = pos.y() + 1;
-    int w = width() + 1;
-    int h = height() + 1;
 
-    // 获取屏幕大小
-    QRect avai = window_rect;
-    // 如果超过范围，则调整位置
-    if (x + w > avai.right())
-        x = avai.right() - w;
-    if (y + h > avai.bottom())
-        y = avai.bottom() - h;
-    if (x >= w && pos.x() + w > avai.right())
-        x = originPos.x() - w;
-    if (y >= h && pos.y() + h > avai.bottom())
-        y = originPos.y() - h;
+    if (autoAdjust)
+    {
+        int w = width() + 1;
+        int h = height() + 1;
+        QRect avai = window_rect; // 屏幕大小
+
+        // 如果超过范围，则调整位置
+        if (x + w > avai.right())
+            x = avai.right() - w;
+        if (y + h > avai.bottom())
+            y = avai.bottom() - h;
+        if (x >= w && pos.x() + w > avai.right())
+            x = originPos.x() - w;
+        if (y >= h && pos.y() + h > avai.bottom())
+            y = originPos.y() - h;
+    }
 
     // 移动窗口
     move(QPoint(x, y));
@@ -1122,8 +1125,12 @@ void FacileMenu::showSubMenu(FacileMenuItem *item)
             pos.setX(itemPos.x() - current_sub_menu->width());
         if (pos.y() + current_sub_menu->height() > avai.height())
             pos.setY(itemPos.y() + item->height() - current_sub_menu->height());
+        if (pos.x() < 0)
+            pos.setX(0);
+        if (pos.y() < 0)
+            pos.setY(0);
     }
-    current_sub_menu->exec(pos);
+    current_sub_menu->exec(pos, !sub_menu_show_on_cursor);
     current_sub_menu->setKeyBoardUsed(using_keyboard);
 }
 
