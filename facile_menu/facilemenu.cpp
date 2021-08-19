@@ -1130,7 +1130,7 @@ void FacileMenu::showSubMenu(FacileMenuItem *item)
         if (pos.y() < 0)
             pos.setY(0);
     }
-    current_sub_menu->exec(pos, !sub_menu_show_on_cursor);
+    current_sub_menu->exec(pos, sub_menu_show_on_cursor);
     current_sub_menu->setKeyBoardUsed(using_keyboard);
 }
 
