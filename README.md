@@ -95,10 +95,12 @@ menu->endRow();
 ### 添加标题
 
 ```C++
-menu->addTitle("标题");
+menu->addTitle("标题", -1/0/1);
 ```
 
-一个灰色文字的 QLabel，自带一条分割线。
+一个灰色文字的 QLabel，根据参数二会选择性添加一条分割线。
+
+`-1` 添加到标题上方（margin=4），`0` 不添加分割线，`1` 添加到标题下方。默认为 `0`，不带分割线。
 
 
 
@@ -108,14 +110,14 @@ menu->addTitle("标题");
 
 ```C++
 QAction* action = ...;
-menu->addAction(action, true/*是否在菜单关闭一起时delete*/);
+menu->addAction(action, true/*是否在菜单关闭时一起delete*/);
 ```
 
 
 
 ### 添加 Widget/Layout
 
-添加任意 widget 至菜单中，和菜单项并存。layout 同理。
+添加任意 widget 至菜单中，和菜单项并存，不占 `at(index)/indexOf(item)` 的位置。layout 同理。
 
 ```C++
 QPushButton* button = new QPushButton("外部添加的按钮", this);
@@ -131,6 +133,7 @@ menu->addWidget(button);
 > setCheckable(bool) / setChecked(bool) / check(bool) / uncheck(bool)
 
 ```C++
+// 使用 linger() 使菜单点击后不隐藏，持续显示当前单选/多选结果
 auto ac1 = subMenu2->addAction(QIcon(":/icons/run"), "带图标")->check()->linger();
 auto ac2 = subMenu2->addAction("无图标")->uncheck()->linger();
 auto ac3 = subMenu2->split()->addAction("全不选")->uncheck()->linger();
@@ -288,6 +291,14 @@ FacileMenuItem* borderR(int radius = 3, QColor co = Qt::transparent);
 
 // 点击后是否保持菜单显示（默认点一下就隐藏菜单）
 FacileMenuItem* linger();
+// 点击后保持显示（同linger()），并且修改菜单项文本
+FacileMenuItem* lingerText(QString textAfterClick);
+
+// 点击后的菜单文本改变
+textAfterClick(QString newText);
+// 根据当前文本修改为新文本的 Lambda 表达式
+// 参数示例：[=](QString s) -> QString { if (s == "xx") return "xx"; }
+textAfterClick(FuncStringStringType func);
 
 // 满足 exp 时执行 trueLambda 表达式，否则执行 falseLambda 表达式
 FacileMenuItem* ifer(bool exp, trueLambda, falseLambda = nullptr);
@@ -298,7 +309,7 @@ FacileMenuItem* elifer(bool exp);
 FacileMenuItem* elser();
 
 FacileMenuItem* switcher(int value);
-FacileMenuItem* caser(int value, matchedLambda); // 匹配时执行lambda，无需break
+FacileMenuItem* caser(int value, matchedLambda); // 匹配时执行Lambda，无需break
 FacileMenuItem* caser(int value); // 结束记得breaker（允许忘掉~）
 FacileMenuItem* breaker();
 FacileMenuItem* defaulter();
@@ -341,11 +352,11 @@ FacileMenu* menu = (new FacileMenu(this))
     ->setDisappearAnimation(false); // 菜单消失动画
 ```
 
-如果多级菜单中要将这些设置项传递给子菜单，需要在添加子菜单之前设置。
+如果多级菜单中要将这些设置项传递给子菜单，需要在**添加子菜单之前设置**。
 
 其中仅 `setTipArea` 不会传递给下一级。
 
-可以直接修改源码中这些变量的默认值，全部菜单统一修改。
+可以直接修改源码中这些变量的默认值，全部菜单生效。
 
 
 
