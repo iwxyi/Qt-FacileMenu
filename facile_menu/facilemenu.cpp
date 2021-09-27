@@ -708,27 +708,30 @@ void FacileMenu::execute()
         int radius = qMin(64, qMin(width(), height())); // 模糊半径，也是边界
         rect.adjust(-radius, -radius, +radius, +radius);
         QScreen* screen = QApplication::screenAt(QCursor::pos());
-        QPixmap bg = screen->grabWindow(QApplication::desktop()->winId(), rect.left(), rect.top(), rect.width(), rect.height());
-
-        // 开始模糊
-        QT_BEGIN_NAMESPACE
-          extern Q_WIDGETS_EXPORT void qt_blurImage( QPainter *p, QImage &blurImage, qreal radius, bool quality, bool alphaOnly, int transposed = 0 );
-        QT_END_NAMESPACE
-
-        QPixmap pixmap = bg;
-        QPainter painter( &pixmap );
-        // 填充半透明的背景颜色，避免太透
+        if (screen)
         {
-            QColor bg_c(normal_bg);
-            bg_c.setAlpha(normal_bg.alpha() * (100 - blur_bg_alpha) / 100);
-            painter.fillRect(0, 0, pixmap.width(), pixmap.height(), bg_c);
+			QPixmap bg = screen->grabWindow(QApplication::desktop()->winId(), rect.left(), rect.top(), rect.width(), rect.height());
+
+	        // 开始模糊
+	        QT_BEGIN_NAMESPACE
+	          extern Q_WIDGETS_EXPORT void qt_blurImage( QPainter *p, QImage &blurImage, qreal radius, bool quality, bool alphaOnly, int transposed = 0 );
+	        QT_END_NAMESPACE
+
+	        QPixmap pixmap = bg;
+	        QPainter painter( &pixmap );
+	        // 填充半透明的背景颜色，避免太透
+	        {
+	            QColor bg_c(normal_bg);
+	            bg_c.setAlpha(normal_bg.alpha() * (100 - blur_bg_alpha) / 100);
+	            painter.fillRect(0, 0, pixmap.width(), pixmap.height(), bg_c);
+	        }
+	        QImage img = pixmap.toImage(); // img -blur-> painter(pixmap)
+	        qt_blurImage( &painter, img, radius, true, false );
+	        // 裁剪掉边缘（模糊后会有黑边）
+	        int c = qMin(bg.width(), bg.height());
+	        c = qMin(c/2, radius);
+	        bg_pixmap = pixmap.copy(c, c, pixmap.width()-c*2, pixmap.height()-c*2);
         }
-        QImage img = pixmap.toImage(); // img -blur-> painter(pixmap)
-        qt_blurImage( &painter, img, radius, true, false );
-        // 裁剪掉边缘（模糊后会有黑边）
-        int c = qMin(bg.width(), bg.height());
-        c = qMin(c/2, radius);
-        bg_pixmap = pixmap.copy(c, c, pixmap.width()-c*2, pixmap.height()-c*2);
     }
 
     // 显示、动画
