@@ -96,7 +96,7 @@ int FacileMenuBar::count() const
     return buttons.size();
 }
 
-void FacileMenuBar::setEnableAniation(bool en)
+void FacileMenuBar::setAnimationEnabled(bool en)
 {
     this->enableAnimation = en;
 }

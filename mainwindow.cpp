@@ -40,6 +40,7 @@ MainWindow::MainWindow(QWidget *parent)
     helpMenu->addAction("反馈");
     helpMenu->split()->addAction("关于");
 
+    ui->menuBar->setAnimationEnabled(false); // 开启动画。有闪烁的问题，受得了就能开
     ui->menuBar->addMenu("文件", fileMenu);
     ui->menuBar->addMenu("编辑", editMenu);
     ui->menuBar->addMenu("查看", viewMenu);
@@ -51,7 +52,6 @@ MainWindow::~MainWindow()
 {
     delete ui;
 }
-
 
 void MainWindow::on_pushButton_clicked()
 {

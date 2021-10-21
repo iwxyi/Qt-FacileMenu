@@ -22,7 +22,7 @@ public:
     void insertMenu(int index, QString name, FacileMenu* menu);
     void deleteMenu(int index);
     int count() const;
-    void setEnableAniation(bool en); // 开启动画，目前会有些问题
+    void setAnimationEnabled(bool en); // 开启动画，目前会有些问题
 
 signals:
     void triggered();
