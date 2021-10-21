@@ -1328,7 +1328,20 @@ void FacileMenu::startAnimationOnShowed()
 void FacileMenu::startAnimationOnHidden(int focusIndex)
 {
     if (!enable_disappear_animation)
+    {
+        if (focusIndex > -1)
+        {
+            // 等待点击动画结束
+            QTimer::singleShot(100, [=]{
+                close();
+            });
+        }
+        else
+        {
+            close();
+        }
         return ;
+    }
 
     _showing_animation = true;
     // 控件移动动画

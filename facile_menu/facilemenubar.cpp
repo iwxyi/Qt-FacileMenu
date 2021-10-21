@@ -86,8 +86,9 @@ void FacileMenuBar::addMenu(QString name, FacileMenu *menu)
 
     menu->setMenuBar(this);
     menu->setAttribute(Qt::WA_DeleteOnClose, false);
-    menu->setAppearAnimation(false);
-    menu->setDisappearAnimation(false);
+//    menu->setAppearAnimation(false);
+    menu->setDisappearAnimation(false); // 必须要关闭，否则会出现问题
+    menu->setSubMenuShowOnCursor(false);
 
     buttons.append(btn);
     menus.append(menu);
@@ -101,7 +102,7 @@ void FacileMenuBar::trigger(int index)
         return ;
 
     InteractiveButtonBase* btn = buttons.at(index);
-    btn->setBgColor(FacileMenu::press_bg);
+    btn->setBgColor(FacileMenu::hover_bg);
     QRect rect(btn->mapToGlobal(QPoint(0, 0)), btn->size());
     menus.at(index)->exec(rect, true);
     _currentIndex = index;
