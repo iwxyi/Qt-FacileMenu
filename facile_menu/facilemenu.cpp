@@ -561,6 +561,15 @@ FacileMenuItem *FacileMenu::at(int index)
 }
 
 /**
+ * 设置菜单栏
+ * 鼠标移动时会增加判断是否移动到菜单栏按钮上
+ */
+void FacileMenu::setMenuBar(FacileMenuBarInterface *mb)
+{
+    this->menu_bar = mb;
+}
+
+/**
  * 一行有多个按钮时的竖向分割线
  * 只有添加chip前有效
  */
@@ -1167,13 +1176,20 @@ bool FacileMenu::isCursorInArea(QPoint pos, FacileMenu *child)
     // 不在这范围内
     if (!geometry().contains(pos))
     {
-        // 在自己的副菜单那里
+        // 在自己的父菜单那里
         if (isSubMenu() && parent_menu->isCursorInArea(pos, this)) // 如果这也是子菜单（已展开），则递归遍历父菜单
         {
             hidden_by_another = true;
             QTimer::singleShot(0, this, [=]{
                 close(); // 把自己也隐藏了
             });
+            return true;
+        }
+        // 在菜单栏那里
+        int rst = -1;
+        if (menu_bar && (rst = menu_bar->isCursorInArea(pos)) > -1)
+        {
+            menu_bar->triggerIfNot(rst, this);
             return true;
         }
         return false;
