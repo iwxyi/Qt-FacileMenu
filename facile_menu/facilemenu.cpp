@@ -641,11 +641,12 @@ void FacileMenu::exec(QRect expt, bool vertical, QPoint pos)
     if (pos == QPoint(-1,-1))
         pos = QCursor::pos();
     main_vlayout->setEnabled(true);
+    main_hlayout->invalidate();
     main_vlayout->activate(); // 先调整所有控件大小
 
     // setAttribute(Qt::WA_DontShowOnScreen); // 会触发 setMouseGrabEnabled 错误
-    show();
-    // hide(); // 直接显示吧
+    // show(); // 但直接显示会有一瞬间闪烁情况
+    // hide();
     // setAttribute(Qt::WA_DontShowOnScreen, false);
 
     // 根据 rect 和 avai 自动调整范围
@@ -744,7 +745,12 @@ void FacileMenu::execute()
         }
     }
 
-    // 显示、动画
+    // 有些重复显示的，需要再初始化一遍
+    hidden_by_another = false;
+    using_keyboard = false;
+    closed_by_clicked = false;
+
+    // 显示动画
     QWidget::show();
     setFocus();
     startAnimationOnShowed();

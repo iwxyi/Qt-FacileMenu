@@ -19,6 +19,9 @@ public:
     virtual bool triggerIfNot(int index, void*menu) override;
 
     void addMenu(QString name, FacileMenu* menu);
+    void insertMenu(int index, QString name, FacileMenu* menu);
+    void deleteMenu(int index);
+    int count() const;
     void setEnableAniation(bool en); // 开启动画，目前会有些问题
 
 signals:
@@ -27,6 +30,9 @@ signals:
 public slots:
     virtual void trigger(int index) override;
     virtual void switchTrigger(int index, int prevIndex);
+
+private:
+    InteractiveButtonBase* createButton(QString name, FacileMenu* menu);
 
 private:
     QList<InteractiveButtonBase*> buttons;

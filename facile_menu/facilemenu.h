@@ -168,8 +168,6 @@ private:
     // 可修改的配置属性
     int addin_tip_area = 48; // 右边用来显示提示文字的区域
     int border_radius = 5; // 圆角
-
-    // 可修改的配置属性（传递给子菜单）
     bool split_in_row = false; // 同一行是否默认添加分割线
     bool enable_appear_animation = true;
     bool enable_disappear_animation = true;

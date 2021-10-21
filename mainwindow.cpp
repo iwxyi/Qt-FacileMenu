@@ -42,9 +42,9 @@ MainWindow::MainWindow(QWidget *parent)
 
     ui->menuBar->addMenu("文件", fileMenu);
     ui->menuBar->addMenu("编辑", editMenu);
-    ui->menuBar->addMenu("格式", formatMenu);
     ui->menuBar->addMenu("查看", viewMenu);
     ui->menuBar->addMenu("帮助", helpMenu);
+    ui->menuBar->insertMenu(2, "格式", formatMenu);
 }
 
 MainWindow::~MainWindow()

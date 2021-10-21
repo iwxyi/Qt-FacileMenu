@@ -67,42 +67,33 @@ bool FacileMenuBar::triggerIfNot(int index, void *menu)
 
 void FacileMenuBar::addMenu(QString name, FacileMenu *menu)
 {
-    InteractiveButtonBase* btn = new InteractiveButtonBase(name, this);
-    // TODO: name 识别并注册快捷键
-    connect(btn, &InteractiveButtonBase::clicked, this, [=]{
-        int index = buttons.indexOf(btn);
-        if (!menus.at(index)->isHidden())
-        {
-            // 如果是正在显示状态
-            // 但是理论上来说不可能，因为这种情况是点不到按钮的
-            menus.at(index)->hide();
-        }
-        else
-        {
-            // 点击触发菜单
-            trigger(buttons.indexOf(btn));
-        }
-    });
-    connect(menu, &FacileMenu::signalHidden, btn, [=]{
-        btn->setBgColor(Qt::transparent);
-        _currentIndex = -1;
-    });
-
-    btn->adjustMinimumSize();
-    btn->setRadius(5);
-    btn->setFixedForePos();
-
-    menu->setMenuBar(this);
-    menu->setAttribute(Qt::WA_DeleteOnClose, false);
-//    menu->setAppearAnimation(false); // 设置显示动画
-    menu->setDisappearAnimation(false); // 设置关闭动画
-    menu->setSubMenuShowOnCursor(false);
-    if (!enableAnimation)
-        menu->setBorderRadius(0);
+    auto btn = createButton(name, menu);
 
     buttons.append(btn);
     menus.append(menu);
     hlayout->addWidget(btn);
+}
+
+void FacileMenuBar::insertMenu(int index, QString name, FacileMenu *menu)
+{
+    auto btn = createButton(name, menu);
+
+    buttons.insert(index, btn);
+    menus.insert(index, menu);
+    hlayout->insertWidget(index, btn);
+}
+
+void FacileMenuBar::deleteMenu(int index)
+{
+    if (index < 0 || index >= buttons.size())
+        return ;
+    buttons.takeAt(index)->deleteLater();
+    menus.takeAt(index)->deleteLater();
+}
+
+int FacileMenuBar::count() const
+{
+    return buttons.size();
 }
 
 void FacileMenuBar::setEnableAniation(bool en)
@@ -163,4 +154,41 @@ void FacileMenuBar::switchTrigger(int index, int prevIndex)
         aniWidget = nullptr; // 自动deleteLater
     });
     _currentIndex = index;
+}
+
+InteractiveButtonBase *FacileMenuBar::createButton(QString name, FacileMenu *menu)
+{
+    InteractiveButtonBase* btn = new InteractiveButtonBase(name, this);
+    // TODO: name 识别并注册快捷键
+    connect(btn, &InteractiveButtonBase::clicked, this, [=]{
+        int index = buttons.indexOf(btn);
+        if (!menus.at(index)->isHidden())
+        {
+            // 如果是正在显示状态
+            // 但是理论上来说不可能，因为这种情况是点不到按钮的
+            menus.at(index)->hide();
+        }
+        else
+        {
+            // 点击触发菜单
+            trigger(buttons.indexOf(btn));
+        }
+    });
+    connect(menu, &FacileMenu::signalHidden, btn, [=]{
+        btn->setBgColor(Qt::transparent);
+        _currentIndex = -1;
+    });
+
+    btn->adjustMinimumSize();
+    btn->setRadius(5);
+    btn->setFixedForePos();
+
+    menu->setMenuBar(this);
+    menu->setAttribute(Qt::WA_DeleteOnClose, false);
+//    menu->setAppearAnimation(false); // 设置显示动画
+    menu->setDisappearAnimation(false); // 设置关闭动画
+    menu->setSubMenuShowOnCursor(false);
+    if (enableAnimation)
+        menu->setBorderRadius(0);
+    return btn;
 }
