@@ -6,6 +6,8 @@
 #include "facilemenubarinterface.h"
 #include "facilemenu.h"
 
+class FacileSwitchWidget;
+
 class FacileMenuBar : public QWidget, public FacileMenuBarInterface
 {
     Q_OBJECT
@@ -17,12 +19,14 @@ public:
     virtual bool triggerIfNot(int index, void*menu) override;
 
     void addMenu(QString name, FacileMenu* menu);
+    void setEnableAniation(bool en); // 开启动画，目前会有些问题
 
 signals:
     void triggered();
 
 public slots:
     virtual void trigger(int index) override;
+    virtual void switchTrigger(int index, int prevIndex);
 
 private:
     QList<InteractiveButtonBase*> buttons;
@@ -30,6 +34,8 @@ private:
     QHBoxLayout* hlayout;
 
     int _currentIndex = -1;
+    bool enableAnimation = false;
+    FacileSwitchWidget* aniWidget = nullptr;
 };
 
 #endif // FACILEMENUBAR_H

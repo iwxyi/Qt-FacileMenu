@@ -94,6 +94,7 @@ public:
     FacileMenu* setTipArea(int x = 48);
     FacileMenu* setTipArea(QString longestTip);
     FacileMenu* setSplitInRow(bool split = true);
+    FacileMenu* setBorderRadius(int r);
 
     FacileMenu* setAppearAnimation(bool en);
     FacileMenu* setDisappearAnimation(bool en);
@@ -132,6 +133,7 @@ public:
     static QColor press_bg;  // 按下背景
     static QColor text_fg;   // 字体/变色图标颜色
     static int blur_bg_alpha; // 背景图显示程度，0禁用，1~100为模糊透明度
+    static QEasingCurve easing_curve; // 出现的动画曲线
 
 private:
     QList<FacileMenuItem*> items;
@@ -165,6 +167,7 @@ private:
 
     // 可修改的配置属性
     int addin_tip_area = 48; // 右边用来显示提示文字的区域
+    int border_radius = 5; // 圆角
 
     // 可修改的配置属性（传递给子菜单）
     bool split_in_row = false; // 同一行是否默认添加分割线

@@ -6,8 +6,6 @@
 class FacileMenuBarInterface
 {
 public:
-    FacileMenuBarInterface();
-
     virtual void trigger(int) = 0;
     virtual bool triggerIfNot(int, void*) = 0;
     virtual int isCursorInArea(QPoint) const = 0;

@@ -6,6 +6,7 @@ QColor FacileMenu::hover_bg = QColor(128, 128, 128, 64);
 QColor FacileMenu::press_bg = QColor(128, 128, 128, 128);
 QColor FacileMenu::text_fg = QColor(0, 0, 0);
 int FacileMenu::blur_bg_alpha = DEFAULT_MENU_BLUR_ALPHA;
+QEasingCurve FacileMenu::easing_curve = QEasingCurve::OutBack; // OutCubic 也不错
 
 FacileMenu::FacileMenu(QWidget *parent) : QWidget(parent)
 {
@@ -697,14 +698,14 @@ void FacileMenu::execute()
     current_index = -1;
 
     // 设置背景为圆角矩形
-    if (height() > 0) // 没有菜单项的时候为0
+    if (height() > 0 && border_radius) // 没有菜单项的时候为0
     {
         QPixmap pixmap(width(), height());
         pixmap.fill(Qt::transparent);
         QPainter pix_ptr(&pixmap);
         pix_ptr.setRenderHint(QPainter::Antialiasing, true);
         QPainterPath path;
-        path.addRoundedRect(0, 0, width(), height(), 5, 5);
+        path.addRoundedRect(0, 0, width(), height(), border_radius, border_radius);
         pix_ptr.fillPath(path, Qt::white);
         setMask(pixmap.mask());
     }
@@ -998,6 +999,14 @@ FacileMenu *FacileMenu::setSplitInRow(bool split)
     return this;
 }
 
+FacileMenu *FacileMenu::setBorderRadius(int r)
+{
+    border_radius = r;
+    foreach (auto item, items)
+        item->subMenu() && item->subMenu()->setBorderRadius(r);
+    return this;
+}
+
 FacileMenu *FacileMenu::setAppearAnimation(bool en)
 {
     this->enable_appear_animation = en;
@@ -1232,12 +1241,12 @@ void FacileMenu::startAnimationOnShowed()
 
     main_vlayout->setEnabled(false);
     _showing_animation = true;
-    QEasingCurve curve = QEasingCurve::OutBack;
+    QEasingCurve curve = easing_curve;
     int duration = 300;
-//    QEasingCurve curve = QEasingCurve::OutCubic;
-//    int duration = 200;
     if (items.size() <= 1)
-        curve = QEasingCurve::OutQuad;
+    {
+        duration = 200;
+    }
 
     // 从上往下的动画
     QPoint start_pos = mapFromGlobal(QCursor::pos());

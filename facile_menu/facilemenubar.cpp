@@ -1,4 +1,5 @@
 #include "facilemenubar.h"
+#include "facilemenuanimation.h"
 
 FacileMenuBar::FacileMenuBar(QWidget *parent) : QWidget(parent)
 {
@@ -49,10 +50,17 @@ bool FacileMenuBar::triggerIfNot(int index, void *menu)
         return false;
     }
 
-    if (m)
-        m->hide();
-
-    trigger(index);
+    if (m && enableAnimation)
+    {
+        // 带动画的trigger
+        switchTrigger(index, menus.indexOf(m));
+    }
+    else
+    {
+        if (m)
+            m->close();
+        trigger(index);
+    }
 
     return true;
 }
@@ -86,13 +94,20 @@ void FacileMenuBar::addMenu(QString name, FacileMenu *menu)
 
     menu->setMenuBar(this);
     menu->setAttribute(Qt::WA_DeleteOnClose, false);
-//    menu->setAppearAnimation(false);
-    menu->setDisappearAnimation(false); // 必须要关闭，否则会出现问题
+//    menu->setAppearAnimation(false); // 设置显示动画
+    menu->setDisappearAnimation(false); // 设置关闭动画
     menu->setSubMenuShowOnCursor(false);
+    if (!enableAnimation)
+        menu->setBorderRadius(0);
 
     buttons.append(btn);
     menus.append(menu);
     hlayout->addWidget(btn);
+}
+
+void FacileMenuBar::setEnableAniation(bool en)
+{
+    this->enableAnimation = en;
 }
 
 /// 显示菜单
@@ -101,9 +116,51 @@ void FacileMenuBar::trigger(int index)
     if (index < 0 || index >= buttons.size())
         return ;
 
+    if (aniWidget)
+    {
+        aniWidget->deleteLater();
+        aniWidget = nullptr;
+    }
+
     InteractiveButtonBase* btn = buttons.at(index);
     btn->setBgColor(FacileMenu::hover_bg);
     QRect rect(btn->mapToGlobal(QPoint(0, 0)), btn->size());
+    if (enableAnimation)
+        menus.at(index)->setAppearAnimation(true); // 要重新设置一下，因为取消掉了
     menus.at(index)->exec(rect, true);
+    _currentIndex = index;
+}
+
+void FacileMenuBar::switchTrigger(int index, int prevIndex)
+{
+    if (index < 0 || index >= buttons.size())
+        return ;
+    if (prevIndex < 0 || prevIndex >= buttons.size())
+        return trigger(index);
+
+    InteractiveButtonBase* btn = buttons.at(index);
+    QRect rect(btn->mapToGlobal(QPoint(0, 0)), btn->size());
+
+    FacileMenu* m = menus.at(index);
+    m->setAppearAnimation(false); // 必须要关闭显示动画
+    menus.at(prevIndex)->hide(); // 避免影响背景
+    m->exec(rect, true);
+
+    if (aniWidget)
+    {
+        aniWidget->deleteLater();
+        aniWidget = nullptr;
+    }
+
+    auto w = new FacileSwitchWidget(menus.at(prevIndex), menus.at(index));
+    aniWidget = w;
+    QPoint pos = m->pos();
+    m->move(-10000 - m->width(), -10000 - m->height()); // 要保持显示，才能监控鼠标位置；因为可能立刻移开了
+    btn->setBgColor(FacileMenu::hover_bg); // 上面的hide会触发关闭事件，取消颜色
+    connect(w, &FacileSwitchWidget::finished, w, [=]{
+        m->move(pos);
+        m->show();
+        aniWidget = nullptr; // 自动deleteLater
+    });
     _currentIndex = index;
 }
