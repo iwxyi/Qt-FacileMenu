@@ -1457,6 +1457,8 @@ void FacileMenu::showEvent(QShowEvent *event)
 {
     QWidget::showEvent(event);
 
+    main_vlayout->setEnabled(true);
+    main_vlayout->invalidate(); // 不清除缓存的话 activate 会false
     main_vlayout->activate();
 }
 
@@ -1472,8 +1474,13 @@ void FacileMenu::mouseMoveEvent(QMouseEvent *event)
     QWidget::mouseMoveEvent(event);
 
     QPoint pos = QCursor::pos();
-    if (_showing_animation || isCursorInArea(pos)) // 正在出现或在自己的区域内，不管
+    int rst = -1;
+    if ((_showing_animation && !menu_bar) || isCursorInArea(pos)) // 正在出现或在自己的区域内，不管
         ;
+    else if (menu_bar && (rst = menu_bar->isCursorInArea(pos)) > -1) // 在菜单栏
+    {
+        menu_bar->triggerIfNot(rst, this);
+    }
     else if (parent_menu && parent_menu->isCursorInArea(pos, this)) // 在父类，自己隐藏
     {
         this->hide();
