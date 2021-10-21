@@ -48,4 +48,5 @@ RESOURCES += \
 
 DISTFILES += \
     README.md \
-    picture.gif
+    screenshots/menubar.gif \
+    screenshots/picture.gif

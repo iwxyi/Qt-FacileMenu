@@ -362,7 +362,26 @@ FacileMenu* menu = (new FacileMenu(this))
 
 ## 截图
 
-![](picture.gif)
+![菜单](screenshots/picture.gif)
+
+
+
+## 菜单栏
+
+![菜单栏](screenshots/menubar.gif)
+
+结合 FacileMenu 自定义的一个菜单栏，目前不是很完善（做着玩的，但是对这个动画效果确实挺失望的）。
+
+具体可参考 MainWindow 中的写法：
+
+```C++
+ui->menuBar->setAnimationEnabled(false); // 开启动画
+ui->menuBar->addMenu("文件", fileMenu);
+ui->menuBar->addMenu("编辑", editMenu);
+ui->menuBar->addMenu("查看", viewMenu);
+ui->menuBar->addMenu("帮助", helpMenu);
+ui->menuBar->insertMenu(2, "格式", formatMenu);
+```
 
 
 
