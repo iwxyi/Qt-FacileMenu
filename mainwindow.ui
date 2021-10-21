@@ -56,8 +56,8 @@
    <widget class="FacileMenuBar" name="menuBar" native="true">
     <property name="geometry">
      <rect>
-      <x>20</x>
-      <y>20</y>
+      <x>0</x>
+      <y>0</y>
       <width>341</width>
       <height>31</height>
      </rect>

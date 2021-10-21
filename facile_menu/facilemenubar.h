@@ -18,7 +18,6 @@ public:
 
     void addMenu(QString name, FacileMenu* menu);
 
-
 signals:
     void triggered();
 

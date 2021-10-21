@@ -36,7 +36,6 @@ bool FacileMenuBar::triggerIfNot(int index, void *menu)
 {
     // 非菜单栏中的按钮，隐藏全部
     FacileMenu* m = static_cast<FacileMenu*>(menu);
-    qDebug() << "triggerIfNot:" << index << m << currentIndex();
     if (index < 0 || index >= buttons.size())
     {
         if (m)
@@ -76,6 +75,10 @@ void FacileMenuBar::addMenu(QString name, FacileMenu *menu)
             trigger(buttons.indexOf(btn));
         }
     });
+    connect(menu, &FacileMenu::signalHidden, btn, [=]{
+        btn->setBgColor(Qt::transparent);
+        _currentIndex = -1;
+    });
 
     btn->adjustMinimumSize();
     btn->setRadius(5);
@@ -83,6 +86,8 @@ void FacileMenuBar::addMenu(QString name, FacileMenu *menu)
 
     menu->setMenuBar(this);
     menu->setAttribute(Qt::WA_DeleteOnClose, false);
+    menu->setAppearAnimation(false);
+    menu->setDisappearAnimation(false);
 
     buttons.append(btn);
     menus.append(menu);
@@ -96,6 +101,7 @@ void FacileMenuBar::trigger(int index)
         return ;
 
     InteractiveButtonBase* btn = buttons.at(index);
+    btn->setBgColor(FacileMenu::press_bg);
     QRect rect(btn->mapToGlobal(QPoint(0, 0)), btn->size());
     menus.at(index)->exec(rect, true);
     _currentIndex = index;
