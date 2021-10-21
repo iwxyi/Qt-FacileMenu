@@ -352,7 +352,7 @@ FacileMenu* menu = (new FacileMenu(this))
     ->setDisappearAnimation(false); // 菜单消失动画
 ```
 
-如果多级菜单中要将这些设置项传递给子菜单，需要在**添加子菜单之前设置**。
+如果多级菜单中要将这些设置项传递给子菜单。
 
 其中仅 `setTipArea` 不会传递给下一级。
 

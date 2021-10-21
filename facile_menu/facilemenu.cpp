@@ -1001,18 +1001,24 @@ FacileMenu *FacileMenu::setSplitInRow(bool split)
 FacileMenu *FacileMenu::setAppearAnimation(bool en)
 {
     this->enable_appear_animation = en;
+    foreach (auto item, items)
+        item->subMenu() && item->subMenu()->setAppearAnimation(en);
     return this;
 }
 
 FacileMenu *FacileMenu::setDisappearAnimation(bool en)
 {
     this->enable_disappear_animation = en;
+    foreach (auto item, items)
+        item->subMenu() && item->subMenu()->setDisappearAnimation(en);
     return this;
 }
 
 FacileMenu *FacileMenu::setSubMenuShowOnCursor(bool en)
 {
     this->sub_menu_show_on_cursor = en;
+    foreach (auto item, items)
+        item->subMenu() && item->subMenu()->setSubMenuShowOnCursor(en);
     return this;
 }
 
