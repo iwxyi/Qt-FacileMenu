@@ -92,20 +92,32 @@ menu->endRow();
 
 
 
+### 添加标题
+
+```C++
+menu->addTitle("标题", -1/0/1);
+```
+
+一个灰色文字的 QLabel，根据参数二会选择性添加一条分割线。
+
+`-1` 添加到标题上方（margin=4），`0` 不添加分割线，`1` 添加到标题下方。默认为 `0`，不带分割线。
+
+
+
 ### 添加 QAction
 
 支持在菜单关闭时自动 delete 传入的 action，避免内存泄漏（默认关闭）
 
 ```C++
 QAction* action = ...;
-menu->addAction(action, true/*是否在菜单关闭一起时delete*/);
+menu->addAction(action, true/*是否在菜单关闭时一起delete*/);
 ```
 
 
 
 ### 添加 Widget/Layout
 
-添加任意 widget 至菜单中，和菜单项并存。layout 同理。
+添加任意 widget 至菜单中，和菜单项并存，不占 `at(index)/indexOf(item)` 的位置。layout 同理。
 
 ```C++
 QPushButton* button = new QPushButton("外部添加的按钮", this);
@@ -121,6 +133,7 @@ menu->addWidget(button);
 > setCheckable(bool) / setChecked(bool) / check(bool) / uncheck(bool)
 
 ```C++
+// 使用 linger() 使菜单点击后不隐藏，持续显示当前单选/多选结果
 auto ac1 = subMenu2->addAction(QIcon(":/icons/run"), "带图标")->check()->linger();
 auto ac2 = subMenu2->addAction("无图标")->uncheck()->linger();
 auto ac3 = subMenu2->split()->addAction("全不选")->uncheck()->linger();
@@ -278,6 +291,14 @@ FacileMenuItem* borderR(int radius = 3, QColor co = Qt::transparent);
 
 // 点击后是否保持菜单显示（默认点一下就隐藏菜单）
 FacileMenuItem* linger();
+// 点击后保持显示（同linger()），并且修改菜单项文本
+FacileMenuItem* lingerText(QString textAfterClick);
+
+// 点击后的菜单文本改变
+textAfterClick(QString newText);
+// 根据当前文本修改为新文本的 Lambda 表达式
+// 参数示例：[=](QString s) -> QString { if (s == "xx") return "xx"; }
+textAfterClick(FuncStringStringType func);
 
 // 满足 exp 时执行 trueLambda 表达式，否则执行 falseLambda 表达式
 FacileMenuItem* ifer(bool exp, trueLambda, falseLambda = nullptr);
@@ -288,7 +309,7 @@ FacileMenuItem* elifer(bool exp);
 FacileMenuItem* elser();
 
 FacileMenuItem* switcher(int value);
-FacileMenuItem* caser(int value, matchedLambda); // 匹配时执行lambda，无需break
+FacileMenuItem* caser(int value, matchedLambda); // 匹配时执行Lambda，无需break
 FacileMenuItem* caser(int value); // 结束记得breaker（允许忘掉~）
 FacileMenuItem* breaker();
 FacileMenuItem* defaulter();
@@ -302,9 +323,65 @@ FacileMenuItem* exiter(bool ex = true);
 
 
 
+## 配置项
+
+### 静态统一颜色
+
+都是静态变量，设置一次，所有菜单都生效。
+
+```C++
+FacileMenu::normal_bg = QColor(255, 255, 255);
+FacileMenu::hover_bg = QColor(128, 128, 128, 64);
+FacileMenu::press_bg = QColor(128, 128, 128, 128);
+FacileMenu::text_fg = QColor(0, 0, 0);
+FacileMenu::blur_bg_alpha = DEFAULT_MENU_BLUR_ALPHA;
+```
+
+
+
+### 单个菜单设置
+
+一些可选的设置项，按需加上去，也可以都不加。
+
+```C++
+FacileMenu* menu = (new FacileMenu(this))
+	->setTipArea("Ctrl+Alt+P") // 设置右边的快捷键提示区域的留空宽度，建议使用最长快捷键
+	->setSplitInRow(true) // 横向按钮是否使用分割线分隔
+    ->setSubMenuShowOnCursor(false) // 设置子菜单是从鼠标位置出现还是右边出现
+    ->setAppearAnimation(false) // 菜单出现动画
+    ->setDisappearAnimation(false); // 菜单消失动画
+```
+
+如果多级菜单中要将这些设置项传递给子菜单。
+
+其中仅 `setTipArea` 不会传递给下一级。
+
+可以直接修改源码中这些变量的默认值，全部菜单生效。
+
+
+
 ## 截图
 
-![](picture.gif)
+![菜单](screenshots/picture.gif)
+
+
+
+## 菜单栏
+
+![菜单栏](screenshots/menubar.gif)
+
+结合 FacileMenu 自定义的一个菜单栏，目前不是很完善（做着玩的，但是对这个动画效果确实挺失望的）。
+
+具体可参考 MainWindow 中的写法：
+
+```C++
+ui->menuBar->setAnimationEnabled(false); // 开启动画
+ui->menuBar->addMenu("文件", fileMenu);
+ui->menuBar->addMenu("编辑", editMenu);
+ui->menuBar->addMenu("查看", viewMenu);
+ui->menuBar->addMenu("帮助", helpMenu);
+ui->menuBar->insertMenu(2, "格式", formatMenu);
+```
 
 
 
@@ -323,7 +400,7 @@ menu->addAction("选择文件", [=]{
 ```
 
 
-### 菜单关闭后退出程序
+### 菜单关闭导致退出程序
 
 在 `main.cpp` 中添加以下代码，使窗口关闭后不会退出整个程序：
 

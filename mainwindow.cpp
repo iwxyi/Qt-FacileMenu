@@ -6,13 +6,52 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+
+    // 设置菜单栏
+    FacileMenu* fileMenu = new FacileMenu(this);
+    fileMenu->addAction("新建");
+    fileMenu->addAction("打开");
+    fileMenu->addAction("保存");
+    fileMenu->addAction("另存为");
+    fileMenu->split()->addAction("退出");
+
+    FacileMenu* editMenu = new FacileMenu(this);
+    editMenu->addAction("撤销");
+    editMenu->addAction("重做");
+    editMenu->split()->addAction("查找");
+    editMenu->addAction("替换");
+    FacileMenu* m = editMenu->split()->addMenu("编码");
+    m->addAction("ANSI");
+    m->addAction("UTF-8");
+    m->addAction("GBK");
+
+    FacileMenu* formatMenu = new FacileMenu(this);
+    formatMenu->addAction("自动换行");
+
+    FacileMenu* viewMenu = new FacileMenu(this);
+    m = viewMenu->addMenu("缩放");
+    m->addAction("放大");
+    m->addAction("缩小");
+    m->addAction("回复默认");
+    viewMenu->addAction("全屏");
+
+    FacileMenu* helpMenu = new FacileMenu(this);
+    helpMenu->addAction("帮助");
+    helpMenu->addAction("反馈");
+    helpMenu->split()->addAction("关于");
+
+    ui->menuBar->setAnimationEnabled(false); // 开启动画。有闪烁的问题，受得了就能开
+    ui->menuBar->addMenu("文件", fileMenu);
+    ui->menuBar->addMenu("编辑", editMenu);
+    ui->menuBar->addMenu("查看", viewMenu);
+    ui->menuBar->addMenu("帮助", helpMenu);
+    ui->menuBar->insertMenu(2, "格式", formatMenu);
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
 }
-
 
 void MainWindow::on_pushButton_clicked()
 {
@@ -21,6 +60,7 @@ void MainWindow::on_pushButton_clicked()
 
     FacileMenu* menu = (new FacileMenu(this))
         ->setTipArea("Ctrl+P")
+        //->setSubMenuShowOnCursor(false)
         ->setSplitInRow(true);
 
     menu->addAction(QIcon(":/icons/run"), "开始播放 (&S)", [=]{
