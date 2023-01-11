@@ -27,7 +27,7 @@ FacileMenu::FacileMenu(QWidget *parent) : QWidget(parent)
     setMouseTracking(true);
 
     // 获取窗口尺寸
-    window_rect = QApplication::desktop()->availableGeometry();
+    window_rect = QApplication::screenAt(QCursor::pos())->geometry();
     window_height = window_rect.height();
 }
 
