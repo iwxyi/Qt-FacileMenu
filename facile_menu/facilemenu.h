@@ -75,6 +75,7 @@ public:
     void exec(QPoint pos = QPoint(-1, -1));
     void exec(QRect expt, bool vertical = false, QPoint pos = QPoint(-1, -1));
     void execute();
+    void getBackgroupPixmap();
     void toHide(int focusIndex = -1);
     void toClose();
     bool isClosedByClick() const;
@@ -102,6 +103,7 @@ public:
 
 signals:
     void signalActionTriggered(FacileMenuItem* action);
+    void signalDynamicMenuTriggered(FacileMenuItem* item);
     void signalHidden(); // 只是隐藏了自己
 
 private slots:

@@ -16,10 +16,11 @@ FacileMenu
 1. 放入源代码
    将 `facile_menu` 文件夹放入 Qt 程序，pro 文件的 `INCLUDEPATH` 加上对应路径，`resources` 里的资源文件 `sub_menu_arrow.png` （子菜单箭头）也导入，前缀别名为：`:/icons/sub_menu_arrow`（或按需修改）
 
-2. 包含头文件
-   `#include "facile_menu.h"`
+2. `.pro` 文件需要添加 `QT += core gui svg`
 
-3. 创建并显示菜单
+3. 包含头文件 `#include "facile_menu.h"`
+
+4. 创建并显示菜单
 
    ```C++
    // 创建菜单
@@ -320,6 +321,108 @@ FacileMenuItem* exiter(bool ex = true);
 
 
 > 注意：由于加了一些容错处理（例如caser可以不用写breaker），无法进行if/switch的多层嵌套（较多的逻辑运算不建议放在菜单中）
+
+
+
+### 动态菜单
+
+在 FacileMenu 中先创建一个 item 作为菜单（示例中的 `m`），但是先不创建子菜单，直到鼠标悬浮上去的时候才创建并显示出来。
+
+作用是可以显示动态加载的列表，比如**多层级嵌套的目录树**，如果一次性全部加载完那么会很费性能，可以等每次需要加载的时候才读取列表。
+
+```C++
+auto m = menu->addMenu("icon", "name", [=]{ /*...*/ });
+menu->lastAddedItem()->setDynamicCreate(true)->setData("data1");
+connect(m, &FacileMenu::signalDynamicMenuTriggered, this, [=](FacileMenuItem* item) {
+    QString data = item->getData().toString(); // 字符串"data1"
+    /*...处理代码...*/
+});
+```
+
+#### 示例：目录树
+
+```C++
+void showFacileDir(QString path, FacileMenu *parentMenu, int level)
+{
+    // 这是方案一：显示的时候一次性加载所有的目录，但是要限制最大层级，否则文件太多导致卡顿
+    // if (level >= maxLevel)
+    //    return ;
+
+    // 这是方案二：一个menu相当于一个外层文件夹，需要的时候连接信号，再动态加载目录
+    auto connectDynamicMenu = [=](FacileMenu* menu) {
+        connect(menu, &FacileMenu::signalDynamicMenuTriggered, this, [=](FacileMenuItem* item) {
+            QString path = item->getData().toString();
+            if (path.isEmpty())
+            {
+                qWarning() << "无法获取到目录路径" << path;
+                return;
+            }
+            qInfo() << "动态加载目录列表：" << path;
+            showFacileDir(path, item->subMenu(), -1);
+        });
+    };
+
+    FacileMenu* menu = parentMenu;
+    if (!parentMenu)
+    {
+        menu = new FacileMenu(this);
+        connectDynamicMenu(menu);
+    }
+
+    auto infos = QDir(path).entryInfoList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot);
+    QFileIconProvider provicer;
+    int count = 0; // 单个目录的文件数量上限，太多的话就不是菜单的事儿了
+    foreach (auto info, infos)
+    {
+        if (++count > us->fastOpenDirFileCount)
+        {
+            menu->addTitle("总计文件(夹)数量：" + QString::number(infos.count()));
+            break;
+        }
+
+        if (info.isDir())
+        {
+            auto m = menu->addMenu(provicer.icon(info), info.fileName(), [=]{
+                menu->toClose(); // 先关闭菜单，得以隐藏面板；否则即使隐藏也会重新触发enter事件
+                QDesktopServices::openUrl("file:///" + info.absoluteFilePath());
+                if (hideAfterTrigger)
+                {
+                    QTimer::singleShot(0, [=]{
+                        emit hidePanel();
+                    });
+                }
+            });
+            // 方案一：一口气加载
+            // showFacileDir(info.absoluteFilePath(), m, level+1);
+            
+            // 方案二：动态加载
+            menu->lastAddedItem()->setDynamicCreate(true)->setData(QString(info.absoluteFilePath()));
+            connectDynamicMenu(m);
+        }
+        else
+        {
+            menu->addAction(provicer.icon(info), info.fileName(), [=]{
+                menu->toClose();
+                QDesktopServices::openUrl("file:///" + info.absoluteFilePath());
+                if (hideAfterTrigger)
+                {
+                    QTimer::singleShot(0, [=]{
+                        emit hidePanel();
+                    });
+                }
+            });
+        }
+    }
+
+    if (!parentMenu)
+    {
+        emit facileMenuUsed(menu);
+
+        if (level != -1)
+            menu->exec();
+    }
+}
+```
 
 
 
