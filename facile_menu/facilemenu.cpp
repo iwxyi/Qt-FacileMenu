@@ -1,6 +1,7 @@
 #include <QLabel>
 #include <QRadialGradient>
 #include "facilemenu.h"
+#include "imageutil.h"
 
 QColor FacileMenu::normal_bg = QColor(255, 255, 255);
 QColor FacileMenu::hover_bg = QColor(128, 128, 128, 64);
@@ -8,6 +9,9 @@ QColor FacileMenu::press_bg = QColor(128, 128, 128, 128);
 QColor FacileMenu::text_fg = QColor(0, 0, 0);
 int FacileMenu::blur_bg_alpha = DEFAULT_MENU_BLUR_ALPHA;
 QEasingCurve FacileMenu::easing_curve = QEasingCurve::OutBack; // OutCubic 也不错
+bool FacileMenu::auto_dark_mode = true;
+bool FacileMenu::auto_theme_by_bg = false;
+bool FacileMenu::all_menu_same_color = true;
 
 FacileMenu::FacileMenu(QWidget *parent) : QWidget(parent)
 {
@@ -25,7 +29,9 @@ FacileMenu::FacileMenu(QWidget *parent) : QWidget(parent)
     main_hlayout->setMargin(0);
     main_hlayout->setSpacing(0);
 
-    setStyleSheet("#FacileMenu { background: "+QVariant(normal_bg).toString()+"; border: none; border-radius:5px; }");
+    m_bg_color = normal_bg;
+    m_text_color = text_fg;
+    setStyleSheet("#FacileMenu { background: "+QVariant(m_bg_color).toString()+"; border: none; border-radius:5px; }");
 
     setMouseTracking(true);
 
@@ -736,89 +742,6 @@ void FacileMenu::execute()
     startAnimationOnShowed();
 }
 
-void FacileMenu::getBackgroupPixmap()
-{
-    // 设置背景为圆角矩形
-    if (height() > 0 && border_radius) // 没有菜单项的时候为0
-    {
-        QPixmap pixmap(width(), height());
-        pixmap.fill(Qt::transparent);
-        QPainter pix_ptr(&pixmap);
-        pix_ptr.setRenderHint(QPainter::Antialiasing, true);
-        QPainterPath path;
-        path.addRoundedRect(0, 0, width(), height(), border_radius, border_radius);
-        pix_ptr.fillPath(path, Qt::white);
-        setMask(pixmap.mask());
-    }
-
-    // 是否捕获背景模糊图片
-    if (blur_bg_alpha <= 0)
-        return;
-
-    // 获取图片
-    QRect rect = this->geometry();
-    int radius = qMin(64, qMin(width(), height())); // 模糊半径，也是边界
-    int cut = radius;
-    rect.adjust(-cut, -cut, +cut, +cut);
-
-    // 屏幕信息
-    QScreen* screen = QApplication::screenAt(QCursor::pos());
-    if (!screen)
-    {
-        qWarning() << "无法获取屏幕";
-        return;
-    }
-    // 屏幕截图
-    QPixmap bg = screen->grabWindow(QApplication::desktop()->winId(), rect.left(), rect.top(), rect.width(), rect.height());
-    // 在Mac的Retina显示屏上，QScreen::grabWindow() 返回的是物理像素图像，而不是逻辑像素
-    // 设备像素比（Device Pixel Ratio）：Retina Mac通常为2.0
-    qreal devicePixelRatio = screen->devicePixelRatio();
-
-    // 当截屏有问题的时候，判断是否纯黑
-    static bool is_all_blank = false;
-    static bool judged = false;
-    if (!judged)
-    {
-        judged = true;
-        QColor color = bg.scaled(1, 1).toImage().pixelColor(0, 0);
-        is_all_blank = (color == QColor(0, 0, 0));
-        if (is_all_blank)
-        {
-            qWarning() << "FacileMenu: Scrollshot is all black, disabled blur background";
-        }
-    }
-
-    if (is_all_blank)
-        return;
-
-    QPixmap pixmap = bg;
-    QPainter painter(&pixmap);
-    // 填充半透明的背景颜色，避免太透
-    QColor bg_c(normal_bg);
-    bg_c.setAlpha(normal_bg.alpha() * (100 - blur_bg_alpha) / 100);
-    painter.fillRect(0, 0, pixmap.width(), pixmap.height(), bg_c);
-
-    // 开始模糊
-    QImage img = pixmap.toImage(); // img -blur-> painter(pixmap)
-    QT_BEGIN_NAMESPACE
-    extern Q_WIDGETS_EXPORT void qt_blurImage(QPainter *p, QImage &blurImage,
-                                              qreal radius, bool quality,
-                                              bool alphaOnly, int transposed = 0);
-    QT_END_NAMESPACE
-
-    // 使用更高质量的模糊 (多次小半径模糊)
-    for (int i = 0; i < 3; i++) {
-        qt_blurImage(&painter, img, radius / 3.0, true, false);
-    }
-
-    // 裁剪掉边缘（模糊后会有黑边）
-    cut = cut * devicePixelRatio; // 按照图像进行缩放
-    QRect copy_rect(cut, cut, pixmap.width()-cut*2, pixmap.height()-cut*2);
-
-    // 设置为背景
-    bg_pixmap = pixmap.copy(copy_rect);
-}
-
 /**
  * 逐级隐藏菜单，并带有选中项动画
  */
@@ -1073,6 +996,36 @@ FacileMenu *FacileMenu::setBorderRadius(int r)
     border_radius = r;
     foreach (auto item, items)
         item->subMenu() && item->subMenu()->setBorderRadius(r);
+    return this;
+}
+
+FacileMenu *FacileMenu::setItemsHoverColor(QColor c)
+{
+    if (!c.isValid())
+        return this;
+
+    foreach (auto item, items)
+        item->setHoverColor(c);
+    return this;
+}
+
+FacileMenu *FacileMenu::setItemsPressColor(QColor c)
+{
+    if (!c.isValid())
+        return this;
+
+    foreach (auto item, items)
+        item->setPressColor(c);
+    return this;
+}
+
+FacileMenu *FacileMenu::setItemsTextColor(QColor c)
+{
+    if (!c.isValid())
+        return this;
+
+    foreach (auto item, items)
+        item->setTextColor(c);
     return this;
 }
 
@@ -1794,6 +1747,158 @@ void FacileMenu::keyPressEvent(QKeyEvent *event)
     return QWidget::keyPressEvent(event);
 }
 
+void FacileMenu::getBackgroupPixmap()
+{
+    /// 设置背景为圆角矩形
+    if (height() > 0 && border_radius) // 没有菜单项的时候为0
+    {
+        QPixmap pixmap(width(), height());
+        pixmap.fill(Qt::transparent);
+        QPainter pix_ptr(&pixmap);
+        pix_ptr.setRenderHint(QPainter::Antialiasing, true);
+        QPainterPath path;
+        path.addRoundedRect(0, 0, width(), height(), border_radius, border_radius);
+        pix_ptr.fillPath(path, Qt::white);
+        setMask(pixmap.mask());
+    }
+
+    // 是否捕获背景模糊图片
+    if (blur_bg_alpha <= 0)
+        return;
+
+    /// 获取图片
+    QRect rect = this->geometry();
+    int radius = qMin(64, qMin(width(), height())); // 模糊半径，也是边界
+    int cut = radius;
+    rect.adjust(-cut, -cut, +cut, +cut);
+
+    // 屏幕信息
+    QScreen* screen = QApplication::screenAt(QCursor::pos());
+    if (!screen)
+    {
+        qWarning() << "无法获取屏幕";
+        return;
+    }
+    // 屏幕截图
+    QPixmap bg = screen->grabWindow(QApplication::desktop()->winId(), rect.left(), rect.top(), rect.width(), rect.height());
+    // 在Mac的Retina显示屏上，QScreen::grabWindow() 返回的是物理像素图像，而不是逻辑像素
+    // 设备像素比（Device Pixel Ratio）：Retina Mac通常为2.0
+    qreal devicePixelRatio = screen->devicePixelRatio();
+
+    // 当截屏有问题的时候，判断是否纯黑
+    static bool is_all_blank = false;
+    static bool judged = false;
+    if (!judged)
+    {
+        judged = true;
+        QColor color = bg.scaled(1, 1).toImage().pixelColor(0, 0);
+        is_all_blank = (color == QColor(0, 0, 0));
+        if (is_all_blank)
+        {
+            qWarning() << "FacileMenu: Scrollshot is all black, disabled blur background";
+        }
+    }
+    if (is_all_blank)
+        return;
+
+    /// 获取图片主题色
+    if (auto_dark_mode || auto_theme_by_bg)
+    {
+        if (!all_menu_same_color || !parent_menu) // 如果是统一判断，那么由最外层计算
+        {
+            QColor img_fg, img_bg, img_sg;
+            bool ok = ImageUtil::getBgFgSgColor(ImageUtil::extractImageThemeColors(bg.toImage(), 8), &img_bg, &img_fg, &img_sg);
+            if (ok)
+            {
+                // 使用主题色
+                if (auto_theme_by_bg)
+                {
+                    m_bg_color = img_bg;
+                    setItemsTextColor(img_fg);
+
+                    QColor hover_color = img_sg;
+                    hover_color.setAlpha(64);
+                    setItemsHoverColor(hover_color);
+                    QColor press_color = img_sg;
+                    press_color.setAlpha(128);
+                    setItemsHoverColor(press_color);
+
+                    if (all_menu_same_color && !this->parent_menu)
+                    {
+                        FacileMenu::text_fg = img_fg;
+                        FacileMenu::normal_bg = m_bg_color;
+                        FacileMenu::hover_bg = hover_color;
+                        FacileMenu::press_bg = press_color;
+                    }
+                }
+                else if (auto_dark_mode) // 判断是否是夜间模式
+                {
+                    auto calculateLuminance = [=](QColor c) -> double {
+                        return (0.2126 * c.redF() + 0.7152 * c.greenF() + 0.0722 * c.blueF()) * 255;
+                    };
+                    double light = calculateLuminance(img_bg);
+                    if (light < 40) // 暗色
+                    {
+                        m_bg_color = QColor("#121212");
+                        setItemsTextColor(QColor("#E0E0E0"));
+
+                        if (all_menu_same_color && !this->parent_menu)
+                        {
+                            FacileMenu::text_fg = QColor("#E0E0E0");
+                            FacileMenu::normal_bg = QColor("#121212");
+                        }
+                    }
+                    else if (light > 120) // 亮色
+                    {
+                        // 默认就是亮色，不做改变
+                        if (all_menu_same_color && !this->parent_menu)
+                        {
+                            FacileMenu::text_fg = QColor(0, 0, 0);
+                            FacileMenu::normal_bg = QColor(255, 255, 255);
+                        }
+                    }
+                }
+
+            }
+        }
+        else // 统一颜色的子菜单，只要使用父菜单的样式即可
+        {
+            m_bg_color = normal_bg;
+            setItemsTextColor(text_fg);
+            setItemsHoverColor(hover_bg);
+            setItemsPressColor(press_bg);
+        }
+    }
+
+    /// 模糊图片
+    QPixmap pixmap = bg;
+    QPainter painter(&pixmap);
+    // 填充半透明的背景颜色，避免太透
+    QColor bg_c(m_bg_color);
+    bg_c.setAlpha(m_bg_color.alpha() * (100 - blur_bg_alpha) / 100);
+    painter.fillRect(0, 0, pixmap.width(), pixmap.height(), bg_c);
+
+    // 开始模糊
+    QImage img = pixmap.toImage(); // img -blur-> painter(pixmap)
+    QT_BEGIN_NAMESPACE
+    extern Q_WIDGETS_EXPORT void qt_blurImage(QPainter *p, QImage &blurImage,
+                                              qreal radius, bool quality,
+                                              bool alphaOnly, int transposed = 0);
+    QT_END_NAMESPACE
+
+    // 使用更高质量的模糊 (多次小半径模糊)
+    for (int i = 0; i < 3; i++) {
+        qt_blurImage(&painter, img, radius / 3.0, true, false);
+    }
+
+    // 裁剪掉边缘（模糊后会有黑边）
+    cut = cut * devicePixelRatio; // 按照图像进行缩放
+    QRect copy_rect(cut, cut, pixmap.width()-cut*2, pixmap.height()-cut*2);
+
+    // 设置为背景
+    bg_pixmap = pixmap.copy(copy_rect);
+}
+
 void FacileMenu::paintEvent(QPaintEvent *event)
 {
     if (!bg_pixmap.isNull())
@@ -1811,8 +1916,8 @@ void FacileMenu::paintEvent(QPaintEvent *event)
             
             // 创建径向渐变
             QRadialGradient gradient(pos, r);
-            gradient.setColorAt(0, QColor(normal_bg.red(), normal_bg.green(), normal_bg.blue(), 76)); // 0.3 * 255 ≈ 76
-            gradient.setColorAt(1, QColor(normal_bg.red(), normal_bg.green(), normal_bg.blue(), 0));
+            gradient.setColorAt(0, QColor(m_bg_color.red(), m_bg_color.green(), m_bg_color.blue(), 76)); // 0.3 * 255 ≈ 76
+            gradient.setColorAt(1, QColor(m_bg_color.red(), m_bg_color.green(), m_bg_color.blue(), 0));
             
             // 设置画笔
             painter.setBrush(gradient);

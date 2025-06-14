@@ -5,7 +5,7 @@ FacileMenu
 
 非常飘逸的 Qt 菜单控件，带有各种动画效果，用起来也十分方便。
 
-无限层级，响应键盘、鼠标单独操作，支持单快捷键。
+无限层级，响应键盘、鼠标单独操作，自动切换日夜间模式或主题，支持单快捷键。
 
 允许添加自定义 widget、layout，当做特殊的 QDialog 使用。
 
@@ -34,7 +34,6 @@ FacileMenu
    // 显示菜单
    menu->execute(QCursor::pos());
    ```
-
 
 
 
@@ -414,10 +413,8 @@ void showFacileDir(QString path, FacileMenu *parentMenu, int level)
         }
     }
 
-    if (!parentMenu)
+    if (!parentMenu) // 表示是最外层的菜单
     {
-        emit facileMenuUsed(menu);
-
         if (level != -1)
             menu->exec();
     }
@@ -428,17 +425,29 @@ void showFacileDir(QString path, FacileMenu *parentMenu, int level)
 
 ## 配置项
 
-### 静态统一颜色
+### 菜单颜色与主题
 
-都是静态变量，设置一次，所有菜单都生效。
+整个应用程序统一的菜单设置，即 FacileMenu 类中的静态变量。可自定义，与所用程序的主题绑定。
+
+例如：
 
 ```C++
-FacileMenu::normal_bg = QColor(255, 255, 255);
-FacileMenu::hover_bg = QColor(128, 128, 128, 64);
-FacileMenu::press_bg = QColor(128, 128, 128, 128);
-FacileMenu::text_fg = QColor(0, 0, 0);
-FacileMenu::blur_bg_alpha = DEFAULT_MENU_BLUR_ALPHA;
+FacileMenu::normal_bg = QColor(128, 128, 128);
 ```
+
+变量说明：
+
+| 变量                | 默认值  | 说明                                                         |
+| ------------------- | ------- | ------------------------------------------------------------ |
+| normal_bg           | 白色    | 菜单背景                                                     |
+| hover_bg            | 灰色    | 鼠标悬浮时的 item 背景                                       |
+| press_bg            | 深灰色  | 鼠标按下时的 item 背景                                       |
+| text_fg             | 黑色    | 菜单项字体颜色                                               |
+| blur_bg_alpha       | 33      | 毛玻璃不透明度，0为不显示毛玻璃                              |
+| easing_curve        | OutBack | 出现的动画曲线                                               |
+| auto_dark_mode      | true    | 自动判断夜间模式，随背景图变化                               |
+| auto_theme_by_bg    | false   | 自动判断多种主题色，会覆盖夜间模式                           |
+| all_menu_same_color | true    | 子菜单与主菜单统一颜色，否则同时出现的多个菜单可以使用不同颜色 |
 
 
 
@@ -455,7 +464,7 @@ FacileMenu* menu = (new FacileMenu(this))
     ->setDisappearAnimation(false); // 菜单消失动画
 ```
 
-如果多级菜单中要将这些设置项传递给子菜单。
+如果多级菜单中会自动将这些设置项**传递给子菜单**。
 
 其中仅 `setTipArea` 不会传递给下一级。
 
@@ -492,7 +501,7 @@ ui->menuBar->insertMenu(2, "格式", formatMenu);
 
 ### 打开**模态对话框**可能会引起崩溃
 
-需要在打开模态对话框之前，关闭当前 menu
+需要在打开模态对话框之前，关闭当前 menu：
 
 ```C++
 menu->addAction("选择文件", [=]{
@@ -501,6 +510,7 @@ menu->addAction("选择文件", [=]{
     // ...
 });
 ```
+
 
 
 ### 菜单关闭导致退出程序
