@@ -347,7 +347,8 @@ double ImageUtil::calculateLuminance(QColor c)
     return (0.2126 * c.redF() + 0.7152 * c.greenF() + 0.0722 * c.blueF()) * 255;
 }
 
-QColor ImageUtil::getNearestColor(QColor color, const QList<QColor> &colors)
+/// 从一组色彩中获取最相似的颜色
+QColor ImageUtil::getNearestColorByRGB(QColor color, const QList<QColor> &colors)
 {
     double min_diff = std::numeric_limits<double>::max();
     QColor nearest_color = color;
@@ -364,4 +365,180 @@ QColor ImageUtil::getNearestColor(QColor color, const QList<QColor> &colors)
         }
     }
     return nearest_color;
+}
+
+/* 查找视觉上最接近的颜色，CIELAB 颜色空间
+颜色空间转换：
+- RGB → XYZ → CIELAB（使用 D65 白点，标准照明条件）
+- 包含 sRGB 非线性校正
+色差计算：
+- 使用 CIEDE2000 色差公式（ΔE00）
+- 考虑了明度、色度和色调的感知差异
+- 包含了补偿因子（如色调旋转、彩度权重）
+优势：
+- 更符合人眼对颜色的感知
+- 对高饱和度和中等明度的颜色特别准确
+- 正确处理了 CIELAB 空间中的非线性问题
+*/
+QColor ImageUtil::getVisuallyClosestColor(const QColor& target, const QList<QColor>& colors, const QList<QVector3D>& colorLabs) {
+    QVector3D targetLab = rgbToLab(target);
+    QColor closestColor;
+    double minDeltaE = std::numeric_limits<double>::max();
+
+    for (int i = 0; i < colors.size(); i++) {
+        QVector3D colorLab = colorLabs[i];
+        double deltaE = deltaE2000(targetLab, colorLab);
+
+        if (deltaE < minDeltaE) {
+            minDeltaE = deltaE;
+            closestColor = colors[i];
+        }
+    }
+
+    return closestColor;
+}
+
+// RGB 转 XYZ (D65 白点)
+QVector3D ImageUtil::rgbToXyz(const QColor& color) {
+    float r = color.redF();
+    float g = color.greenF();
+    float b = color.blueF();
+
+    // sRGB 到线性 RGB 的转换
+    auto linearize = [](float c) {
+        return c <= 0.04045 ? c / 12.92 : std::pow((c + 0.055) / 1.055, 2.4);
+    };
+
+    r = linearize(r);
+    g = linearize(g);
+    b = linearize(b);
+
+    // 线性 RGB 到 XYZ 的转换 (D65 白点)
+    float X = r * 0.4124564 + g * 0.3575761 + b * 0.1804375;
+    float Y = r * 0.2126729 + g * 0.7151522 + b * 0.0721750;
+    float Z = r * 0.0193339 + g * 0.1191920 + b * 0.9503041;
+
+    return {X, Y, Z};
+}
+
+// XYZ 转 CIELAB (D65 白点)
+QVector3D ImageUtil::xyzToLab(const QVector3D& xyz) {
+    float X = xyz.x() / 0.95047; // D65 白点 X
+    float Y = xyz.y();
+    float Z = xyz.z() / 1.08883; // D65 白点 Z
+
+    auto f = [](float t) {
+        return t > 0.008856 ? std::cbrt(t) : (7.787 * t + 16.0 / 116.0);
+    };
+
+    float L = 116.0 * f(Y) - 16.0;
+    float a = 500.0 * (f(X) - f(Y));
+    float b = 200.0 * (f(Y) - f(Z));
+
+    return {L, a, b};
+}
+
+// RGB 转 CIELAB
+QVector3D ImageUtil::rgbToLab(const QColor& color) {
+    return xyzToLab(rgbToXyz(color));
+}
+
+// 计算 CIELAB 颜色空间中的 Delta E 2000 距离
+double ImageUtil::deltaE2000(const QVector3D& lab1, const QVector3D& lab2) {
+    double L1 = lab1.x();
+    double a1 = lab1.y();
+    double b1 = lab1.z();
+    double L2 = lab2.x();
+    double a2 = lab2.y();
+    double b2 = lab2.z();
+
+    // 计算 C1, C2, h1, h2
+    double C1 = std::sqrt(a1 * a1 + b1 * b1);
+    double C2 = std::sqrt(a2 * a2 + b2 * b2);
+    double C_bar = (C1 + C2) / 2.0;
+
+    // 计算 G
+    double G = 0.5 * (1 - std::sqrt(std::pow(C_bar, 7) / (std::pow(C_bar, 7) + std::pow(25.0, 7))));
+
+    // 计算 a'
+    double a1_prime = a1 * (1 + G);
+    double a2_prime = a2 * (1 + G);
+
+    // 计算 C', h'
+    double C1_prime = std::sqrt(a1_prime * a1_prime + b1 * b1);
+    double C2_prime = std::sqrt(a2_prime * a2_prime + b2 * b2);
+
+    double h1_prime = std::atan2(b1, a1_prime);
+    double h2_prime = std::atan2(b2, a2_prime);
+
+    // 确保 h 在 0 到 2π 之间
+    if (h1_prime < 0) h1_prime += 2 * M_PI;
+    if (h2_prime < 0) h2_prime += 2 * M_PI;
+
+    // 计算 ΔL', ΔC', Δh'
+    double delta_L_prime = L2 - L1;
+    double delta_C_prime = C2_prime - C1_prime;
+
+    double delta_h_prime;
+    if (C1_prime * C2_prime == 0) {
+        delta_h_prime = 0;
+    } else {
+        double dh = h2_prime - h1_prime;
+        if (std::abs(dh) <= M_PI) {
+            delta_h_prime = dh;
+        } else if (dh > M_PI) {
+            delta_h_prime = dh - 2 * M_PI;
+        } else {
+            delta_h_prime = dh + 2 * M_PI;
+        }
+    }
+
+    double delta_H_prime = 2 * std::sqrt(C1_prime * C2_prime) * std::sin(delta_h_prime / 2);
+
+    // 计算 C' 平均值和 h' 平均值
+    double C_prime_bar = (C1_prime + C2_prime) / 2.0;
+
+    double h_prime_bar;
+    if (C1_prime * C2_prime == 0) {
+        h_prime_bar = h1_prime + h2_prime;
+    } else {
+        double dh = h2_prime - h1_prime;
+        if (std::abs(dh) <= M_PI) {
+            h_prime_bar = (h1_prime + h2_prime) / 2.0;
+        } else {
+            if (h1_prime + h2_prime < 2 * M_PI) {
+                h_prime_bar = (h1_prime + h2_prime + 2 * M_PI) / 2.0;
+            } else {
+                h_prime_bar = (h1_prime + h2_prime - 2 * M_PI) / 2.0;
+            }
+        }
+    }
+
+    // 计算 T
+    double T = 1 - 0.17 * std::cos(h_prime_bar - M_PI / 6) +
+               0.24 * std::cos(2 * h_prime_bar) +
+               0.32 * std::cos(3 * h_prime_bar + M_PI / 30) -
+               0.20 * std::cos(4 * h_prime_bar - 63 * M_PI / 180);
+
+    // 计算 Δθ
+    double delta_theta = 30 * M_PI / 180 * std::exp(-std::pow((h_prime_bar * 180 / M_PI - 275) / 25, 2));
+
+    // 计算 RC, SL, SC, SH
+    double R_C = 2 * std::sqrt(std::pow(C_prime_bar, 7) / (std::pow(C_prime_bar, 7) + std::pow(25.0, 7)));
+    double S_L = 1 + (0.015 * std::pow(L2 + L1 - 100, 2)) / std::sqrt(20 + std::pow(L2 + L1 - 100, 2));
+    double S_C = 1 + 0.045 * C_prime_bar;
+    double S_H = 1 + 0.015 * C_prime_bar * T;
+
+    // 计算 RT
+    double R_T = -std::sin(2 * delta_theta) * R_C;
+
+    // 计算最终的 ΔE00
+    double delta_E = std::sqrt(
+        std::pow(delta_L_prime / S_L, 2) +
+        std::pow(delta_C_prime / S_C, 2) +
+        std::pow(delta_H_prime / S_H, 2) +
+        R_T * (delta_C_prime / S_C) * (delta_H_prime / S_H)
+        );
+
+    return delta_E;
 }

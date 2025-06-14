@@ -3,6 +3,7 @@
 
 #include <QPixmap>
 #include <QList>
+#include <QVector3D>
 #include "coloroctree.h"
 
 #define IMAGE_CALC_PIXEL_MAX_SIZE 128 // 计算的最大边长（大图缩小）
@@ -32,7 +33,17 @@ public:
 
     static double calculateLuminance(QColor c);
 
-    static QColor getNearestColor(QColor color, const QList<QColor>& colors);
+    static QColor getNearestColorByRGB(QColor color, const QList<QColor>& colors);
+
+    static QColor getVisuallyClosestColor(const QColor& target, const QList<QColor>& colors, const QList<QVector3D>& colorLabs);
+
+    static QVector3D rgbToXyz(const QColor& color);
+
+    static QVector3D xyzToLab(const QVector3D& xyz);
+
+    static QVector3D rgbToLab(const QColor& color);
+
+    static double deltaE2000(const QVector3D& lab1, const QVector3D& lab2);
 };
 
 #endif // PIXMAPUTIL_H

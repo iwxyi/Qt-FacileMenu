@@ -1815,6 +1815,7 @@ void FacileMenu::getBackgroupPixmap()
                 {
                     // 加载色彩列表
                     static QList<QColor> colors;
+                    static QList<QVector3D> colorLabs;
                     if (colors.isEmpty())
                     {
                         QString path = ":/documents/color_list";
@@ -1831,6 +1832,7 @@ void FacileMenu::getBackgroupPixmap()
                                     QString name = list[0];
                                     QString color = list[1];
                                     colors << QColor(color);
+                                    colorLabs << ImageUtil::rgbToLab(QColor(color));
                                 }
                             }
                             file.close();
@@ -1842,11 +1844,10 @@ void FacileMenu::getBackgroupPixmap()
                         }
                     }
 
-
                     // 各个颜色使用与色彩列表中最接近的颜色（方差）
-                    img_bg = ImageUtil::getNearestColor(img_bg, colors);
-                    img_fg = ImageUtil::getNearestColor(img_fg, colors);
-                    img_sg = ImageUtil::getNearestColor(img_sg, colors);
+                    img_bg = ImageUtil::getVisuallyClosestColor(img_bg, colors, colorLabs);
+                    img_fg = ImageUtil::getVisuallyClosestColor(img_fg, colors, colorLabs);
+                    img_sg = ImageUtil::getVisuallyClosestColor(img_sg, colors, colorLabs);
                     
                     // 设置颜色
                     m_bg_color = img_bg;
