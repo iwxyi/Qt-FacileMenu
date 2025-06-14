@@ -338,3 +338,30 @@ QColor ImageUtil::randomColor()
 {
     return QColor::fromHsl(rand()%360,rand()%256,rand()%200);
 }
+
+
+/// 计算明度
+/// <40为暗色，>120为亮色
+double ImageUtil::calculateLuminance(QColor c)
+{
+    return (0.2126 * c.redF() + 0.7152 * c.greenF() + 0.0722 * c.blueF()) * 255;
+}
+
+QColor ImageUtil::getNearestColor(QColor color, const QList<QColor> &colors)
+{
+    double min_diff = std::numeric_limits<double>::max();
+    QColor nearest_color = color;
+    foreach (auto c, colors)
+    {
+        int r = c.red() - color.red();
+        int g = c.green() - color.green();
+        int b = c.blue() - color.blue();
+        int diff = r*r + g*g + b*b;
+        if (diff < min_diff)
+        {
+            min_diff = diff;
+            nearest_color = c;
+        }
+    }
+    return nearest_color;
+}

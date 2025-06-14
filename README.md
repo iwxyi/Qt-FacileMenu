@@ -14,7 +14,7 @@ FacileMenu
 ## 简单使用
 
 1. 放入源代码
-   将 `facile_menu` 文件夹放入 Qt 程序，pro 文件的 `INCLUDEPATH` 加上对应路径，`resources` 里的资源文件 `sub_menu_arrow.png` （子菜单箭头）也导入，前缀别名为：`:/icons/sub_menu_arrow`（或按需修改）
+   将 `facile_menu` 文件夹放入 Qt 程序，pro 文件的 `INCLUDEPATH` 加上对应路径，`resources` 里的资源文件 `sub_menu_arrow.png` （子菜单箭头）也导入，前缀别名为：`:/icons/sub_menu_arrow`（或按需修改）；同理添加建议的色彩资源 `:/documents/color_list`
 
 2. `.pro` 文件需要添加 `QT += core gui svg`
 

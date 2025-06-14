@@ -8,4 +8,7 @@
         <file alias="stop">resources/icons/stop.png</file>
         <file alias="sub_menu_arrow">resources/icons/sub_menu_arrow.png</file>
     </qresource>
+    <qresource prefix="/documents">
+        <file alias="color_list">facile_menu/color_list.txt</file>
+    </qresource>
 </RCC>

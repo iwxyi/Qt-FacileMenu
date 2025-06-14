@@ -1813,6 +1813,42 @@ void FacileMenu::getBackgroupPixmap()
                 // 使用主题色
                 if (auto_theme_by_bg)
                 {
+                    // 加载色彩列表
+                    static QList<QColor> colors;
+                    if (colors.isEmpty())
+                    {
+                        QString path = ":/documents/color_list";
+                        QFile file(path);
+                        if (file.open(QIODevice::ReadOnly))
+                        {
+                            QTextStream in(&file);
+                            QString line;
+                            while (in.readLineInto(&line))
+                            {
+                                QStringList list = line.split(" ");
+                                if (list.size() == 2)
+                                {
+                                    QString name = list[0];
+                                    QString color = list[1];
+                                    colors << QColor(color);
+                                }
+                            }
+                            file.close();
+
+                            if (colors.isEmpty())
+                            {
+                                qWarning() << "无法加载建议的色彩列表";
+                            }
+                        }
+                    }
+
+
+                    // 各个颜色使用与色彩列表中最接近的颜色（方差）
+                    img_bg = ImageUtil::getNearestColor(img_bg, colors);
+                    img_fg = ImageUtil::getNearestColor(img_fg, colors);
+                    img_sg = ImageUtil::getNearestColor(img_sg, colors);
+                    
+                    // 设置颜色
                     m_bg_color = img_bg;
                     setItemsTextColor(img_fg);
 
@@ -1833,10 +1869,7 @@ void FacileMenu::getBackgroupPixmap()
                 }
                 else if (auto_dark_mode) // 判断是否是夜间模式
                 {
-                    auto calculateLuminance = [=](QColor c) -> double {
-                        return (0.2126 * c.redF() + 0.7152 * c.greenF() + 0.0722 * c.blueF()) * 255;
-                    };
-                    double light = calculateLuminance(img_bg);
+                    double light = ImageUtil::calculateLuminance(img_bg);
                     if (light < 40) // 暗色
                     {
                         m_bg_color = QColor("#121212");

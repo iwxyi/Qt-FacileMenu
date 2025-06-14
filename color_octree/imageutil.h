@@ -29,6 +29,10 @@ public:
     static QColor getFastestColor(QColor bg, QList<ColorOctree::ColorCount> palette, int enableCount = 2);
 
     static QColor randomColor();
+
+    static double calculateLuminance(QColor c);
+
+    static QColor getNearestColor(QColor color, const QList<QColor>& colors);
 };
 
 #endif // PIXMAPUTIL_H
