@@ -174,6 +174,9 @@ private:
     bool enable_appear_animation = true;
     bool enable_disappear_animation = true;
     bool sub_menu_show_on_cursor = true; // 子菜单跟随鼠标出现还是在主菜单边缘
+
+    // 一些动画优化
+    QTimer* frame_timer = nullptr;
 };
 
 #endif // FACILEMENU_H

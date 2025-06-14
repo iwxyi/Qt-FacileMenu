@@ -1,4 +1,5 @@
 #include <QLabel>
+#include <QRadialGradient>
 #include "facilemenu.h"
 
 QColor FacileMenu::normal_bg = QColor(255, 255, 255);
@@ -34,6 +35,15 @@ FacileMenu::FacileMenu(QWidget *parent) : QWidget(parent)
         screen_number = 0;
     window_rect = QGuiApplication::screens().at(screen_number)->geometry();
     window_height = window_rect.height();
+
+    // 动画优化
+    frame_timer = new QTimer(this);
+    connect(frame_timer, &QTimer::timeout, this, [=]{
+        if (_showing_animation)
+            return ;
+        update();
+    });
+    frame_timer->start(16); // 60fps
 }
 
 /**
@@ -790,11 +800,16 @@ void FacileMenu::getBackgroupPixmap()
 
     // 开始模糊
     QImage img = pixmap.toImage(); // img -blur-> painter(pixmap)
-    // 模糊函数
     QT_BEGIN_NAMESPACE
-    extern Q_WIDGETS_EXPORT void qt_blurImage( QPainter *p, QImage &blurImage, qreal radius, bool quality, bool alphaOnly, int transposed = 0 );
+    extern Q_WIDGETS_EXPORT void qt_blurImage(QPainter *p, QImage &blurImage,
+                                              qreal radius, bool quality,
+                                              bool alphaOnly, int transposed = 0);
     QT_END_NAMESPACE
-    qt_blurImage(&painter, img, radius, true, false);
+
+    // 使用更高质量的模糊 (多次小半径模糊)
+    for (int i = 0; i < 3; i++) {
+        qt_blurImage(&painter, img, radius / 3.0, true, false);
+    }
 
     // 裁剪掉边缘（模糊后会有黑边）
     cut = cut * devicePixelRatio; // 按照图像进行缩放
@@ -1784,7 +1799,28 @@ void FacileMenu::paintEvent(QPaintEvent *event)
     if (!bg_pixmap.isNull())
     {
         QPainter painter(this);
+
+        // 绘制背景模糊
         painter.drawPixmap(QRect(0,0,width(),height()), bg_pixmap);
+
+        // 绘制鼠标高光
+        {
+            QPoint pos = mapFromGlobal(QCursor::pos());
+            // 绘制半径为min(width(), height())/2的渐变圆，从中心到边缘逐渐透明（0.3->0）
+            int r = qMin(width(), height()) / 2;
+            
+            // 创建径向渐变
+            QRadialGradient gradient(pos, r);
+            gradient.setColorAt(0, QColor(normal_bg.red(), normal_bg.green(), normal_bg.blue(), 76)); // 0.3 * 255 ≈ 76
+            gradient.setColorAt(1, QColor(normal_bg.red(), normal_bg.green(), normal_bg.blue(), 0));
+            
+            // 设置画笔
+            painter.setBrush(gradient);
+            painter.setPen(Qt::NoPen);
+            
+            // 绘制渐变圆
+            painter.drawEllipse(pos, r, r);
+        }
         return ;
     }
     QWidget::paintEvent(event);
