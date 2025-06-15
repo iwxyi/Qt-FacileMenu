@@ -1845,9 +1845,9 @@ void FacileMenu::getBackgroupPixmap()
                     }
 
                     // 各个颜色使用与色彩列表中最接近的颜色（方差）
-                    img_bg = ImageUtil::getVisuallyClosestColor(img_bg, colors, colorLabs);
-                    img_fg = ImageUtil::getVisuallyClosestColor(img_fg, colors, colorLabs);
-                    img_sg = ImageUtil::getVisuallyClosestColor(img_sg, colors, colorLabs);
+                    img_bg = ImageUtil::getVisuallyClosestColorByCIELAB(img_bg, colors, colorLabs);
+                    img_fg = ImageUtil::getVisuallyClosestColorByCIELAB(img_fg, colors, colorLabs);
+                    img_sg = ImageUtil::getVisuallyClosestColorByCIELAB(img_sg, colors, colorLabs);
                     
                     // 设置颜色
                     m_bg_color = img_bg;
@@ -1858,7 +1858,7 @@ void FacileMenu::getBackgroupPixmap()
                     setItemsHoverColor(hover_color);
                     QColor press_color = img_sg;
                     press_color.setAlpha(128);
-                    setItemsHoverColor(press_color);
+                    setItemsPressColor(press_color);
 
                     if (all_menu_same_color && !this->parent_menu)
                     {

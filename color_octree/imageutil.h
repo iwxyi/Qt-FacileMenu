@@ -33,9 +33,9 @@ public:
 
     static double calculateLuminance(QColor c);
 
-    static QColor getNearestColorByRGB(QColor color, const QList<QColor>& colors);
+    static QColor getCloestColorByRGB(QColor color, const QList<QColor>& colors);
 
-    static QColor getVisuallyClosestColor(const QColor& target, const QList<QColor>& colors, const QList<QVector3D>& colorLabs);
+    static QColor getVisuallyClosestColorByCIELAB(const QColor& target, const QList<QColor>& colors, const QList<QVector3D>& colorLabs);
 
     static QVector3D rgbToXyz(const QColor& color);
 
@@ -44,6 +44,10 @@ public:
     static QVector3D rgbToLab(const QColor& color);
 
     static double deltaE2000(const QVector3D& lab1, const QVector3D& lab2);
+
+    static double deltaE94(const QVector3D& lab1, const QVector3D& lab2);
+
+    static double perceptualRgbDistance(const QColor& c1, const QColor& c2);
 };
 
 #endif // PIXMAPUTIL_H

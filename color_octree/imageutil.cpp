@@ -348,16 +348,13 @@ double ImageUtil::calculateLuminance(QColor c)
 }
 
 /// 从一组色彩中获取最相似的颜色
-QColor ImageUtil::getNearestColorByRGB(QColor color, const QList<QColor> &colors)
+QColor ImageUtil::getCloestColorByRGB(QColor color, const QList<QColor> &colors)
 {
     double min_diff = std::numeric_limits<double>::max();
     QColor nearest_color = color;
     foreach (auto c, colors)
     {
-        int r = c.red() - color.red();
-        int g = c.green() - color.green();
-        int b = c.blue() - color.blue();
-        int diff = r*r + g*g + b*b;
+        int diff = perceptualRgbDistance(color, c);
         if (diff < min_diff)
         {
             min_diff = diff;
@@ -380,14 +377,14 @@ QColor ImageUtil::getNearestColorByRGB(QColor color, const QList<QColor> &colors
 - 对高饱和度和中等明度的颜色特别准确
 - 正确处理了 CIELAB 空间中的非线性问题
 */
-QColor ImageUtil::getVisuallyClosestColor(const QColor& target, const QList<QColor>& colors, const QList<QVector3D>& colorLabs) {
+QColor ImageUtil::getVisuallyClosestColorByCIELAB(const QColor& target, const QList<QColor>& colors, const QList<QVector3D>& colorLabs) {
     QVector3D targetLab = rgbToLab(target);
     QColor closestColor;
     double minDeltaE = std::numeric_limits<double>::max();
 
     for (int i = 0; i < colors.size(); i++) {
         QVector3D colorLab = colorLabs[i];
-        double deltaE = deltaE2000(targetLab, colorLab);
+        double deltaE = deltaE94(targetLab, colorLab);
 
         if (deltaE < minDeltaE) {
             minDeltaE = deltaE;
@@ -541,4 +538,49 @@ double ImageUtil::deltaE2000(const QVector3D& lab1, const QVector3D& lab2) {
         );
 
     return delta_E;
+}
+
+/// CIELAB 空间下的 CIE94 色差公式（比 CIEDE2000 快 3-5 倍）
+double ImageUtil::deltaE94(const QVector3D& lab1, const QVector3D& lab2) {
+    double L1 = lab1.x(), a1 = lab1.y(), b1 = lab1.z();
+    double L2 = lab2.x(), a2 = lab2.y(), b2 = lab2.z();
+
+    double deltaL = L1 - L2;
+    double C1 = std::sqrt(a1*a1 + b1*b1);
+    double C2 = std::sqrt(a2*a2 + b2*b2);
+    double deltaC = C1 - C2;
+    double deltaA = a1 - a2;
+    double deltaB = b1 - b2;
+    double deltaH_squared = deltaA*deltaA + deltaB*deltaB - deltaC*deltaC;
+
+    // 纺织品应用的参数（可根据需求调整）
+    double kL = 1, kC = 1, kH = 1;
+    double SL = 1, SC = 1 + 0.045 * C1;
+    double SH = 1 + 0.015 * C1;
+
+    return std::sqrt(
+        std::pow(deltaL / (kL * SL), 2) +
+        std::pow(deltaC / (kC * SC), 2) +
+        std::pow(deltaH_squared > 0 ? std::sqrt(deltaH_squared) / (kH * SH) : 0, 2)
+        );
+}
+
+/// 感知加权的 RGB 距离（比 CIELAB 快 10 倍以上）
+double ImageUtil::perceptualRgbDistance(const QColor& c1, const QColor& c2) {
+    int r1 = c1.red(), g1 = c1.green(), b1 = c1.blue();
+    int r2 = c2.red(), g2 = c2.green(), b2 = c2.blue();
+
+    // 中点位置
+    int r_mean = (r1 + r2) / 2;
+
+    // 加权欧几里得距离（更接近人眼感知）
+    int dr = r1 - r2;
+    int dg = g1 - g2;
+    int db = b1 - b2;
+
+    return std::sqrt(
+        (2 + r_mean/256.0) * dr*dr +
+        4 * dg*dg +
+        (2 + (255 - r_mean)/256.0) * db*db
+        );
 }
